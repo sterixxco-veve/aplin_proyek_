@@ -6,23 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('event_committees', function (Blueprint $table) {
+
             $table->id('id_comm');
 
             $table->uuid('id_event');
             $table->uuid('id_user');
-            $table->unsignedBigInteger('id_divisi');
+            $table->foreignId('id_divisi');
 
             $table->string('jabatan');
+
             $table->timestamps();
 
-            $table->unique(['id_event', 'id_user']);
-
+            // FK
             $table->foreign('id_event')
                 ->references('id_event')
                 ->on('events')
@@ -35,14 +33,10 @@ return new class extends Migration
 
             $table->foreign('id_divisi')
                 ->references('id_divisi')
-                ->on('divisions')
-                ->cascadeOnDelete();
+                ->on('divisions');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('event_committees');

@@ -83,6 +83,35 @@ class EventController extends Controller
         return view('events.index', compact('events'));
     }
 
+    public function edit($id)
+    {
+        $event = Event::findOrFail($id);
+        $organizations = auth()->user()->organizations;
+
+        return view('events.edit', compact('event', 'organizations'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+
+        $request->validate([
+            'nama_event' => 'required',
+            'id_org' => 'required',
+            'kategori' => 'required',
+            'tgl_mulai' => 'nullable|date'
+        ]);
+
+        $event->update([
+            'nama_event' => $request->nama_event,
+            'id_org' => $request->id_org,
+            'kategori' => $request->kategori,
+            'tgl_mulai' => $request->tgl_mulai
+        ]);
+
+        return redirect('/events/' . $event->id_event)
+            ->with('success', 'Event updated');
+    }
     public function store(Request $request)
     {
         $request->validate([

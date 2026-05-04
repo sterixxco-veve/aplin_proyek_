@@ -6,43 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('organization_members', function (Blueprint $table) {
             $table->id();
 
-            // 🔑 FK ke organizations (pakai id_org)
-            $table->unsignedBigInteger('organization_id');
+            $table->foreignId('organization_id')
+                ->constrained('organizations', 'id_org')
+                ->cascadeOnDelete();
 
-            // 🔑 FK ke users (UUID sesuai schema kamu)
             $table->uuid('user_id');
 
-            $table->string('role')->default('member');
+            $table->enum('role', ['admin_org','member']);
 
             $table->timestamps();
 
-            // ✅ Foreign key manual (PENTING)
-            $table->foreign('organization_id')
-                ->references('id_org')
-                ->on('organizations')
-                ->cascadeOnDelete();
-
+            // FK manual karena UUID
             $table->foreign('user_id')
                 ->references('id_user')
                 ->on('users')
                 ->cascadeOnDelete();
-
-            // ❗ biar gak duplicate member
-            $table->unique(['organization_id', 'user_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('organization_members');

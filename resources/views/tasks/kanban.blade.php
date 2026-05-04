@@ -1,259 +1,166 @@
-@php
-    $todo = $tasks->where('status', 'todo');
-    $progressTasks = $tasks->where('status', 'progress');
-    $done = $tasks->where('status', 'done');
-@endphp
+@extends('layouts.app')
 
-<style>
-    .kanban-board {
-        display: flex;
-        gap: 24px;
-        align-items: flex-start;
-        overflow-x: auto;
-        padding: 5px;
-    }
+@section('content')
+<div class="container">
 
-    .kanban-column {
-        flex: 1;
-        min-width: 320px;
-        background-color: #f1f3f4; /* Warna abu-abu latar kolom */
-        border-radius: 20px;
-        padding: 20px;
-        min-height: 600px;
-    }
+    {{-- HEADER --}}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Task Management</h3>
+            <small class="text-muted">
+                {{ $event->nama_event }} - 
+                {{ \Carbon\Carbon::parse($event->tgl_mulai)->format('M d, Y') }}
+            </small>
+        </div>
 
-    .kanban-column h4 {
-        font-weight: 700;
-        font-size: 0.85rem;
-        color: #5f6368;
-        letter-spacing: 0.5px;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 5px;
-    }
+        <button class="btn btn-primary rounded-pill px-4">
+            + Add Task
+        </button>
+    </div>
 
-    .kanban-item {
-        background: white;
-        padding: 18px;
-        margin-bottom: 16px;
-        border-radius: 16px;
-        border: 1px solid transparent;
-        transition: transform 0.2s, box-shadow 0.2s;
-        cursor: grab;
-        position: relative;
-    }
+    {{-- KANBAN --}}
+    <div class="row g-4">
 
-    .kanban-item:hover {
-        transform: translateY(-2px);
-        transition: 0.2s;
-    }
+        @php
+            $columns = [
+                'todo' => ['title' => 'To Do', 'color' => 'secondary'],
+                'progress' => ['title' => 'In Progress', 'color' => 'primary'],
+                'done' => ['title' => 'Done', 'color' => 'success'],
+            ];
+        @endphp
 
-    .kanban-item strong {
-        display: block;
-        font-size: 1rem;
-        color: #202124;
-        margin-bottom: 12px;
-    }
+        @foreach($columns as $status => $col)
+        <div class="col-md-4">
 
-    .task-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        font-size: 0.75rem;
-        color: #70757a;
-    }
+            <div class="kanban-wrapper p-3">
 
-    .meta-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+                {{-- HEADER --}}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-{{ $col['color'] }}">
+                        {{ $col['title'] }}
+                    </h6>
 
-    .meta-row i {
-        font-size: 1rem;
-        color: #1a73e8;
-    }
+                    <span class="badge bg-{{ $col['color'] }} bg-opacity-10 text-{{ $col['color'] }}">
+                        {{ $tasks->where('status', $status)->count() }}
+                    </span>
+                </div>
 
-    .btn-delete-task {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        border: none;
-        background: #f1f3f4;
-        color: #bdc1c6;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        transition: 0.2s;
-    }
+                {{-- COLUMN --}}
+                <div class="kanban-column" data-status="{{ $status }}">
 
-    .btn-delete-task:hover {
-        background: #d93025;
-        color: white;
-    }
+                    @forelse($tasks->where('status', $status) as $task)
 
-    /* Indikator Status Warna */
-    .dot {
-        height: 8px;
-        width: 8px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-    }
-</style>
-@php
-    $todo = $tasks->where('status', 'todo');
-    $progressTasks = $tasks->where('status', 'progress');
-    $done = $tasks->where('status', 'done');
-@endphp
+                    <div class="kanban-card p-3 mb-3 shadow-sm relative"
+                         draggable="true"
+                         data-id="{{ $task->id_task }}">
 
-<div id="kanban-board" style="display:flex; gap:20px;">
+                        {{-- TITLE --}}
+                        <div class="fw-semibold mb-2">
+                            {{ $task->nama_tugas }}
+                        </div>
 
-    @foreach([
-        'todo' => $todo,
-        'progress' => $progressTasks,
-        'done' => $done
-    ] as $status => $list)
+                        {{-- DIVISION --}}
+                        <div class="mb-2">
+                            <span class="badge bg-light text-dark">
+                                {{ $task->division->nama_divisi ?? '-' }}
+                            </span>
+                        </div>
 
-    <div class="kanban-column"
-         data-status="{{ $status }}"
-         style="flex:1; background:#f4f4f4; padding:15px; border-radius:10px; min-height:300px;">
+                        {{-- FOOTER --}}
+                        <div class="d-flex justify-content-between text-muted small mt-2">
 
-        <h4>{{ ucfirst($status) }}</h4>
+                            <div>
+                                <i class="bi bi-calendar me-1"></i>
+                                {{ $task->deadline 
+                                    ? \Carbon\Carbon::parse($task->deadline)->format('M d') 
+                                    : '-' }}
+                            </div>
 
-        @foreach($list as $task)
-            <div class="kanban-item"
-                 draggable="true"
-                 data-id="{{ $task->id_task }}"
-                 data-task='@json($task)'
-                 style="background:white; padding:12px; margin-bottom:10px; border-radius:10px; cursor:grab; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                            <div>
+                                <i class="bi bi-person me-1"></i>
+                                {{ $task->assignee->name ?? '-' }}
+                            </div>
 
-                <div class="d-flex justify-content-between align-items-start">
+                        </div>
 
-                    <div>
-                        <strong>{{ $task->nama_tugas }}</strong><br>
+                        {{-- ACTION --}}
+                        <div class="mt-2 text-end">
+                            <button class="btn btn-sm btn-light"
+                                    onclick="openEditModal({{ $task->id_task }})">
+                                ✏️
+                            </button>
+                        </div>
 
-                        <small class="text-muted">
-                            👤 {{ $task->assignee->name ?? '-' }}
-                        </small><br>
-
-                        <small class="text-muted">
-                            ⏰ {{ $task->deadline ?? '-' }}
-                        </small>
                     </div>
 
-                    {{-- EDIT BUTTON --}}
-                    <button class="btn btn-sm btn-light edit-task-btn">
-                        ✏️
-                    </button>
+                    @empty
+                        <p class="text-muted small">No tasks</p>
+                    @endforelse
 
                 </div>
 
             </div>
+
+        </div>
         @endforeach
 
     </div>
-    @endforeach
 
 </div>
+@endsection
+
 
 {{-- ========================= --}}
-{{-- STYLE --}}
+{{-- STYLE FIX (WAJIB) --}}
 {{-- ========================= --}}
+@push('styles')
 <style>
-.kanban-item:hover {
-    transform: translateY(-2px);
-    transition: 0.2s;
+
+/* COLUMN WRAPPER */
+.kanban-wrapper {
+    background: #ffffff; /* FIX: solid putih */
+    border-radius: 18px;
+    padding: 16px;
+    min-height: 500px;
+    border: 1px solid #f1f3f4;
 }
 
-.kanban-item {
+/* COLUMN AREA */
+.kanban-column {
+    min-height: 400px;
+}
+
+/* CARD */
+.kanban-card {
+    border-radius: 16px;
+    background: #ffffff !important; /* FIX: paksa solid */
+    border: 1px solid #e5e7eb;
     cursor: grab;
+    transition: all 0.2s ease;
 }
 
-.edit-task-btn {
-    cursor: pointer;
+/* HOVER EFFECT */
+.kanban-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+    background: #ffffff !important;
 }
+
+/* HEADER COUNT BADGE */
+.badge.bg-opacity-10 {
+    background-color: rgba(0,0,0,0.05) !important;
+}
+
+/* REMOVE FADED LOOK */
+.bg-light {
+    background: #f9fafb !important;
+    opacity: 1 !important;
+}
+
+/* TEXT FIX */
+.text-muted {
+    opacity: 0.7;
+}
+
 </style>
-
-{{-- ========================= --}}
-{{-- SCRIPT --}}
-{{-- ========================= --}}
-<script>
-const BASE_URL = "{{ url('/') }}";
-
-// =========================
-// DRAG & DROP
-// =========================
-function initDragAndDrop() {
-
-    document.querySelectorAll('.kanban-item').forEach(item => {
-
-        item.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('taskId', item.dataset.id);
-        });
-
-    });
-
-    document.querySelectorAll('.kanban-column').forEach(column => {
-
-        column.addEventListener('dragover', e => e.preventDefault());
-
-        column.addEventListener('drop', async (e) => {
-            e.preventDefault();
-
-            const taskId = e.dataTransfer.getData('taskId');
-            const newStatus = column.dataset.status;
-
-            const draggedItem = document.querySelector(`[data-id='${taskId}']`);
-            if (!draggedItem) return;
-
-            column.appendChild(draggedItem);
-
-            try {
-                await fetch(`${BASE_URL}/tasks/${taskId}/status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-            } catch (err) {
-                alert('Gagal update status');
-                console.error(err);
-            }
-        });
-
-    });
-}
-
-// =========================
-// EDIT TASK CLICK (FIXED)
-// =========================
-document.addEventListener('click', function(e) {
-
-    const btn = e.target.closest('.edit-task-btn');
-    if (!btn) return;
-
-    const item = btn.closest('.kanban-item');
-    const task = JSON.parse(item.dataset.task);
-
-    document.getElementById('edit_task_id').value = task.id_task;
-    document.getElementById('edit_nama').value = task.nama_tugas;
-    document.getElementById('edit_deadline').value = task.deadline ?? '';
-
-    const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
-    modal.show();
-});
-
-// =========================
-// INIT
-// =========================
-initDragAndDrop();
-</script>
+@endpush

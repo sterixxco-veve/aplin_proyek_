@@ -31,14 +31,14 @@ class Task extends Model
         return $this->belongsTo(Event::class, 'id_event', 'id_event');
     }
 
-    public function division()
-    {
-        return $this->belongsTo(Division::class, 'id_divisi', 'id_divisi');
-    }
-
     public function assignee()
     {
         return $this->belongsTo(User::class, 'assigned_to', 'id_user');
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class, 'id_divisi');
     }
 
     // =========================

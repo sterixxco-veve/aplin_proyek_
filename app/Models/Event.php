@@ -52,7 +52,7 @@ class Event extends Model
     }
     public function tasks()
     {
-        return $this->hasMany(\App\Models\Task::class, 'id_event', 'id_event');
+        return $this->hasMany(Task::class, 'id_event');
     }
 
     public function budgets()

@@ -14,6 +14,7 @@ class TaskController extends Controller
     // =========================
     // UPDATE STATUS (KANBAN)
     // =========================
+    
     public function updateStatus(Request $request, $id)
     {
         $task = Task::findOrFail($id);
@@ -147,12 +148,26 @@ class TaskController extends Controller
     // =========================
     // KANBAN VIEW
     // =========================
-    public function index($id)
+    public function index($eventId)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::findOrFail($eventId);
 
-        $tasks = Task::where('id_event', $id)->get();
+        $tasks = Task::where('id_event', $eventId)->get();
 
         return view('tasks.kanban', compact('tasks', 'event'));
+    }
+
+    public function listEvent()
+    {
+        $user = auth()->user();
+
+        // ambil event yang user ikut
+        $events = Event::whereIn('id_event', function ($q) use ($user) {
+            $q->select('id_event')
+            ->from('event_committees')
+            ->where('id_user', $user->id_user);
+        })->get();
+
+        return view('tasks.index', compact('events'));
     }
 }

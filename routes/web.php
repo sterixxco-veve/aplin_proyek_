@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/create', [EventController::class, 'create']);
     Route::post('/events', [EventController::class, 'store']);
     Route::get('/events', [EventController::class, 'index']);
+    Route::get('/events/{id}/edit', [EventController::class, 'edit']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
     Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
     Route::delete('/events/{id}', [EventController::class, 'destroy']);
     
@@ -56,6 +58,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/events/{id}/expenses', [ExpenseController::class, 'store']);
     Route::get('/events/{id}/expenses', [ExpenseController::class, 'page']);
 
+    Route::get('/tasks', [TaskController::class, 'listEvent']);
+    Route::get('/tasks/event/{eventId}', [TaskController::class, 'index']);
     Route::post('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);

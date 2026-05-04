@@ -11,12 +11,20 @@ class DatabaseSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        $this->call([
-        DivisionsSeeder::class,
-        BudgetCategoriesSeeder::class,
-        ExpenseCategoriesSeeder::class,
-        UsersSeeder::class,
-    ]);
-    }
+        {
+            $this->call([
+                DivisionSeeder::class,
+                EventCategorySeeder::class,
+                BudgetCategorySeeder::class,
+                ExpenseCategorySeeder::class,
+                UserSeeder::class,
+
+                OrganizationSeeder::class,
+                OrganizationMemberSeeder::class,
+                EventSeeder::class,
+                EventCommitteeSeeder::class,
+                TaskSeeder::class,
+                ExpenseSeeder::class,
+            ]);
+        }
 }

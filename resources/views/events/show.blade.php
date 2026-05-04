@@ -25,9 +25,10 @@
                 </div>
             </div>
 
-            <button class="btn btn-primary px-4">
-                Edit Event
-            </button>
+            <a href="/events/{{ $event->id_event }}/edit"
+                class="btn btn-primary px-4">
+                    Edit Event
+                </a>
 
         </div>
     </div>

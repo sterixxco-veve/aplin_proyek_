@@ -6,17 +6,15 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class BudgetCategoriesSeeder extends Seeder
+class BudgetCategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         DB::table('budget_categories')->insert([
-    ['nama_kategori' => 'Dana Kampus'],
-    ['nama_kategori' => 'Sponsor'],
-    ['nama_kategori' => 'Kas'],
-]);
+            ['nama_kategori' => 'Operasional'],
+            ['nama_kategori' => 'Marketing'],
+            ['nama_kategori' => 'Produksi'],
+            ['nama_kategori' => 'Transport'],
+        ]);
     }
 }
