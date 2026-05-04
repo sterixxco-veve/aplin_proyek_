@@ -11,16 +11,17 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * The path to your application's "home" route.
+     * Jalur ke "home" untuk aplikasi Anda.
      *
-     * Typically, users are redirected here after authentication.
+     * Jalur ini digunakan oleh autentikasi Laravel untuk mengalihkan pengguna setelah login.
+     * Di sini kita mengubahnya dari '/home' menjadi '/dashboard'.
      *
      * @var string
      */
-    public const HOME = '/home';
+    public const HOME = '/dashboard';
 
     /**
-     * Define your route model bindings, pattern filters, and other route configuration.
+     * Tentukan pemetaan rute untuk aplikasi Anda.
      */
     public function boot(): void
     {

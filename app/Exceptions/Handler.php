@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -21,10 +22,13 @@ class Handler extends ExceptionHandler
     /**
      * Register the exception handling callbacks for the application.
      */
-    public function register(): void
-    {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
-    }
+    public function register()
+{
+    $this->renderable(function (ValidationException $e, $request) {
+        return response()->json([
+            'message' => 'Validation Error',
+            'errors' => $e->errors(),
+        ], 422);
+    });
+}
 }
