@@ -1,116 +1,54 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Finance</title>
-</head>
-<body>
+@extends('layouts.app')
 
-<h1>Finance</h1>
+@section('content')
+<div class="container pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Finance</h2>
+            <p class="text-muted mb-0">Pilih event untuk membuka detail budget dan expense.</p>
+        </div>
+    </div>
 
-<a href="/dashboard">← Back</a>
+    <div class="row g-4">
+        @forelse($events as $event)
+            @php
+                $financial = $event->financial_summary;
+            @endphp
 
-<h3>Tambah Pengeluaran</h3>
+            <div class="col-md-6 col-lg-4">
+                <a href="/events/{{ $event->id_event }}/expenses" class="text-decoration-none text-dark">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-2">{{ $event->nama_event }}</h5>
+                            <p class="text-muted small mb-3">
+                                {{ \Carbon\Carbon::parse($event->tgl_mulai)->format('M d, Y') }}
+                            </p>
 
-<input id="nominal" placeholder="Nominal"><br>
-<input id="bank" placeholder="Bank"><br>
-<input id="rek" placeholder="No Rekening"><br>
-<input id="desc" placeholder="Deskripsi"><br>
-<input type="file" id="foto"><br>
-
-<button onclick="submitFinance()">Submit</button>
-
-<hr>
-
-<h3>List Pengeluaran</h3>
-<div id="list"></div>
-
-<script>
-const eventId = {{ $eventId }};
-
-async function loadFinance() {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(`/api/finance/${eventId}`, {
-        headers: {
-            Authorization: 'Bearer ' + token
-        }
-    });
-
-    const data = await res.json();
-
-    let html = '';
-
-    data.forEach(f => {
-        html += `
-            <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-                <p>Rp ${f.nominal}</p>
-                <p>${f.deskripsi}</p>
-                <p>Status: ${f.status}</p>
-                ${f.foto_nota_url ? `<img src="/storage/${f.foto_nota_url}" width="100">` : ''}
-                <br>
-                <button onclick="approve(${f.id_finance})">Approve</button>
-                <button onclick="reject(${f.id_finance})">Reject</button>
+                            <div class="d-flex justify-content-between small mb-2">
+                                <span class="text-muted">Budget</span>
+                                <span class="fw-semibold">Rp {{ number_format($financial['total_budget']) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-2">
+                                <span class="text-muted">Expense</span>
+                                <span class="fw-semibold text-danger">Rp {{ number_format($financial['total_expense']) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Remaining</span>
+                                <span class="fw-semibold text-success">Rp {{ number_format($financial['remaining']) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
             </div>
-        `;
-    });
-
-    document.getElementById('list').innerHTML = html;
-}
-
-async function submitFinance() {
-    const token = localStorage.getItem("token");
-
-    const formData = new FormData();
-    formData.append('id_event', eventId);
-    formData.append('nominal', document.getElementById('nominal').value);
-    formData.append('jenis_bank', document.getElementById('bank').value);
-    formData.append('no_rekening', document.getElementById('rek').value);
-    formData.append('deskripsi', document.getElementById('desc').value);
-
-    const file = document.getElementById('foto').files[0];
-    if (file) {
-        formData.append('foto', file);
-    }
-
-    await fetch('/api/finance', {
-        method: 'POST',
-        headers: {
-            Authorization: 'Bearer ' + token
-        },
-        body: formData
-    });
-
-    loadFinance();
-}
-
-async function approve(id) {
-    const token = localStorage.getItem("token");
-
-    await fetch(`/api/finance/${id}/approve`, {
-        method: 'PATCH',
-        headers: {
-            Authorization: 'Bearer ' + token
-        }
-    });
-
-    loadFinance();
-}
-
-async function reject(id) {
-    const token = localStorage.getItem("token");
-
-    await fetch(`/api/finance/${id}/reject`, {
-        method: 'PATCH',
-        headers: {
-            Authorization: 'Bearer ' + token
-        }
-    });
-
-    loadFinance();
-}
-
-loadFinance();
-</script>
-
-</body>
-</html>
+        @empty
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 text-muted">
+                        Belum ada event yang bisa dibuka.
+                    </div>
+                </div>
+            </div>
+        @endforelse
+    </div>
+</div>
+@endsection

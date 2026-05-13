@@ -31,18 +31,20 @@
         {{-- Kategori --}}
         <div style="margin-bottom: 15px;">
             <label>Kategori</label><br>
-            <select name="kategori" required>
-                <option value="study_jam">Study Jam</option>
-                <option value="seminar">Seminar</option>
-                <option value="lomba">Lomba</option>
-                <option value="workshop">Workshop</option>
+            <select name="id_event_category" required>
+                <option value="">-- Pilih Kategori --</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id_event_category }}">
+                        {{ $category->nama_kategori }}
+                    </option>
+                @endforeach
             </select>
         </div>
 
         {{-- Tanggal Mulai --}}
         <div style="margin-bottom: 15px;">
             <label>Tanggal Mulai</label><br>
-            <input type="datetime-local" name="tgl_mulai">
+            <input type="datetime-local" name="tgl_mulai" required>
         </div>
 
         <button type="submit">

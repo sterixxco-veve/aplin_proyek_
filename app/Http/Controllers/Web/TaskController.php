@@ -26,7 +26,7 @@ class TaskController extends Controller
         $isSuperAdmin = DB::table('organization_members')
             ->where('organization_id', $event->id_org)
             ->where('user_id', $user->id_user)
-            ->where('role', 'super_admin')
+            ->where('role', 'admin_org')
             ->exists();
 
         // 🔥 COMMITTEE CHECK (event level)

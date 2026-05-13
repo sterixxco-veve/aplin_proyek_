@@ -18,10 +18,10 @@
                 </span>
 
                 <div class="d-flex gap-4 mt-3 text-muted small flex-wrap">
-                    <div><i class="bi bi-calendar-event me-1"></i> May 15, 2026</div>
-                    <div><i class="bi bi-geo-alt me-1"></i> Jakarta CC</div>
-                    <div><i class="bi bi-people me-1"></i> 250 people</div>
-                    <div><i class="bi bi-cash me-1"></i> $12,500</div>
+                    <div><i class="bi bi-calendar-event me-1"></i> {{ \Carbon\Carbon::parse($event->tgl_mulai)->format('M d, Y') }}</div>
+                    <div><i class="bi bi-geo-alt me-1"></i> {{ $event->organization->nama_org ?? 'N/A' }}</div>
+                    <div><i class="bi bi-people me-1"></i> {{ $event->committees->count() }} members</div>
+                    <div><i class="bi bi-cash me-1"></i> Rp {{ number_format($event->financial_summary['total_budget']) }}</div>
                 </div>
             </div>
 
@@ -62,23 +62,18 @@
             </div>
 
             <div id="tasks" class="tab-content d-none">
-
-                {{-- HEADER TASK --}}
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0">Tasks</h5>
 
-                    <button class="btn btn-primary rounded-pill px-4"
-                            data-bs-toggle="modal"
-                            data-bs-target="#taskModal">
-                        + Add Task
-                    </button>
+                    <a href="/tasks/event/{{ $event->id_event }}"
+                       class="btn btn-primary rounded-pill px-4">
+                        Open Task Management
+                    </a>
                 </div>
 
-                {{-- KANBAN --}}
-                <div class="mt-3">
-                    @include('tasks.kanban', ['event' => $event])
+                <div class="p-4 bg-light rounded-3 text-muted">
+                    Task board dibuka di halaman terpisah supaya detail event tetap fokus ke overview, rundown, dan budget.
                 </div>
-
             </div>
 
         </div>

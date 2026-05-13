@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\BudgetCategory;
+use App\Models\EventBudget;
 use App\Models\Event;
+use App\Models\EventCategory;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,10 +22,14 @@ class EventController extends Controller
     {
         $event = \App\Models\Event::with([
             'committees.user',
-            'organization.members'
+            'organization.members',
+            'budgets.category',
+            'budgets.user',
+            'category'
         ])->findOrFail($id);
 
         $divisions = \App\Models\Division::all();
+        $budgetCategories = BudgetCategory::orderBy('nama_kategori')->get();
         $members = $event->organization->members;
 
         // 🔹 ambil tasks (INI  YANG KAMU KURANG)
@@ -38,6 +45,7 @@ class EventController extends Controller
             'event',
             'tasks',
             'divisions',
+            'budgetCategories',
             'members',
             'progress',
             'expenses' // 🔥 INI YANG KAMU BELUM ADA
@@ -73,8 +81,9 @@ class EventController extends Controller
     public function create()
     {
         $organizations = auth()->user()->organizations;
+        $categories = EventCategory::orderBy('nama_kategori')->get();
 
-        return view('events.create', compact('organizations'));
+        return view('events.create', compact('organizations', 'categories'));
     }
 
     public function index()
@@ -87,8 +96,9 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
         $organizations = auth()->user()->organizations;
+        $categories = EventCategory::orderBy('nama_kategori')->get();
 
-        return view('events.edit', compact('event', 'organizations'));
+        return view('events.edit', compact('event', 'organizations', 'categories'));
     }
 
     public function update(Request $request, $id)
@@ -98,25 +108,85 @@ class EventController extends Controller
         $request->validate([
             'nama_event' => 'required',
             'id_org' => 'required',
-            'kategori' => 'required',
+            'id_event_category' => 'required|exists:event_categories,id_event_category',
             'tgl_mulai' => 'nullable|date'
         ]);
 
         $event->update([
             'nama_event' => $request->nama_event,
             'id_org' => $request->id_org,
-            'kategori' => $request->kategori,
+            'id_event_category' => $request->id_event_category,
             'tgl_mulai' => $request->tgl_mulai
         ]);
 
         return redirect('/events/' . $event->id_event)
             ->with('success', 'Event updated');
     }
+
+    public function storeBudget(Request $request, $id)
+    {
+        $request->validate([
+           'id_category' => 'required|exists:budget_categories,id_category',
+           'keterangan' => 'required|string|max:255',
+           'qty' => 'required|integer|min:1',
+           'nominal_rencana' => 'required|numeric|min:0',
+        ]);
+
+        $event = Event::findOrFail($id);
+
+        EventBudget::create([
+           'id_event' => $event->id_event,
+           'id_user' => auth()->user()->id_user,
+           'id_category' => $request->id_category,
+           'keterangan' => $request->keterangan,
+           'qty' => $request->qty,
+           'nominal_rencana' => $request->nominal_rencana,
+        ]);
+
+        return back()->with('success', 'Budget berhasil ditambahkan');
+    }
+
+    public function updateBudget(Request $request, $eventId, $budgetId)
+    {
+        $request->validate([
+            'id_category' => 'required|exists:budget_categories,id_category',
+            'keterangan' => 'required|string|max:255',
+            'qty' => 'required|integer|min:1',
+            'nominal_rencana' => 'required|numeric|min:0',
+        ]);
+
+        $budget = EventBudget::where('id_budget', $budgetId)
+            ->where('id_event', $eventId)
+            ->firstOrFail();
+
+        $budget->update([
+            'id_category' => $request->id_category,
+            'keterangan' => $request->keterangan,
+            'qty' => $request->qty,
+            'nominal_rencana' => $request->nominal_rencana,
+        ]);
+
+        return back()->with('success', 'Budget berhasil diupdate');
+    }
+
+    public function destroyBudget($eventId, $budgetId)
+    {
+        $budget = EventBudget::where('id_budget', $budgetId)
+            ->where('id_event', $eventId)
+            ->firstOrFail();
+
+        $budget->delete();
+
+        return back()->with('success', 'Budget berhasil dihapus');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
            'nama_event' => 'required|unique:events,nama_event', 
-            'id_org' => 'required|exists:organizations,id_org',
+           'id_org' => 'required|exists:organizations,id_org',
+           'id_event_category' => 'required|exists:event_categories,id_event_category',
+           'tgl_mulai' => 'required|date',
         ]);
 
         // ❗ pastikan user memang member org ini
@@ -128,9 +198,10 @@ class EventController extends Controller
         }
 
         $event = \App\Models\Event::create([
-            'id_event' => Str::uuid(),
             'nama_event' => $request->nama_event,
             'id_org' => $request->id_org,
+            'id_event_category' => $request->id_event_category,
+            'tgl_mulai' => $request->tgl_mulai,
         ]);
 
         // 🔥 auto jadi committee (owner)
@@ -188,11 +259,11 @@ class EventController extends Controller
 
     $user = auth()->user();
 
-    // 🔥 hanya super admin yang boleh delete
+    // 🔥 hanya admin org yang boleh delete
     $isSuperAdmin = \DB::table('organization_members')
         ->where('organization_id', $event->id_org)
         ->where('user_id', $user->id_user)
-        ->where('role', 'super_admin')
+        ->where('role', 'admin_org')
         ->exists();
 
     if (!$isSuperAdmin) {

@@ -10,10 +10,17 @@ class EventBudget extends Model
 
     protected $fillable = [
         'id_event',
+        'id_user',
         'id_category',
         'keterangan',
         'qty',
         'nominal_rencana'
+    ];
+
+    protected $casts = [
+        'qty' => 'integer',
+        'nominal_rencana' => 'decimal:2',
+        'sub_total' => 'decimal:2',
     ];
 
     protected static function boot()
@@ -29,5 +36,15 @@ class EventBudget extends Model
     public function event()
     {
         return $this->belongsTo(Event::class, 'id_event');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(BudgetCategory::class, 'id_category', 'id_category');
     }
 }

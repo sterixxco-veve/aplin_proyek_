@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Event;
+use App\Models\EventCategory;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EventResource;
@@ -19,10 +20,10 @@ class EventController extends Controller
     }
 
     public function store(StoreEventRequest $request)
-{
-    $event = Event::create($request->validated());
-    return new EventResource($event);
-}
+    {
+        $event = Event::create($request->validated());
+        return new EventResource($event);
+    }
 
     public function show($id)
     {
@@ -38,12 +39,12 @@ class EventController extends Controller
 
     
 public function update(UpdateEventRequest $request, $id)
-{
-    $event = Event::findOrFail($id);
-    $event->update($request->validated());
+    {
+        $event = Event::findOrFail($id);
+        $event->update($request->validated());
 
-    return new EventResource($event);
-}
+        return new EventResource($event);
+    }
 
     public function destroy($id)
     {

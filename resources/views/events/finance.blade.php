@@ -15,161 +15,227 @@
         </a>
     </div>
 
-    <div class="row g-4">
+    @php
+        $financial = $summary ?? ['total_budget' => 0, 'total_expense' => 0, 'remaining' => 0];
+    @endphp
 
-        {{-- ========================= --}}
-        {{-- FORM --}}
-        {{-- ========================= --}}
-        <div class="col-lg-5">
+    @php
+        $reimbursedCount = $expenses->where('is_reimbursed', true)->count();
+        $pendingReimburseCount = $expenses->where('is_reimbursed', false)->count();
+    @endphp
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
+                    <small class="text-muted d-block mb-1">Total Proposal</small>
+                    <h3 class="fw-bold mb-0">Rp {{ number_format($financial['total_budget']) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <small class="text-muted d-block mb-1">Total Realisasi</small>
+                    <h3 class="fw-bold mb-0 text-danger">Rp {{ number_format($financial['total_expense']) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <small class="text-muted d-block mb-1">Sisa Anggaran</small>
+                    <h3 class="fw-bold mb-0 text-success">Rp {{ number_format($financial['remaining']) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <small class="text-muted d-block mb-1">Reimburse</small>
+                    <h3 class="fw-bold mb-0">{{ $reimbursedCount }}/{{ $pendingReimburseCount }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <h5 class="fw-bold mb-3">Tambah / Edit Expense</h5>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
+                <div>
+                    <h5 class="fw-bold mb-1">LPJ & Reimbursement</h5>
+                    <p class="text-muted small mb-0">Catat pengeluaran yang sudah benar-benar keluar, lalu lampirkan nota untuk LPJ.</p>
+                    <small class="text-muted">Alur status: Pending → Accepted / Declined → Reimbursed.</small>
+                </div>
+                <span class="badge bg-success-subtle text-success rounded-pill">Realisasi</span>
+            </div>
 
-                    <form id="expenseForm"
-                          method="POST"
-                          action="/events/{{ $eventId }}/expenses"
-                          enctype="multipart/form-data">
-                        @csrf
+            <form id="expenseForm"
+                  method="POST"
+                  action="/events/{{ $eventId }}/expenses"
+                  enctype="multipart/form-data">
+                @csrf
 
+                <div class="row g-3">
+                    <div class="col-12">
                         <input type="text" name="nama_pengeluaran" id="nama_pengeluaran"
-                               class="form-control mb-2" placeholder="Nama" required>
+                               class="form-control" placeholder="Contoh: Bayar venue" required>
+                    </div>
 
+                    <div class="col-md-4">
                         <select name="id_expense_category" id="kategori"
-                                class="form-control mb-2" required>
-                            <option value="">Pilih kategori</option>
+                                class="form-control" required>
+                            <option value="">Pilih kategori expense</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id_expense_category }}">
                                     {{ $cat->nama_kategori }}
                                 </option>
                             @endforeach
                         </select>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-6">
-                                <input type="number" name="nominal" id="nominal"
-                                       class="form-control mb-2" placeholder="Nominal" required>
-                            </div>
-                            <div class="col-6">
-                                <input type="number" name="qty" id="qty"
-                                       class="form-control mb-2" placeholder="Qty" required>
-                            </div>
-                        </div>
+                    <div class="col-md-3">
+                        <input type="number" name="nominal" id="nominal"
+                               class="form-control" placeholder="Harga" required>
+                    </div>
 
+                    <div class="col-md-2">
+                        <input type="number" name="qty" id="qty"
+                               class="form-control" placeholder="Qty" required>
+                    </div>
+
+                    <div class="col-md-3">
                         <input type="number" name="nomor_rekening" id="rekening"
-                               class="form-control mb-2" placeholder="Nomor rekening" required>
+                               class="form-control" placeholder="Nomor rekening" required>
+                    </div>
 
-                        <input type="file" name="bukti_nota"
-                               class="form-control mb-3">
+                    <div class="col-12">
+                        <input type="file" name="bukti_nota" class="form-control">
+                    </div>
 
-                        <button id="submitBtn" class="btn btn-success w-100">
-                            Tambah
+                    <div class="col-12 d-flex gap-2">
+                        <button id="submitBtn" class="btn btn-success px-4">
+                            Catat Pengeluaran
                         </button>
 
                         <button type="button" id="cancelBtn"
-                                class="btn btn-secondary w-100 mt-2"
+                                class="btn btn-secondary"
                                 style="display:none;">
-                            Cancel
+                            Batalkan
                         </button>
-
-                    </form>
-
-                </div>
-            </div>
-        </div>
-
-        {{-- ========================= --}}
-        {{-- LIST --}}
-        {{-- ========================= --}}
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-
-                    <h5 class="fw-bold mb-3">Daftar Pengeluaran</h5>
-
-                    @php $total = 0; @endphp
-
-                    @forelse($expenses as $exp)
-                        @php $total += $exp->sub_total; @endphp
-
-                        <div class="mb-3 p-3 bg-light rounded-3">
-
-                            <div class="d-flex justify-content-between align-items-center">
-
-                                <div>
-                                    <div class="fw-bold">
-                                        {{ $exp->nama_pengeluaran }}
-                                    </div>
-
-                                    <small class="text-muted">
-                                        {{ $exp->category->nama_kategori ?? '-' }} |
-                                        {{ $exp->qty }} x Rp {{ number_format($exp->nominal) }}
-                                    </small>
-                                </div>
-
-                                <div class="fw-bold text-success">
-                                    Rp {{ number_format($exp->sub_total) }}
-                                </div>
-
-                            </div>
-
-                            {{-- ACTION --}}
-                            <div class="d-flex gap-2 mt-2">
-
-                                {{-- EDIT --}}
-                                <button
-                                    class="btn btn-sm btn-outline-warning edit-btn"
-                                    data-id="{{ $exp->id_expense }}"
-                                    data-nama="{{ $exp->nama_pengeluaran }}"
-                                    data-kategori="{{ $exp->id_expense_category }}"
-                                    data-nominal="{{ $exp->nominal }}"
-                                    data-qty="{{ $exp->qty }}"
-                                    data-rekening="{{ $exp->nomor_rekening }}">
-                                    ✏️ Edit
-                                </button>
-
-                                {{-- DELETE --}}
-                                <form method="POST"
-                                      action="/expenses/{{ $exp->id_expense }}"
-                                      onsubmit="return confirm('Hapus expense ini?')">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button class="btn btn-sm btn-outline-danger">
-                                        🗑 Hapus
-                                    </button>
-                                </form>
-
-                            </div>
-
-                            {{-- PREVIEW --}}
-                            @if($exp->bukti_nota_path)
-                                <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $exp->bukti_nota_path) }}"
-                                         style="width:100px; border-radius:8px; cursor:pointer;"
-                                         onclick="previewImage(this.src)">
-                                </div>
-                            @endif
-
-                        </div>
-
-                    @empty
-                        <p class="text-muted">Belum ada pengeluaran</p>
-                    @endforelse
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between fw-bold">
-                        <span>Total</span>
-                        <span class="text-success">
-                            Rp {{ number_format($total) }}
-                        </span>
                     </div>
-
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Daftar Realisasi</h5>
+
+            @php $total = 0; @endphp
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th class="ps-4">Item</th>
+                            <th>Kategori</th>
+                            <th class="text-end">Harga</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Subtotal</th>
+                            <th>Nota</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($expenses as $exp)
+                            @php
+                                $total += $exp->sub_total;
+                                $approvalStatus = $exp->approval_status ?? 'pending';
+                                $isDeclined = in_array($approvalStatus, ['rejected', 'declined'], true);
+                                $statusLabel = $isDeclined
+                                    ? 'Declined'
+                                    : ($exp->is_reimbursed
+                                        ? 'Reimbursed'
+                                        : ($approvalStatus === 'accepted' ? 'Accepted' : 'Pending'));
+                                $statusClass = $isDeclined
+                                    ? 'bg-danger-subtle text-danger'
+                                    : ($exp->is_reimbursed
+                                        ? 'bg-success-subtle text-success'
+                                        : ($approvalStatus === 'accepted'
+                                            ? 'bg-primary-subtle text-primary'
+                                            : 'bg-warning-subtle text-warning'));
+                            @endphp
+
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-semibold">{{ $exp->nama_pengeluaran }}</div>
+                                    <small class="text-muted d-block">LPJ item</small>
+                                    <small class="text-muted d-block">Diajukan oleh: {{ optional($exp->user)->name ?? '-' }}</small>
+                                    <small class="text-muted d-block text-nowrap">Dibuat: {{ $exp->created_at?->format('d M Y H:i') ?? '-' }}</small>
+                                    <small class="text-muted d-block text-nowrap">Update: {{ $exp->updated_at?->format('d M Y H:i') ?? '-' }}</small>
+                                    @if($isDeclined && filled($exp->rejection_reason))
+                                        <small class="text-danger d-block mt-1">Alasan decline: {{ $exp->rejection_reason }}</small>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ $exp->category->nama_kategori ?? '-' }}</span>
+                                </td>
+                                <td class="text-end text-nowrap">Rp {{ number_format($exp->nominal) }}</td>
+                                <td class="text-end text-nowrap">{{ $exp->qty }}</td>
+                                <td class="text-end fw-bold text-success text-nowrap">Rp {{ number_format($exp->sub_total) }}</td>
+                                <td class="text-nowrap">
+                                    @if($exp->bukti_nota_path)
+                                        <a href="{{ asset('storage/' . $exp->bukti_nota_path) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold">
+                                            Lihat nota
+                                        </a>
+                                    @else
+                                        <span class="text-muted small">Belum ada</span>
+                                    @endif
+                                </td>
+                                <td class="text-nowrap">
+                                    <span class="badge {{ $statusClass }} rounded-pill">{{ $statusLabel }}</span>
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button
+                                            class="btn btn-sm btn-outline-warning edit-btn"
+                                            data-id="{{ $exp->id_expense }}"
+                                            data-nama="{{ $exp->nama_pengeluaran }}"
+                                            data-kategori="{{ $exp->id_expense_category }}"
+                                            data-nominal="{{ $exp->nominal }}"
+                                            data-qty="{{ $exp->qty }}"
+                                            data-rekening="{{ $exp->nomor_rekening }}">
+                                            Edit
+                                        </button>
+                                        <form method="POST"
+                                              action="/expenses/{{ $exp->id_expense }}"
+                                              onsubmit="return confirm('Hapus expense ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger">Hapus</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-muted p-4">Belum ada realisasi pengeluaran.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between fw-bold">
+                <span>Total Realisasi</span>
+                <span class="text-success">Rp {{ number_format($total) }}</span>
             </div>
         </div>
-
     </div>
 
 </div>

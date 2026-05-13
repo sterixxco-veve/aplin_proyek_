@@ -33,11 +33,13 @@
         {{-- Kategori --}}
         <div class="mb-3">
             <label>Kategori</label>
-            <select name="kategori" class="form-control">
-                <option value="study_jam" {{ $event->kategori == 'study_jam' ? 'selected' : '' }}>Study Jam</option>
-                <option value="seminar" {{ $event->kategori == 'seminar' ? 'selected' : '' }}>Seminar</option>
-                <option value="lomba" {{ $event->kategori == 'lomba' ? 'selected' : '' }}>Lomba</option>
-                <option value="workshop" {{ $event->kategori == 'workshop' ? 'selected' : '' }}>Workshop</option>
+            <select name="id_event_category" class="form-control">
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id_event_category }}"
+                        {{ $event->id_event_category == $category->id_event_category ? 'selected' : '' }}>
+                        {{ $category->nama_kategori }}
+                    </option>
+                @endforeach
             </select>
         </div>
 
@@ -46,7 +48,7 @@
             <label>Tanggal Mulai</label>
             <input type="datetime-local"
                    name="tgl_mulai"
-                   value="{{ $event->tgl_mulai }}"
+                   value="{{ \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d\TH:i') }}"
                    class="form-control">
         </div>
 

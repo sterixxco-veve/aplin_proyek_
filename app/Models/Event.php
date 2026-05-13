@@ -14,8 +14,8 @@ class Event extends Model
     protected $fillable = [
         'id_event',
         'id_org',
+        'id_event_category',
         'nama_event',
-        'kategori',
         'tgl_mulai',
         'status'
     ];
@@ -44,6 +44,11 @@ class Event extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Models\Organization::class, 'id_org', 'id_org');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(\App\Models\EventCategory::class, 'id_event_category', 'id_event_category');
     }
 
     public function committees()
@@ -75,16 +80,33 @@ class Event extends Model
         return $total ? round(($done / $total) * 100) : 0;
     }
 
+    public function getKategoriAttribute()
+    {
+        return $this->category?->slug;
+    }
+
     // ✅ FINANCIAL SUMMARY
+    public function getTotalBudgetAttribute()
+    {
+        return (float) $this->budgets()->sum('sub_total');
+    }
+
+    public function getTotalExpenseAttribute()
+    {
+        return (float) $this->expenses()->sum('sub_total');
+    }
+
+    public function getRemainingBudgetAttribute()
+    {
+        return $this->total_budget - $this->total_expense;
+    }
+
     public function getFinancialSummaryAttribute()
     {
-        $budget = $this->budgets()->sum('sub_total');
-        $expense = $this->expenses()->sum('sub_total');
-
         return [
-            'total_budget' => $budget,
-            'total_expense' => $expense,
-            'remaining' => $budget - $expense,
+            'total_budget' => round($this->total_budget, 2),
+            'total_expense' => round($this->total_expense, 2),
+            'remaining' => round($this->remaining_budget, 2),
         ];
     }
 }

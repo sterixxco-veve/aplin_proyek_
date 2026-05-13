@@ -29,7 +29,7 @@ class OrganizationController extends Controller
         $org = Organization::findOrFail($orgId);
 
         // ❗ cek role dulu
-        if (!$org->hasRole(auth()->user()->id_user, 'super_admin')) {
+        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
             abort(403, 'Kamu tidak punya akses');
         }
 
@@ -76,7 +76,7 @@ class OrganizationController extends Controller
         ]);
 
         $org->members()->attach(auth()->user()->id_user, [
-            'role' => 'super_admin'
+            'role' => 'admin_org'
         ]);
 
         return redirect('/organizations')->with('success', 'Organization created');

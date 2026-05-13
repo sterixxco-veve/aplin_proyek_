@@ -2,25 +2,48 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Event;
 use App\Models\ExpenseReport;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
+    public function home()
+    {
+        $events = auth()->user()
+            ->organizations()
+            ->with('events')
+            ->get()
+            ->flatMap(fn ($organization) => $organization->events)
+            ->sortBy('tgl_mulai')
+            ->values();
+
+        return view('finance', compact('events'));
+    }
+
     public function index($eventId)
     {
-        return ExpenseReport::where('id_event', $eventId)->get();
+        return ExpenseReport::with(['category', 'user'])
+            ->where('id_event', $eventId)
+            ->get();
     }
 
     public function page($eventId)
     {
-        $expenses = ExpenseReport::where('id_event', $eventId)->get();
+        $event = Event::findOrFail($eventId);
+        $summary = $event->financial_summary;
+        $expenses = ExpenseReport::with(['category', 'user'])
+            ->where('id_event', $eventId)
+            ->latest('id_expense')
+            ->get();
         $categories = ExpenseCategory::all();
 
         return view('events.finance', compact(
+            'event',
             'expenses',
             'eventId',
+            'summary',
             'categories' // 🔥 WAJIB
         ));
     }

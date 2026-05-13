@@ -15,7 +15,7 @@ class UpdateEventRequest extends FormRequest
     {
         return [
             'nama_event' => 'sometimes|string|max:255',
-            'kategori' => 'sometimes|in:study_jam,seminar,lomba,workshop',
+            'id_event_category' => 'sometimes|exists:event_categories,id_event_category',
             'tgl_mulai' => 'sometimes|date',
             'status' => 'sometimes|in:planning,ongoing,done',
         ];

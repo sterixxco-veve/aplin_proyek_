@@ -30,7 +30,7 @@
     <div class="row g-4">
         @foreach($events as $event)
             <div class="col-md-6 col-lg-4">
-                <a href="/events/{{ $event->id_event }}" class="text-decoration-none text-dark">
+                <a href="/events/{{ $event->id_event }}/details" class="text-decoration-none text-dark">
                     <div class="card h-100 border-0 shadow-sm event-card p-2" style="border-radius: 24px; transition: 0.3s ease;">
                         <div class="card-body p-3">
                             {{-- Top Header: Icon & Status --}}

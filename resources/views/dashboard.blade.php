@@ -208,16 +208,26 @@
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Event Name</label>
-                    <input type="text" id="nama_event" class="form-control border-0 bg-light py-3 px-3 rounded-4" placeholder="Ex: Flutter Study Jam">
+                    <label class="form-label small fw-bold text-muted">Organization</label>
+                    <select id="id_org" class="form-control border-0 bg-light py-3 px-3 rounded-4" required>
+                        <option value="">Pilih organization</option>
+                        @foreach($organizations as $org)
+                            <option value="{{ $org->id_org }}">{{ $org->nama_org }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-muted">Category</label>
-                    <input type="text" id="kategori" class="form-control border-0 bg-light py-3 px-3 rounded-4" placeholder="Ex: Workshop">
+                    <select id="id_event_category" class="form-control border-0 bg-light py-3 px-3 rounded-4" required>
+                        <option value="">Pilih kategori</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id_event_category }}">{{ $category->nama_kategori }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="mb-0">
                     <label class="form-label small fw-bold text-muted">Start Date</label>
-                    <input type="date" id="tgl_mulai" class="form-control border-0 bg-light py-3 px-3 rounded-4">
+                    <input type="date" id="tgl_mulai" class="form-control border-0 bg-light py-3 px-3 rounded-4" required>
                 </div>
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
@@ -276,8 +286,9 @@ document.getElementById('saveEvent')?.addEventListener('click', function(){
             'X-CSRF-TOKEN':'{{ csrf_token() }}'
         },
         body: JSON.stringify({
+            id_org: document.getElementById('id_org').value,
+            id_event_category: document.getElementById('id_event_category').value,
             nama_event: document.getElementById('nama_event').value,
-            kategori: document.getElementById('kategori').value,
             tgl_mulai: document.getElementById('tgl_mulai').value
         })
     })

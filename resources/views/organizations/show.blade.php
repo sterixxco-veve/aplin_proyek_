@@ -59,7 +59,7 @@
         @php
             $isAdmin = $org->members->contains(function ($member) {
                 return $member->id_user === auth()->user()->id_user 
-                    && $member->pivot->role === 'super_admin';
+                    && $member->pivot->role === 'admin_org';
             });
         @endphp
 
@@ -129,11 +129,12 @@
                                         <td>
                                             @php
                                                 $role = $member->pivot->role;
-                                                $badgeClass = ($role === 'super_admin') ? 'bg-danger-subtle text-danger' : 'bg-light text-dark';
+                                                $badgeClass = ($role === 'admin_org') ? 'bg-danger-subtle text-danger' : 'bg-light text-dark';
+                                                $roleLabel = $role === 'admin_org' ? 'Admin Org' : ucfirst($role);
                                             @endphp
                                             <span class="badge {{ $badgeClass }} border rounded-pill px-3 py-2 shadow-sm small">
-                                                <i class="bi {{ $role === 'super_admin' ? 'bi-shield-lock-fill' : 'bi-person-fill' }} me-1"></i>
-                                                {{ ucfirst($role) }}
+                                                <i class="bi {{ $role === 'admin_org' ? 'bi-shield-lock-fill' : 'bi-person-fill' }} me-1"></i>
+                                                {{ $roleLabel }}
                                             </span>
                                         </td>
                                         <td class="text-end pe-4">
