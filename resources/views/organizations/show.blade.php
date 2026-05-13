@@ -47,9 +47,9 @@
                         <a href="/divisions" class="btn btn-outline-primary rounded-pill">
                             <i class="bi bi-gear me-2"></i>Master Divisi
                         </a>
-                        <button class="btn btn-light rounded-pill px-3 shadow-sm border">
+                        <a href="{{ route('organizations.edit', $org->id_org) }}" class="btn btn-light rounded-pill px-3 shadow-sm border">
                             <i class="bi bi-pencil-square me-1"></i> Edit Info
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

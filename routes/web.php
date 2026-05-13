@@ -33,11 +33,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 });
-Route::get('/organizations/create', [OrganizationController::class, 'create']);
-Route::get('/organizations', [OrganizationController::class, 'index']);
-Route::post('/organizations', [OrganizationController::class, 'store']);
-Route::get('/organizations/{id}', [OrganizationController::class, 'show']);
-Route::post('/organizations/{id}/invite', [OrganizationController::class, 'invite'])->middleware('org.role:super_admin');
+Route::middleware('auth')->group(function () {
+    Route::get('/organizations/create', [OrganizationController::class, 'create']);
+    Route::get('/organizations', [OrganizationController::class, 'index']);
+    Route::post('/organizations', [OrganizationController::class, 'store']);
+    Route::get('/organizations/{id}', [OrganizationController::class, 'show']);
+    Route::post('/organizations/{id}/invite', [OrganizationController::class, 'invite'])->middleware('org.role:admin_org');
+    Route::get('/organizations/{id}', [OrganizationController::class, 'show'])->name('organizations.show');
+    Route::get('/organizations/{id}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
+    Route::put('/organizations/{id}', [OrganizationController::class, 'update'])->name('organizations.update');
+});
 
 Route::middleware('auth')->group(function () {
 
@@ -46,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/events', [EventController::class, 'index']);
     Route::get('/events/{id}/edit', [EventController::class, 'edit']);
     Route::put('/events/{id}', [EventController::class, 'update']);
+    Route::get('/events/{id}/details', [EventController::class, 'show'])->name('events.details');
     Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
     Route::delete('/events/{id}', [EventController::class, 'destroy']);
     
@@ -57,6 +63,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/tasks', [EventController::class, 'getTasks']);
     Route::post('/events/{id}/expenses', [ExpenseController::class, 'store']);
     Route::get('/events/{id}/expenses', [ExpenseController::class, 'page']);
+    Route::post('/events/{id}/budgets', [EventController::class, 'storeBudget']);
+    Route::put('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'updateBudget']);
+    Route::delete('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'destroyBudget']);
+    Route::get('/finance', [ExpenseController::class, 'home']);
 
     Route::get('/tasks', [TaskController::class, 'listEvent']);
     Route::get('/tasks/event/{eventId}', [TaskController::class, 'index']);
