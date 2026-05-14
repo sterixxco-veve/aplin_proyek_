@@ -81,4 +81,52 @@ class OrganizationController extends Controller
 
         return redirect('/organizations')->with('success', 'Organization created');
     }
+
+    public function edit($id)
+    {
+        $org = auth()->user()
+            ->organizations()
+            ->where('id_org', $id)
+            ->firstOrFail();
+
+        // Keamanan: Cek apakah user adalah admin organisasi
+        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
+            abort(403, 'Hanya admin organisasi yang dapat mengubah data.');
+        }
+
+        return view('organizations.edit', compact('org'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $org = Organization::findOrFail($id);
+
+        // Keamanan: Pastikan yang update adalah admin organisasi tersebut
+        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
+            abort(403);
+        }
+
+        $request->validate([
+            'nama_org' => 'required|string|max:255',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+        ]);
+
+        
+        $org->nama_org = $request->nama_org;
+
+        if ($request->hasFile('logo')) {
+           
+            if ($org->logo_path) {
+                Storage::disk('public')->delete($org->logo_path);
+            }
+            
+            $org->logo_path = $request->file('logo')->store('logos', 'public');
+        }
+
+        $org->save();
+
+        return redirect()->route('organizations.show', $id)
+            ->with('success', 'Informasi organisasi berhasil diperbarui!');
+    }
+
 }
