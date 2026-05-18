@@ -146,6 +146,7 @@
                             <th class="text-end">Subtotal</th>
                             <th>Nota</th>
                             <th>Status</th>
+                            <th>Alasan</th>
                             <th class="text-end pe-4">Aksi</th>
                         </tr>
                     </thead>
@@ -155,6 +156,7 @@
                                 $total += $exp->sub_total;
                                 $approvalStatus = $exp->approval_status ?? 'pending';
                                 $isDeclined = in_array($approvalStatus, ['rejected', 'declined'], true);
+                                $isLocked = in_array($approvalStatus, ['accepted', 'rejected', 'declined'], true);
                                 $statusLabel = $isDeclined
                                     ? 'Declined'
                                     : ($exp->is_reimbursed
@@ -176,9 +178,6 @@
                                     <small class="text-muted d-block">Diajukan oleh: {{ optional($exp->user)->name ?? '-' }}</small>
                                     <small class="text-muted d-block text-nowrap">Dibuat: {{ $exp->created_at?->format('d M Y H:i') ?? '-' }}</small>
                                     <small class="text-muted d-block text-nowrap">Update: {{ $exp->updated_at?->format('d M Y H:i') ?? '-' }}</small>
-                                    @if($isDeclined && filled($exp->rejection_reason))
-                                        <small class="text-danger d-block mt-1">Alasan decline: {{ $exp->rejection_reason }}</small>
-                                    @endif
                                 </td>
                                 <td>
                                     <span class="badge bg-light text-dark border">{{ $exp->category->nama_kategori ?? '-' }}</span>
@@ -198,31 +197,42 @@
                                 <td class="text-nowrap">
                                     <span class="badge {{ $statusClass }} rounded-pill">{{ $statusLabel }}</span>
                                 </td>
+                                <td>
+                                    @if($isDeclined && filled($exp->rejection_reason))
+                                        <small class="text-danger d-block">{{ $exp->rejection_reason }}</small>
+                                    @else
+                                        <span class="text-muted small">-</span>
+                                    @endif
+                                </td>
                                 <td class="text-end pe-4 text-nowrap">
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <button
-                                            class="btn btn-sm btn-outline-warning edit-btn"
-                                            data-id="{{ $exp->id_expense }}"
-                                            data-nama="{{ $exp->nama_pengeluaran }}"
-                                            data-kategori="{{ $exp->id_expense_category }}"
-                                            data-nominal="{{ $exp->nominal }}"
-                                            data-qty="{{ $exp->qty }}"
-                                            data-rekening="{{ $exp->nomor_rekening }}">
-                                            Edit
-                                        </button>
-                                        <form method="POST"
-                                              action="/expenses/{{ $exp->id_expense }}"
-                                              onsubmit="return confirm('Hapus expense ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger">Hapus</button>
-                                        </form>
-                                    </div>
+                                    @if($isLocked)
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill">Terkunci</span>
+                                    @else
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <button
+                                                class="btn btn-sm btn-outline-warning edit-btn"
+                                                data-id="{{ $exp->id_expense }}"
+                                                data-nama="{{ $exp->nama_pengeluaran }}"
+                                                data-kategori="{{ $exp->id_expense_category }}"
+                                                data-nominal="{{ $exp->nominal }}"
+                                                data-qty="{{ $exp->qty }}"
+                                                data-rekening="{{ $exp->nomor_rekening }}">
+                                                Edit
+                                            </button>
+                                            <form method="POST"
+                                                  action="/expenses/{{ $exp->id_expense }}"
+                                                  onsubmit="return confirm('Hapus expense ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-sm btn-outline-danger">Hapus</button>
+                                            </form>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-muted p-4">Belum ada realisasi pengeluaran.</td>
+                                <td colspan="9" class="text-muted p-4">Belum ada realisasi pengeluaran.</td>
                             </tr>
                         @endforelse
                     </tbody>

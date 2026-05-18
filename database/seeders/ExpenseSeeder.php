@@ -25,6 +25,19 @@ class ExpenseSeeder extends Seeder
                 'nomor_rekening' => '1234567890',
                 'approval_status' => 'pending',
                 'is_reimbursed' => false
+            ],
+            [
+                'id_event' => $event->id_event,
+                'id_user' => $user->id_user,
+                'id_expense_category' => $cat->id_expense_category,
+                'nama_pengeluaran' => 'Transport panitia',
+                'nominal' => 50000,
+                'qty' => 2,
+                'sub_total' => 100000,
+                'nomor_rekening' => '1234567890',
+                'approval_status' => 'rejected',
+                'rejection_reason' => 'Bukti nota kurang jelas dan nominal tidak sesuai dengan laporan',
+                'is_reimbursed' => false
             ]
         ]);
     }
