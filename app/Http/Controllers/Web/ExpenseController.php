@@ -83,6 +83,8 @@ class ExpenseController extends Controller
     {
         $expense = ExpenseReport::findOrFail($id);
 
+        abort_if($expense->isLockedForModification(), 403, 'Expense yang sudah accepted/declined tidak bisa diubah');
+
         $request->validate([
             'nama_pengeluaran' => 'required',
             'id_expense_category' => 'required',
@@ -105,6 +107,8 @@ class ExpenseController extends Controller
     public function destroy($id)
     {
         $expense = ExpenseReport::findOrFail($id);
+
+        abort_if($expense->isLockedForModification(), 403, 'Expense yang sudah accepted/declined tidak bisa dihapus');
 
         // optional: delete file juga
         if ($expense->bukti_nota_path) {

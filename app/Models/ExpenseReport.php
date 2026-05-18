@@ -43,4 +43,9 @@ class ExpenseReport extends Model
     {
         return $this->belongsTo(ExpenseCategory::class, 'id_expense_category', 'id_expense_category');
     }
+
+    public function isLockedForModification(): bool
+    {
+        return in_array($this->approval_status, ['accepted', 'rejected', 'declined'], true);
+    }
 }
