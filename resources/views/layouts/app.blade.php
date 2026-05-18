@@ -102,6 +102,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
     </style>
+    @stack('styles')
 </head>
 <body class="antialiased">
     <div class="d-flex">
@@ -121,5 +122,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 </html>

@@ -17,7 +17,9 @@ class Task extends Model
         'id_event',
         'id_divisi',
         'nama_tugas',
+        'brief',
         'assigned_to',
+        'priority',
         'status',
         'deadline',
     ];

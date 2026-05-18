@@ -6,6 +6,7 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Division;
 use App\Models\EventCommittee;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,10 @@ class TaskController extends Controller
     {
         $task = Task::findOrFail($id);
         $user = auth()->user();
+
+        $request->validate([
+            'status' => 'required|in:todo,progress,done',
+        ]);
 
         $event = Event::findOrFail($task->id_event);
 
@@ -55,6 +60,8 @@ class TaskController extends Controller
             'nama_tugas' => 'required|string|max:255',
             'id_divisi' => 'required|exists:divisions,id_divisi',
             'assigned_to' => 'nullable|exists:users,id_user',
+            'brief' => 'nullable|string',
+            'priority' => 'required|in:low,medium,high',
             'deadline' => 'nullable|date'
         ]);
 
@@ -74,7 +81,9 @@ class TaskController extends Controller
             'id_event' => $eventId,
             'nama_tugas' => $request->nama_tugas,
             'id_divisi' => $request->id_divisi,
+            'brief' => $request->brief,
             'assigned_to' => $request->assigned_to,
+            'priority' => $request->priority,
             'status' => 'todo',
             'deadline' => $request->deadline
         ]);
@@ -107,10 +116,21 @@ class TaskController extends Controller
             abort(403);
         }
 
+        $request->validate([
+            'nama_tugas' => 'sometimes|string|max:255',
+            'brief' => 'nullable|string',
+            'id_divisi' => 'sometimes|exists:divisions,id_divisi',
+            'assigned_to' => 'nullable|exists:users,id_user',
+            'priority' => 'sometimes|in:low,medium,high',
+            'deadline' => 'nullable|date',
+        ]);
+
         $task->update($request->only([
             'nama_tugas',
+            'brief',
             'id_divisi',
             'assigned_to',
+            'priority',
             'deadline'
         ]));
 
@@ -150,11 +170,25 @@ class TaskController extends Controller
     // =========================
     public function index($eventId)
     {
-        $event = Event::findOrFail($eventId);
+        $event = Event::with('organization.members')->findOrFail($eventId);
 
-        $tasks = Task::where('id_event', $eventId)->get();
+        $tasks = Task::with(['assignee', 'division'])
+            ->where('id_event', $eventId)
+            ->get();
+        $divisions = Division::orderBy('nama_divisi')->get();
+        $members = $event->organization?->members ?? collect();
+        $user = auth()->user();
 
-        return view('tasks.kanban', compact('tasks', 'event'));
+        $canManageTasks = DB::table('organization_members')
+            ->where('organization_id', $event->id_org)
+            ->where('user_id', $user->id_user)
+            ->where('role', 'admin_org')
+            ->exists()
+            || EventCommittee::where('id_event', $eventId)
+                ->where('id_user', $user->id_user)
+                ->exists();
+
+        return view('tasks.kanban', compact('tasks', 'event', 'divisions', 'members', 'canManageTasks'));
     }
 
     public function listEvent()
