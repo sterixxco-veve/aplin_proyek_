@@ -7,6 +7,9 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\Web\TaskController;
+use App\Http\Controllers\Web\PartnerController;
+use App\Http\Controllers\Web\CertificateController;
+use App\Http\Controllers\Web\DocumentController;
 use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\ExpenseCategoryController;
 
@@ -42,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/organizations/{id}', [OrganizationController::class, 'show'])->name('organizations.show');
     Route::get('/organizations/{id}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
     Route::put('/organizations/{id}', [OrganizationController::class, 'update'])->name('organizations.update');
+    Route::post('/organizations/{id}/invite-bulk', [OrganizationController::class, 'inviteBulk']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -59,10 +63,26 @@ Route::middleware('auth')->group(function () {
     // 🔥 AUTO UPDATE PROGRESS
     Route::get('/events/{id}/progress', [EventController::class, 'progress']);
     Route::post('/events/{id}/assign', [EventController::class, 'assignMember']);
+    Route::post('/events/{id}/assign-bulk', [EventController::class, 'assignMembersBulk']);
+    Route::delete('/events/{eventId}/committees/{committeeId}', [EventController::class, 'removeCommittee']);
+    Route::post('/events/{id}/rundown', [EventController::class, 'storeRundown']);
+    Route::put('/events/{eventId}/rundown/{rundownId}', [EventController::class, 'updateRundown']);
+    Route::delete('/events/{eventId}/rundown/{rundownId}', [EventController::class, 'destroyRundown']);
+    Route::post('/events/{id}/partners', [EventController::class, 'storePartner']);
+    Route::put('/events/{eventId}/partners/{partnerId}', [EventController::class, 'updatePartner']);
+    Route::delete('/events/{eventId}/partners/{partnerId}', [EventController::class, 'destroyPartner']);
+    Route::post('/events/{id}/certificates', [EventController::class, 'storeCertificate']);
+    Route::put('/events/{eventId}/certificates/{certId}', [EventController::class, 'updateCertificate']);
+    Route::delete('/events/{eventId}/certificates/{certId}', [EventController::class, 'destroyCertificate']);
+    Route::post('/events/{id}/documents', [EventController::class, 'storeDocument']);
+    Route::put('/events/{eventId}/documents/{documentId}', [EventController::class, 'updateDocument']);
+    Route::delete('/events/{eventId}/documents/{documentId}', [EventController::class, 'destroyDocument']);
     Route::post('/events/{id}/tasks', [TaskController::class, 'store']);
     Route::get('/events/{id}/tasks', [EventController::class, 'getTasks']);
     Route::post('/events/{id}/expenses', [ExpenseController::class, 'store']);
     Route::get('/events/{id}/expenses', [ExpenseController::class, 'page']);
+    Route::get('/events/{id}/expenses/export', [ExpenseController::class, 'export'])->name('web.events.expenses.export');
+    Route::post('/events/{id}/expenses/import', [ExpenseController::class, 'import'])->name('web.events.expenses.import');
     Route::post('/events/{id}/budgets', [EventController::class, 'storeBudget']);
     Route::put('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'updateBudget']);
     Route::delete('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'destroyBudget']);
@@ -70,6 +90,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/tasks', [TaskController::class, 'listEvent']);
     Route::get('/tasks/event/{eventId}', [TaskController::class, 'index']);
+    Route::get('/documents', [DocumentController::class, 'index'])->name('web.documents.index');
+    Route::get('/partners', [PartnerController::class, 'index'])->name('web.partners.index');
+    Route::get('/certificates', [CertificateController::class, 'index'])->name('web.certificates.index');
     Route::post('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);

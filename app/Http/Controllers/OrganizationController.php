@@ -46,6 +46,72 @@ class OrganizationController extends Controller
         return back()->with('success', 'User berhasil di-invite');
     }
 
+    public function inviteBulk(Request $request, $orgId)
+    {
+        $request->validate([
+            'emails' => 'required|string',
+            'role' => 'required|in:admin_org,member',
+        ]);
+
+        $org = Organization::findOrFail($orgId);
+
+        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
+            abort(403, 'Kamu tidak punya akses');
+        }
+
+        $emails = collect(preg_split('/[\r\n,;]+/', $request->emails))
+            ->map(fn ($email) => trim($email))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($emails->isEmpty()) {
+            return back()->with('error', 'Masukkan minimal satu email yang valid.');
+        }
+
+        $added = [];
+        $already = [];
+        $notFound = [];
+
+        foreach ($emails as $email) {
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                $notFound[] = $email;
+                continue;
+            }
+
+            $exists = $org->members()->where('users.id_user', $user->id_user)->exists();
+
+            if ($exists) {
+                $already[] = $email;
+                continue;
+            }
+
+            $org->members()->attach($user->id_user, [
+                'role' => $request->role,
+            ]);
+
+            $added[] = $email;
+        }
+
+        if (count($added) === 0) {
+            return back()->with('error', 'Tidak ada user yang berhasil ditambahkan. Sudah member: ' . implode(', ', $already) . '. Tidak ditemukan: ' . implode(', ', $notFound));
+        }
+
+        $message = 'Berhasil menambahkan ' . count($added) . ' user.';
+
+        if (!empty($already)) {
+            $message .= ' Sudah member: ' . implode(', ', $already) . '.';
+        }
+
+        if (!empty($notFound)) {
+            $message .= ' Tidak ditemukan: ' . implode(', ', $notFound) . '.';
+        }
+
+        return back()->with('success', $message);
+    }
+
     public function index()
     {
         $orgs = auth()->user()->organizations;
