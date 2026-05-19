@@ -16,24 +16,24 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-6    ">
         <div class="p-3 bg-light rounded-3">
             <small class="text-muted d-block">Total Proposal</small>
             <h4 class="mb-0">Rp {{ number_format($financial['total_budget']) }}</h4>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="p-3 bg-success-subtle rounded-3">
             <small class="text-muted d-block">Jumlah Item</small>
             <h4 class="mb-0">{{ $budgetCount }}</h4>
         </div>
     </div>
-    <div class="col-md-4">
+    <!-- <div class="col-md-4">
         <div class="p-3 bg-warning-subtle rounded-3">
             <small class="text-muted d-block">Estimasi Rencana</small>
             <h4 class="mb-0">Proposal Event</h4>
         </div>
-    </div>
+    </div> -->
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
