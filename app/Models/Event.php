@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\User;
 
 class Event extends Model
 {
@@ -14,6 +15,7 @@ class Event extends Model
     protected $fillable = [
         'id_event',
         'id_org',
+        'id_creator',
         'id_event_category',
         'nama_event',
         'tgl_mulai',
@@ -46,6 +48,11 @@ class Event extends Model
         return $this->belongsTo(\App\Models\Organization::class, 'id_org', 'id_org');
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'id_creator', 'id_user');
+    }
+
     public function category()
     {
         return $this->belongsTo(\App\Models\EventCategory::class, 'id_event_category', 'id_event_category');
@@ -65,9 +72,115 @@ class Event extends Model
         return $this->hasMany(EventBudget::class, 'id_event');
     }
 
+    public function partners()
+    {
+        return $this->hasMany(Partner::class, 'id_event', 'id_event')
+            ->orderByDesc('created_at');
+    }
+
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class, 'id_event', 'id_event')
+            ->orderByDesc('created_at');
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(GeneratedDocument::class, 'id_event', 'id_event')
+            ->orderByDesc('created_at');
+    }
+
     public function expenses()
     {
         return $this->hasMany(ExpenseReport::class, 'id_event');
+    }
+
+    public function rundownItems()
+    {
+        return $this->hasMany(EventRundownItem::class, 'id_event', 'id_event')
+            ->orderBy('day_number')
+            ->orderBy('waktu_mulai');
+    }
+
+    public function scopeVisibleTo($query, $user)
+    {
+        $userId = $user instanceof User ? $user->id_user : $user;
+
+        return $query->where(function ($eventQuery) use ($userId) {
+            $eventQuery->where('id_creator', $userId)
+                ->orWhereHas('committees', function ($committeeQuery) use ($userId) {
+                    $committeeQuery->where('id_user', $userId);
+                });
+        });
+    }
+
+    public function isVisibleTo($user): bool
+    {
+        $userId = $user instanceof User ? $user->id_user : $user;
+
+        return $this->id_creator === $userId
+            || $this->committees()->where('id_user', $userId)->exists();
+    }
+
+    public function canManageBy($user): bool
+    {
+        return $this->isVisibleTo($user);
+    }
+
+    public function canManageCommitteeBy($user): bool
+    {
+        $userId = $user instanceof User ? $user->id_user : $user;
+
+        return $this->id_creator === $userId;
+    }
+
+    public function canManageRundownBy($user): bool
+    {
+        $userId = $user instanceof User ? $user->id_user : $user;
+
+        if ($this->id_creator === $userId) {
+            return true;
+        }
+
+        return $this->committees()
+            ->where('id_user', $userId)
+            ->where('jabatan', 'koordinator')
+            ->exists();
+    }
+
+    public function canManagePartnerBy($user): bool
+    {
+        return $this->canManageRundownBy($user);
+    }
+
+    public function canManageCertificateBy($user): bool
+    {
+        $userId = $user instanceof User ? $user->id_user : $user;
+
+        if ($this->id_creator === $userId) {
+            return true;
+        }
+
+        return $this->committees()
+            ->where('id_user', $userId)
+            ->get()
+            ->contains(function ($committee) {
+                $role = Str::lower(trim($committee->jabatan ?? ''));
+
+                return in_array($role, [
+                    'koordinator',
+                    'ketua',
+                    'wakil ketua',
+                    'sekretaris',
+                    'bendahara',
+                    'ketua acara',
+                ], true);
+            });
+    }
+
+    public function canManageDocumentBy($user): bool
+    {
+        return $this->canManageRundownBy($user);
     }
 
     

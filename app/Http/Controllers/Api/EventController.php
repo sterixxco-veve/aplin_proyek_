@@ -15,19 +15,21 @@ class EventController extends Controller
     public function index()
     {
         return EventResource::collection(
-            Event::with(['organization'])->latest()->get()
+            Event::visibleTo(auth()->user())->with(['organization'])->latest()->get()
         );
     }
 
     public function store(StoreEventRequest $request)
     {
-        $event = Event::create($request->validated());
+        $event = Event::create($request->validated() + [
+            'id_creator' => auth()->user()->id_user,
+        ]);
         return new EventResource($event);
     }
 
     public function show($id)
     {
-        $event = Event::with([
+        $event = Event::visibleTo(auth()->user())->with([
             'organization',
             'committees.user',
             'committees.division',

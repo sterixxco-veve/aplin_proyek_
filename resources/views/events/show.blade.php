@@ -43,6 +43,10 @@
             <button class="tab-btn active" data-tab="overview">Overview</button>
             <button class="tab-btn" data-tab="rundown">Rundown</button>
             <button class="tab-btn" data-tab="budget">Budget</button>
+            <button class="tab-btn" data-tab="documents">Documents</button>
+            <button class="tab-btn" data-tab="partners">Partners</button>
+            <button class="tab-btn" data-tab="certificates">Certificates</button>
+            <button class="tab-btn" data-tab="committee">Committee</button>
             <button class="tab-btn" data-tab="tasks">Tasks</button>
         </div>
 
@@ -59,6 +63,169 @@
 
             <div id="budget" class="tab-content d-none">
                 @include('events.partials.budget')
+            </div>
+
+            <div id="documents" class="tab-content d-none">
+                @include('events.partials.documents')
+            </div>
+
+            <div id="partners" class="tab-content d-none">
+                @include('events.partials.partners')
+            </div>
+
+            <div id="certificates" class="tab-content d-none">
+                @include('events.partials.certificates')
+            </div>
+
+            <div id="committee" class="tab-content d-none">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1">Committee</h5>
+                        <small class="text-muted">Tambah atau hapus panitia yang terlibat di event ini.</small>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                        {{ $event->committees->count() }} committee
+                    </span>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Tambah Committee</h6>
+
+                        <form method="POST" action="/events/{{ $event->id_event }}/assign" class="row g-3">
+                            @csrf
+
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Member</label>
+                                <select name="id_user" class="form-select" required>
+                                    <option value="">Pilih member</option>
+                                    @forelse($availableMembers as $member)
+                                        <option value="{{ $member->id_user }}">{{ $member->name }} ({{ $member->email }})</option>
+                                    @empty
+                                        <option value="">Tidak ada member tersedia</option>
+                                    @endforelse
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Divisi</label>
+                                <select name="id_divisi" class="form-select" required>
+                                    <option value="">Pilih divisi</option>
+                                    @foreach($divisions as $division)
+                                        <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Jabatan</label>
+                                <select name="jabatan" class="form-select" required>
+                                    <option value="">Pilih jabatan</option>
+                                    <option value="koordinator">Koordinator</option>
+                                    <option value="anggota">Anggota</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-primary w-100">Tambah</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Tambah Banyak Committee</h6>
+                        <p class="text-muted small mb-3">Pilih lebih dari satu member untuk dimasukkan ke committee dengan divisi dan jabatan yang sama.</p>
+
+                        <form method="POST" action="/events/{{ $event->id_event }}/assign-bulk" class="row g-3">
+                            @csrf
+
+                            <div class="col-md-5">
+                                <label class="form-label small text-muted">Member</label>
+                                <select name="id_users[]" class="form-select" multiple size="6" required>
+                                    @forelse($availableMembers as $member)
+                                        <option value="{{ $member->id_user }}">{{ $member->name }} ({{ $member->email }})</option>
+                                    @empty
+                                        <option value="" disabled>Tidak ada member tersedia</option>
+                                    @endforelse
+                                </select>
+                                <small class="text-muted d-block mt-2">Gunakan Ctrl / Cmd untuk pilih banyak member.</small>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Divisi</label>
+                                <select name="id_divisi" class="form-select" required>
+                                    <option value="">Pilih divisi</option>
+                                    @foreach($divisions as $division)
+                                        <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label small text-muted">Jabatan</label>
+                                <select name="jabatan" class="form-select" required>
+                                    <option value="">Pilih jabatan</option>
+                                    <option value="koordinator">Koordinator</option>
+                                    <option value="anggota">Anggota</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-outline-primary w-100">Tambah Banyak</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-muted text-uppercase">
+                                        <th class="ps-4">Nama</th>
+                                        <th>Divisi</th>
+                                        <th>Jabatan</th>
+                                        <th class="text-end pe-4">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($event->committees as $committee)
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="fw-semibold">{{ $committee->user->name ?? '-' }}</div>
+                                                <small class="text-muted">{{ $committee->user->email ?? '-' }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">{{ $committee->division->nama_divisi ?? '-' }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-muted">{{ $committee->jabatan ? ucfirst($committee->jabatan) : '-' }}</span>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                @if($event->canManageCommitteeBy(auth()->user()) && $event->committees->count() > 1)
+                                                    <form method="POST" action="/events/{{ $event->id_event }}/committees/{{ $committee->id_comm }}" onsubmit="return confirm('Hapus committee ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
+                                                    </form>
+                                                @else
+                                                    <span class="text-muted small">Minimal 1 committee</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-muted p-4">Belum ada committee di event ini.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="tasks" class="tab-content d-none">
@@ -141,6 +308,14 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById(this.dataset.tab).classList.remove('d-none');
         });
     });
+
+    const activeTab = new URLSearchParams(window.location.search).get('tab');
+    if (activeTab) {
+        const target = document.querySelector(`.tab-btn[data-tab="${activeTab}"]`);
+        if (target) {
+            target.click();
+        }
+    }
 
 });
 </script>
