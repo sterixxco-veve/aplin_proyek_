@@ -45,18 +45,21 @@ class EventController extends Controller
         $availableMembers = $members->reject(function ($member) use ($event) {
             return $event->committees->contains('id_user', $member->id_user);
         })->values();
+        
+        // Aturan Hak Akses Pengelolaan Modul
         $canManageRundown = $event->canManageRundownBy(auth()->user());
         $canManagePartner = $event->canManagePartnerBy(auth()->user());
         $canManageCertificate = $event->canManageCertificateBy(auth()->user());
         $canManageDocument = $event->canManageDocumentBy(auth()->user());
+        $canManageTasks = $event->canManageBy(auth()->user()); // 🔥 Ditambahkan agar tidak undefined
 
-        // 🔹 ambil tasks (INI  YANG KAMU KURANG)
+        // Ambil data Tugas (Tasks) & Keuangan
         $tasks = Task::with('assignee')->where('id_event', $id)->get();
         $expenses = ExpenseReport::where('id_event', $id)->get();
-        // 🔹 progress
+        
+        // Hitung Progress Pengerjaan
         $total = $tasks->count();
         $done = $tasks->where('status', 'done')->count();
-
         $progress = $total > 0 ? round(($done / $total) * 100) : 0;
 
         return view('events.show', compact(
@@ -70,8 +73,9 @@ class EventController extends Controller
             'canManagePartner',
             'canManageCertificate',
             'canManageDocument',
+            'canManageTasks', // 🔥 Dimasukkan ke dalam compact
             'progress',
-            'expenses' // 🔥 INI YANG KAMU BELUM ADA
+            'expenses'
         ));
     }
 
@@ -221,7 +225,6 @@ class EventController extends Controller
            'tgl_mulai' => 'required|date',
         ]);
 
-        // ❗ pastikan user memang member org ini
         $isMember = auth()->user()->organizations
             ->contains('id_org', $request->id_org);
 
@@ -237,11 +240,10 @@ class EventController extends Controller
             'tgl_mulai' => $request->tgl_mulai,
         ]);
 
-        // 🔥 auto jadi committee (owner)
         \App\Models\EventCommittee::create([
             'id_event' => $event->id_event,
             'id_user' => auth()->user()->id_user,
-            'id_divisi' => 1, // sementara (nanti kita benerin)
+            'id_divisi' => 1,
             'jabatan' => 'Ketua Acara',
         ]);
 
@@ -259,7 +261,6 @@ class EventController extends Controller
         $event = Event::visibleTo(auth()->user())->findOrFail($id);
         abort_unless($event->canManageBy(auth()->user()), 403, 'Tidak punya akses');
 
-        // ❗ pastikan user yg di-assign memang dari organization event
         $isMember = \App\Models\Organization::find($event->id_org)
             ->members()
             ->where('id_user', $request->id_user)
@@ -269,7 +270,6 @@ class EventController extends Controller
             abort(403, 'User bukan anggota organization ini');
         }
 
-        // ❗ cegah duplicate
         $exists = \App\Models\EventCommittee::where('id_event', $id)
             ->where('id_user', $request->id_user)
             ->exists();
@@ -336,26 +336,17 @@ class EventController extends Controller
         }
 
         if (count($added) === 0) {
-            return back()->with('error', 'Tidak ada member yang berhasil ditambahkan. Sudah ada: ' . implode(', ', $already) . '. Bukan member org: ' . implode(', ', $notMember));
+            return back()->with('error', 'Tidak ada member yang berhasil ditambahkan.');
         }
 
-        $message = 'Berhasil menambahkan ' . count($added) . ' member ke committee.';
-
-        if (!empty($already)) {
-            $message .= ' Sudah ada: ' . implode(', ', $already) . '.';
-        }
-
-        if (!empty($notMember)) {
-            $message .= ' Bukan member organisasi: ' . implode(', ', $notMember) . '.';
-        }
-
-        return back()->with('success', $message);
+        return back()->with('success', 'Berhasil menambahkan ' . count($added) . ' member ke committee.');
     }
 
     public function removeCommittee($eventId, $committeeId)
     {
         $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
         abort_unless($event->canManageCommitteeBy(auth()->user()), 403, 'Tidak punya akses');
+        
         $committee = EventCommittee::where('id_comm', $committeeId)
             ->where('id_event', $eventId)
             ->firstOrFail();
@@ -641,26 +632,26 @@ class EventController extends Controller
 
         return back()->with('success', 'Document berhasil dihapus');
     }
-public function destroy($id)
-{
-    $event = Event::visibleTo(auth()->user())->findOrFail($id);
-    abort_unless($event->canManageBy(auth()->user()), 403, 'Tidak punya akses');
 
-    $user = auth()->user();
+    public function destroy($id)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($id);
+        abort_unless($event->canManageBy(auth()->user()), 403, 'Tidak punya akses');
 
-    // 🔥 hanya admin org yang boleh delete
-    $isSuperAdmin = \DB::table('organization_members')
-        ->where('organization_id', $event->id_org)
-        ->where('user_id', $user->id_user)
-        ->where('role', 'admin_org')
-        ->exists();
+        $user = auth()->user();
 
-    if (!$isSuperAdmin) {
-        abort(403, 'Tidak punya akses');
+        $isSuperAdmin = \DB::table('organization_members')
+            ->where('organization_id', $event->id_org)
+            ->where('user_id', $user->id_user)
+            ->where('role', 'admin_org')
+            ->exists();
+
+        if (!$isSuperAdmin) {
+            abort(403, 'Tidak punya akses');
+        }
+
+        $event->delete();
+
+        return redirect('/events')->with('success', 'Event berhasil dihapus');
     }
-
-    $event->delete();
-
-    return redirect('/events')->with('success', 'Event berhasil dihapus');
 }
-}   

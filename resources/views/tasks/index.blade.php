@@ -49,6 +49,14 @@
 
     @endforeach
     </div>
+    <style>
+.kanban-wrapper { min-height: 450px; }
+.kanban-card { cursor: grab; transition: transform 0.2s ease, box-shadow 0.2s ease; border-radius: 12px; }
+.kanban-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08)!important; }
+.kanban-card.dragging { opacity: 0.5; cursor: grabbing; }
+.kanban-column.drag-over { background: rgba(13, 110, 253, 0.04); border-radius: 8px; }
+.text-truncate-custom { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
 
 </div>
 @endsection

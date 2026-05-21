@@ -188,7 +188,7 @@ class TaskController extends Controller
                 ->where('id_user', $user->id_user)
                 ->exists();
 
-        return view('tasks.kanban', compact('tasks', 'event', 'divisions', 'members', 'canManageTasks'));
+        return view('tasks.task', compact('tasks', 'event', 'divisions', 'members', 'canManageTasks'));
     }
 
     public function listEvent()
