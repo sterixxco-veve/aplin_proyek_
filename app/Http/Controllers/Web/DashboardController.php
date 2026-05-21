@@ -17,9 +17,7 @@ class DashboardController extends Controller
         $categories = EventCategory::orderBy('nama_kategori')->get();
 
         // 🔹 Event yang dia ikuti (via event_committees)
-        $events = \App\Models\Event::whereHas('committees', function ($q) use ($user) {
-            $q->where('id_user', $user->id_user);
-        })->get();
+        $events = \App\Models\Event::visibleTo($user)->latest()->get();
 
         return view('dashboard', compact('organizations', 'categories', 'events'));
     }

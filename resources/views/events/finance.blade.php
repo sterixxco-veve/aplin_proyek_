@@ -61,6 +61,29 @@
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Import / Export Finance</h5>
+                    <p class="text-muted small mb-0">Untuk saat ini pakai CSV dulu; nanti bisa diganti ke template Excel.</p>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <a href="{{ route('web.events.expenses.export', $eventId) }}" class="btn btn-outline-success rounded-pill px-4">
+                        Export CSV
+                    </a>
+
+                    <form method="POST" action="{{ route('web.events.expenses.import', $eventId) }}" enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-center">
+                        @csrf
+                        <input type="file" name="finance_csv" class="form-control" accept=".csv,text/csv" required>
+                        <button class="btn btn-primary rounded-pill px-4" type="submit">Import CSV</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
                 <div>
                     <h5 class="fw-bold mb-1">LPJ & Reimbursement</h5>

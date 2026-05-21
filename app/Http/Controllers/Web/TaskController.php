@@ -39,7 +39,7 @@ class TaskController extends Controller
             ->where('id_user', $user->id_user)
             ->exists();
 
-        if (!$isCommittee && !$isSuperAdmin) {
+        if (!$isCommittee && !$isSuperAdmin && !$event->isVisibleTo($user)) {
             abort(403, 'Tidak punya akses');
         }
 
@@ -73,7 +73,7 @@ class TaskController extends Controller
             ->where('id_user', $user->id_user)
             ->exists();
 
-        if (!$isCommittee) {
+        if (!$isCommittee && !$event->isVisibleTo($user)) {
             abort(403, 'Bukan panitia event');
         }
 
@@ -112,7 +112,7 @@ class TaskController extends Controller
             ->where('id_user', $user->id_user)
             ->exists();
 
-        if (!$isCommittee) {
+        if (!$isCommittee && !$event->isVisibleTo($user)) {
             abort(403);
         }
 
@@ -155,7 +155,7 @@ class TaskController extends Controller
             ->where('id_user', $user->id_user)
             ->exists();
 
-        if (!$isCommittee) {
+        if (!$isCommittee && !$event->isVisibleTo($user)) {
             abort(403);
         }
 
@@ -170,7 +170,7 @@ class TaskController extends Controller
     // =========================
     public function index($eventId)
     {
-        $event = Event::with('organization.members')->findOrFail($eventId);
+        $event = Event::visibleTo(auth()->user())->with('organization.members')->findOrFail($eventId);
 
         $tasks = Task::with(['assignee', 'division'])
             ->where('id_event', $eventId)
@@ -196,11 +196,7 @@ class TaskController extends Controller
         $user = auth()->user();
 
         // ambil event yang user ikut
-        $events = Event::whereIn('id_event', function ($q) use ($user) {
-            $q->select('id_event')
-            ->from('event_committees')
-            ->where('id_user', $user->id_user);
-        })->get();
+        $events = Event::visibleTo($user)->latest()->get();
 
         return view('tasks.index', compact('events'));
     }

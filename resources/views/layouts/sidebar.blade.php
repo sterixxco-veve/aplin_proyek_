@@ -32,7 +32,7 @@
             <span class="fw-bold small">Finance</span>
         </a>
 
-        <a href="#" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
+        <a href="{{ route('web.documents.index') }}" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 {{ request()->is('documents*') ? 'active-sidebar' : 'text-muted hover-sidebar' }}">
             <i class="bi bi-file-earmark-text"></i>
             <span class="fw-bold small">Documents</span>
         </a>
@@ -42,17 +42,12 @@
             <span class="fw-bold small">Rundown</span>
         </a>
 
-        <a href="#" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
+        <a href="{{ route('web.partners.index') }}" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 {{ request()->is('partners*') ? 'active-sidebar' : 'text-muted hover-sidebar' }}">
             <i class="bi bi-people"></i>
-            <span class="fw-bold small">Committees</span>
-        </a>
-
-        <a href="#" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
-            <i class="bi bi-handshake"></i>
             <span class="fw-bold small">Partners</span>
         </a>
 
-        <a href="#" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
+        <a href="{{ route('web.certificates.index') }}" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 {{ request()->is('certificates*') ? 'active-sidebar' : 'text-muted hover-sidebar' }}">
             <i class="bi bi-patch-check"></i>
             <span class="fw-bold small">Certificates</span>
         </a>

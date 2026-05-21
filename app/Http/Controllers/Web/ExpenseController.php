@@ -2,20 +2,20 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\ExpenseCategory;
 use App\Models\Event;
 use App\Models\ExpenseReport;
-use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
     public function home()
     {
-        $events = auth()->user()
-            ->organizations()
-            ->with('events')
+        $events = Event::visibleTo(auth()->user())
+            ->latest()
             ->get()
-            ->flatMap(fn ($organization) => $organization->events)
             ->sortBy('tgl_mulai')
             ->values();
 
@@ -31,7 +31,7 @@ class ExpenseController extends Controller
 
     public function page($eventId)
     {
-        $event = Event::findOrFail($eventId);
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
         $summary = $event->financial_summary;
         $expenses = ExpenseReport::with(['category', 'user'])
             ->where('id_event', $eventId)
@@ -46,6 +46,176 @@ class ExpenseController extends Controller
             'summary',
             'categories' // 🔥 WAJIB
         ));
+    }
+
+    public function export($eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        $filename = 'finance-' . $event->id_event . '-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($event) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, [
+                'nama_pengeluaran',
+                'category_name',
+                'nominal',
+                'qty',
+                'nomor_rekening',
+                'approval_status',
+                'rejection_reason',
+                'is_reimbursed',
+                'bukti_nota_path',
+                'created_by',
+                'created_at',
+            ]);
+
+            ExpenseReport::with(['category', 'user'])
+                ->where('id_event', $event->id_event)
+                ->orderBy('id_expense')
+                ->chunk(200, function ($expenses) use ($handle) {
+                    foreach ($expenses as $expense) {
+                        fputcsv($handle, [
+                            $expense->nama_pengeluaran,
+                            $expense->category?->nama_kategori,
+                            $expense->nominal,
+                            $expense->qty,
+                            $expense->nomor_rekening,
+                            $expense->approval_status,
+                            $expense->rejection_reason,
+                            $expense->is_reimbursed ? 1 : 0,
+                            $expense->bukti_nota_path,
+                            $expense->user?->email,
+                            optional($expense->created_at)->format('Y-m-d H:i:s'),
+                        ]);
+                    }
+                });
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    public function import(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+
+        $request->validate([
+            'finance_csv' => 'required|file|mimes:csv,txt',
+        ]);
+
+        $path = $request->file('finance_csv')->getRealPath();
+        $handle = fopen($path, 'r');
+
+        if ($handle === false) {
+            return back()->with('error', 'CSV tidak bisa dibaca.');
+        }
+
+        $headers = fgetcsv($handle);
+        if ($headers === false) {
+            fclose($handle);
+            return back()->with('error', 'CSV kosong.');
+        }
+
+        $headers = array_map(function ($header) {
+            $header = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header);
+            $header = strtolower(trim($header));
+
+            return str_replace([' ', '-'], '_', $header);
+        }, $headers);
+
+        $errors = [];
+        $rows = [];
+        $line = 1;
+
+        while (($data = fgetcsv($handle)) !== false) {
+            $line++;
+
+            if (!array_filter($data, fn ($value) => trim((string) $value) !== '')) {
+                continue;
+            }
+
+            $row = array_combine($headers, array_pad($data, count($headers), null));
+            $row = array_map(fn ($value) => is_string($value) ? trim($value) : $value, $row);
+
+            $categoryId = null;
+            if (!empty($row['id_expense_category'])) {
+                $categoryId = $row['id_expense_category'];
+                if (!ExpenseCategory::where('id_expense_category', $categoryId)->exists()) {
+                    $errors[] = "Baris {$line}: kategori expense tidak ditemukan untuk id_expense_category {$categoryId}.";
+                    continue;
+                }
+            } else {
+                $categoryName = $row['category_name'] ?? $row['nama_kategori'] ?? null;
+                if (!$categoryName) {
+                    $errors[] = "Baris {$line}: category_name wajib diisi.";
+                    continue;
+                }
+
+                $category = ExpenseCategory::whereRaw('LOWER(nama_kategori) = ?', [strtolower($categoryName)])->first();
+                if (!$category) {
+                    $errors[] = "Baris {$line}: kategori \"{$categoryName}\" tidak ditemukan.";
+                    continue;
+                }
+
+                $categoryId = $category->id_expense_category;
+            }
+
+            $namaPengeluaran = $row['nama_pengeluaran'] ?? null;
+            $nominal = $row['nominal'] ?? null;
+            $qty = $row['qty'] ?? null;
+            $nomorRekening = $row['nomor_rekening'] ?? null;
+
+            if (!$namaPengeluaran || !is_numeric($nominal) || !is_numeric($qty) || !$nomorRekening) {
+                $errors[] = "Baris {$line}: nama_pengeluaran, nominal, qty, dan nomor_rekening wajib diisi.";
+                continue;
+            }
+
+            $approvalStatus = strtolower($row['approval_status'] ?? 'pending');
+            if ($approvalStatus === 'declined') {
+                $approvalStatus = 'rejected';
+            }
+
+            if (!in_array($approvalStatus, ['pending', 'accepted', 'rejected'], true)) {
+                $errors[] = "Baris {$line}: approval_status harus pending, accepted, declined, atau rejected.";
+                continue;
+            }
+
+            $isReimbursed = in_array(strtolower((string) ($row['is_reimbursed'] ?? '0')), ['1', 'true', 'yes', 'ya'], true);
+
+            $rows[] = [
+                'id_event' => $event->id_event,
+                'id_user' => auth()->user()->id_user,
+                'id_expense_category' => $categoryId,
+                'nama_pengeluaran' => $namaPengeluaran,
+                'nominal' => $nominal,
+                'qty' => $qty,
+                'nomor_rekening' => $nomorRekening,
+                'bukti_nota_path' => $row['bukti_nota_path'] ?? null,
+                'approval_status' => $approvalStatus,
+                'rejection_reason' => $row['rejection_reason'] ?? null,
+                'approved_by' => $approvalStatus === 'accepted' ? auth()->user()->id_user : null,
+                'approved_at' => $approvalStatus === 'accepted' ? now() : null,
+                'is_reimbursed' => $isReimbursed,
+                'reimbursed_at' => $isReimbursed ? now() : null,
+            ];
+        }
+
+        fclose($handle);
+
+        if (!empty($errors)) {
+            return back()->with('error', implode(' ', $errors));
+        }
+
+        DB::transaction(function () use ($rows) {
+            foreach ($rows as $row) {
+                ExpenseReport::create($row);
+            }
+        });
+
+        return back()->with('success', 'Berhasil import ' . count($rows) . ' data finance.');
     }
 
     public function store(Request $request, $eventId)

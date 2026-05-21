@@ -17,7 +17,12 @@ class ExpenseReport extends Model
         'qty',
         'nomor_rekening',
         'bukti_nota_path',
-        'is_reimbursed'
+        'approval_status',
+        'rejection_reason',
+        'approved_by',
+        'approved_at',
+        'is_reimbursed',
+        'reimbursed_at'
     ];
 
     protected static function boot()

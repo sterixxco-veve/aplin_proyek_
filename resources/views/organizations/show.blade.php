@@ -86,6 +86,29 @@
                                 Kirim Undangan <i class="bi bi-send-fill ms-2 small"></i>
                             </button>
                         </form>
+
+                        <hr class="my-4">
+
+                        <h6 class="fw-bold mb-2 text-dark">Undang Banyak Anggota</h6>
+                        <p class="text-muted small mb-3">Pisahkan email dengan baris baru, koma, atau titik koma.</p>
+
+                        <form method="POST" action="/organizations/{{ $org->id_org }}/invite-bulk">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Email Anggota</label>
+                                <textarea name="emails" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" rows="4" placeholder="satu@email.com&#10;dua@email.com" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Role Organization</label>
+                                <select name="role" class="form-select bg-light border-0 py-3 rounded-4 shadow-none" required>
+                                    <option value="member">Member</option>
+                                    <option value="admin_org">Admin Org</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold shadow-sm mt-2">
+                                Kirim Banyak Undangan <i class="bi bi-send ms-2 small"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
