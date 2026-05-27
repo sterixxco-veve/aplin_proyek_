@@ -1,47 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>LPJ</title>
-
+    <title>LPJ Acara</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            color: #222;
-            line-height: 1.7;
-        }
-
-        .section {
-            margin-top: 30px;
-        }
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        .header-lpj { text-align: center; font-weight: bold; margin-bottom: 30px; }
+        .section { margin-top: 20px; }
+        .table-rundown { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table-rundown th, .table-rundown td { border: 1px solid #000; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
-
-    <h1>Laporan Pertanggungjawaban</h1>
-
-    <h2>{{ $event_name }}</h2>
-
-    <div class="section">
-        <strong>Tanggal Realisasi:</strong>
-        {{ $realization_date }}
+    <div class="header-lpj">
+        LAPORAN PERTANGGUNG JAWABAN ACARA<br>
+        {{ $event_title }} [cite: 250]
     </div>
 
     <div class="section">
-        <strong>Jumlah Peserta:</strong>
-        {{ $participant_count }}
+        <strong>I. WAKTU DAN TEMPAT REALISASI</strong>
+        <p>Hari/Tanggal: {{ $realized_date }}<br>
+        Waktu: {{ $realized_time }}<br>
+        Tempat: {{ $realized_venue }} [cite: 265]</p>
     </div>
 
     <div class="section">
-        <h3>Pelaksanaan Acara</h3>
-        <p>{{ $implementation }}</p>
+        <strong>II. PELAKSANAAN ACARA</strong>
+        <p>{{ $execution_summary }} [cite: 267, 384]</p>
     </div>
 
     <div class="section">
-        <h3>Evaluasi</h3>
-        <p>{{ $evaluation }}</p>
+        <strong>III. TARGET PESERTA</strong>
+        <ul>
+            <li>Internal: {{ $internal_count }} Orang</li>
+            <li>Umum: {{ $public_count }} Orang [cite: 279]</li>
+        </ul>
     </div>
 
+    <div class="section">
+        <strong>IV. RUNDOWN KEGIATAN</strong>
+        <table class="table-rundown">
+            <thead>
+                <tr><th>Waktu</th><th>Durasi</th><th>Kegiatan</th></tr>
+            </thead>
+            <tbody>
+                {{ $rundown_rows }} [cite: 275]
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
