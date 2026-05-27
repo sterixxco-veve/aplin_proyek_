@@ -8,11 +8,6 @@
         <h5 class="fw-bold mb-1">Budget Proposal</h5>
         <p class="text-muted small mb-0">Isi rencana kebutuhan event per item. Ini belum realisasi uang.</p>
     </div>
-
-    <a href="/events/{{ $event->id_event }}/expenses"
-       class="btn btn-primary">
-        Buka Finance
-    </a>
 </div>
 
 <div class="row g-3 mb-4">

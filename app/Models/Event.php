@@ -58,6 +58,15 @@ class Event extends Model
         return $this->belongsTo(\App\Models\EventCategory::class, 'id_event_category', 'id_event_category');
     }
 
+    public function rundowns()
+    {
+        return $this->hasMany(
+            \App\Models\EventRundownItem::class,
+            'id_event',
+            'id_event'
+        );
+    }
+
     public function committees()
     {
         return $this->hasMany(\App\Models\EventCommittee::class, 'id_event', 'id_event');

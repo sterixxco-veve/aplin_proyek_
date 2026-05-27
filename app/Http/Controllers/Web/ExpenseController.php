@@ -289,4 +289,35 @@ class ExpenseController extends Controller
 
         return back()->with('success', 'Expense deleted');
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,accepted,declined,reimbursed',
+        ]);
+
+        $expense = ExpenseReport::findOrFail($id);
+
+        if ($request->input('status') === 'declined') {
+            $expense->approval_status = 'declined';
+            $expense->is_reimbursed = false;
+        } elseif ($request->input('status') === 'accepted') {
+            $expense->approval_status = 'accepted';
+            $expense->is_reimbursed = false;
+        } elseif ($request->input('status') === 'reimbursed') {
+            $expense->approval_status = 'accepted';
+            $expense->is_reimbursed = true;
+        } else {
+            // pending
+            $expense->approval_status = 'pending';
+            $expense->is_reimbursed = false;
+        }
+
+        $expense->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated',
+        ]);
+    }
 }

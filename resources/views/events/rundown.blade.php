@@ -4,7 +4,7 @@
 
 <div class="container py-4">
 
-    @include('events.partials.finance')
+    @include('events.partials.rundown')
 
 </div>
 

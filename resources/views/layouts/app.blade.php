@@ -54,6 +54,10 @@
             flex-direction: column;
         }
 
+        .content-wrapper.no-sidebar {
+            margin-left: 0;
+        }
+
         .card {
     border: none;
     border-radius: 20px;
@@ -106,9 +110,11 @@
 </head>
 <body class="antialiased">
     <div class="d-flex">
-        @include('layouts.sidebar')
+        @auth
+            @include('layouts.sidebar')
+        @endauth
 
-        <div class="content-wrapper flex-grow-1">
+        <div class="content-wrapper flex-grow-1 @guest no-sidebar @endguest">
             @include('layouts.navigation')
 
             <main class="py-4 px-4 px-lg-5 flex-grow-1">

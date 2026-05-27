@@ -36,7 +36,7 @@
     </div>
 </div>
 
-<div class="card border-0 shadow-sm mb-4">
+<!-- <div class="card border-0 shadow-sm mb-4">
     <div class="card-body p-4">
         <div class="row g-3">
             <div class="col-md-4">
@@ -59,7 +59,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
@@ -103,9 +103,26 @@
                             </td>
                             <td>
                                 @if($document->file_url)
-                                    <a href="{{ $document->file_url }}" target="_blank" class="btn btn-sm btn-outline-primary">Buka File</a>
+                                    <a href="{{ $document->file_url }}"
+                                    target="_blank"
+                                    class="btn btn-primary">
+
+                                        Preview
+                                    </a>
+
+                                    <a href="{{ $document->file_url }}"
+                                    download
+                                    class="btn btn-success">
+
+                                        Download
+                                    </a>
+
                                 @else
-                                    <span class="text-muted small">Belum ada file</span>
+
+                                    <span class="text-muted small">
+                                        Belum ada file
+                                    </span>
+
                                 @endif
                             </td>
                             <td>
@@ -153,54 +170,437 @@
 
 @if($canManageDocument)
     <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 <div class="modal-body p-4">
-                    <h5 class="fw-bold mb-3">Tambah Document</h5>
+
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h4 class="fw-bold mb-1">Generate Document</h4>
+                            <p class="text-muted small mb-0">
+                                Form akan otomatis menyesuaikan jenis document.
+                            </p>
+                        </div>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"></button>
+                    </div>
 
                     <form method="POST" action="/events/{{ $event->id_event }}/documents">
                         @csrf
 
                         <div class="row g-3">
-                            <div class="col-6">
-                                <label class="form-label small text-muted">Type</label>
-                                <select name="document_type" class="form-select" required>
-                                    @foreach($typeLabels as $key => $label)
-                                        <option value="{{ $key }}">{{ $label }}</option>
-                                    @endforeach
+
+                            <!-- DOCUMENT TYPE -->
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">
+                                    Jenis Document
+                                </label>
+
+                                <select
+                                    name="document_type"
+                                    id="documentType"
+                                    class="form-select"
+                                    required>
+
+                                    <option value="proposal">Proposal</option>
+                                    <option value="lpj">Laporan Pertanggungjawaban</option>
+                                    <option value="invitation_letter">Invitation Letter</option>
+                                    <option value="mou_partner">MOU</option>
                                 </select>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label small text-muted">Status</label>
-                                <select name="status" class="form-select" required>
+
+                            <!-- STATUS -->
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">
+                                    Status
+                                </label>
+
+                                <select
+                                    name="status"
+                                    class="form-select"
+                                    required>
+
                                     @foreach($statusLabels as $key => $label)
-                                        <option value="{{ $key }}">{{ $label }}</option>
+                                        <option value="{{ $key }}">
+                                            {{ $label }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
+
+                            <!-- TITLE -->
                             <div class="col-12">
-                                <label class="form-label small text-muted">Title</label>
-                                <input type="text" name="title" class="form-control" required>
+                                <label class="form-label small text-muted">
+                                    Document Title
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="title"
+                                    class="form-control"
+                                    placeholder="Contoh: Proposal Seminar AI"
+                                    required>
                             </div>
+
+                            <!-- DYNAMIC FORM -->
+                            <div id="dynamicDocumentFields" class="row g-3"></div>
+
+                            <!-- FILE URL -->
+                            <!-- <div class="col-12">
+                                <label class="form-label small text-muted">
+                                    File URL
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="file_url"
+                                    class="form-control"
+                                    placeholder="https://...">
+                            </div> -->
+
+                            <!-- NOTES -->
                             <div class="col-12">
-                                <label class="form-label small text-muted">File URL</label>
-                                <input type="text" name="file_url" class="form-control" placeholder="https://...">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small text-muted">Notes</label>
-                                <textarea name="notes" class="form-control" rows="3"></textarea>
+                                <label class="form-label small text-muted">
+                                    Notes
+                                </label>
+
+                                <textarea
+                                    name="notes"
+                                    rows="3"
+                                    class="form-control"
+                                    placeholder="Tambahan informasi document"></textarea>
                             </div>
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
-                            <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary flex-fill">Simpan</button>
+                            <button
+                                type="button"
+                                class="btn btn-light flex-fill"
+                                data-bs-dismiss="modal">
+
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary flex-fill">
+
+                                Generate Document
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+
+        const dynamicDocumentFields = {
+
+            proposal: `
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Nama Event
+                    </label>
+
+                    <input
+                        type="text"
+                        name="event_name"
+                        class="form-control"
+                        placeholder="Nama event">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Tema Event
+                    </label>
+
+                    <input
+                        type="text"
+                        name="event_theme"
+                        class="form-control"
+                        placeholder="Tema kegiatan">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Latar Belakang
+                    </label>
+
+                    <textarea
+                        name="background"
+                        class="form-control"
+                        rows="4"></textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tanggal Event
+                    </label>
+
+                    <input
+                        type="date"
+                        name="event_date"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tempat
+                    </label>
+
+                    <input
+                        type="text"
+                        name="venue"
+                        class="form-control">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Deskripsi Kegiatan
+                    </label>
+
+                    <textarea
+                        name="description"
+                        class="form-control"
+                        rows="4"></textarea>
+                </div>
+            `,
+
+            lpj: `
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Nama Event
+                    </label>
+
+                    <input
+                        type="text"
+                        name="event_name"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Jumlah Peserta
+                    </label>
+
+                    <input
+                        type="number"
+                        name="participant_count"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tanggal Realisasi
+                    </label>
+
+                    <input
+                        type="date"
+                        name="realization_date"
+                        class="form-control">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Pelaksanaan Acara
+                    </label>
+
+                    <textarea
+                        name="implementation"
+                        class="form-control"
+                        rows="5"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Evaluasi
+                    </label>
+
+                    <textarea
+                        name="evaluation"
+                        class="form-control"
+                        rows="4"></textarea>
+                </div>
+            `,
+
+            invitation_letter: `
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Nomor Surat
+                    </label>
+
+                    <input
+                        type="text"
+                        name="letter_number"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Nama Penerima
+                    </label>
+
+                    <input
+                        type="text"
+                        name="recipient_name"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Jabatan Penerima
+                    </label>
+
+                    <input
+                        type="text"
+                        name="recipient_role"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Jumlah Peserta
+                    </label>
+
+                    <input
+                        type="number"
+                        name="participant_total"
+                        class="form-control">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Nama Event
+                    </label>
+
+                    <input
+                        type="text"
+                        name="event_name"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tanggal Event
+                    </label>
+
+                    <input
+                        type="date"
+                        name="event_date"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Lokasi Event
+                    </label>
+
+                    <input
+                        type="text"
+                        name="event_location"
+                        class="form-control">
+                </div>
+            `,
+
+            mou_partner: `
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Nama Pihak Pertama
+                    </label>
+
+                    <input
+                        type="text"
+                        name="first_party"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Nama Pihak Kedua
+                    </label>
+
+                    <input
+                        type="text"
+                        name="second_party"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Jabatan Pihak Pertama
+                    </label>
+
+                    <input
+                        type="text"
+                        name="first_party_role"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Jabatan Pihak Kedua
+                    </label>
+
+                    <input
+                        type="text"
+                        name="second_party_role"
+                        class="form-control">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Bentuk Kerja Sama
+                    </label>
+
+                    <textarea
+                        name="cooperation"
+                        class="form-control"
+                        rows="4"></textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tanggal Mulai
+                    </label>
+
+                    <input
+                        type="date"
+                        name="start_date"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tanggal Selesai
+                    </label>
+
+                    <input
+                        type="date"
+                        name="end_date"
+                        class="form-control">
+                </div>
+            `
+        };
+
+        function renderDocumentFields() {
+
+            const type = document.getElementById('documentType').value;
+
+            document.getElementById('dynamicDocumentFields').innerHTML =
+                dynamicDocumentFields[type] || '';
+        }
+
+        document
+            .getElementById('documentType')
+            .addEventListener('change', renderDocumentFields);
+
+        renderDocumentFields();
+
+    </script>
 
     <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

@@ -17,7 +17,16 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\ExpenseReport;
+use App\Models\ExpenseCategory;
 use Illuminate\Validation\Rule;
+use App\Exports\RundownExport;
+use App\Exports\RundownTemplateExport;
+use App\Exports\CertificateTemplateExport;
+use App\Imports\RundownImport;
+use App\Imports\CertificateImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
@@ -39,6 +48,7 @@ class EventController extends Controller
             'documents.creator',
         ])->findOrFail($id);
 
+
         $divisions = \App\Models\Division::all();
         $budgetCategories = BudgetCategory::orderBy('nama_kategori')->get();
         $members = $event->organization->members;
@@ -55,7 +65,8 @@ class EventController extends Controller
 
         // Ambil data Tugas (Tasks) & Keuangan
         $tasks = Task::with('assignee')->where('id_event', $id)->get();
-        $expenses = ExpenseReport::where('id_event', $id)->get();
+        $expenses = ExpenseReport::with(['category', 'user'])->where('id_event', $id)->latest('id_expense')->get();
+        $expenseCategories = ExpenseCategory::all();
         
         // Hitung Progress Pengerjaan
         $total = $tasks->count();
@@ -75,8 +86,39 @@ class EventController extends Controller
             'canManageDocument',
             'canManageTasks', // 🔥 Dimasukkan ke dalam compact
             'progress',
-            'expenses'
+            'expenses',
+            'expenseCategories'
         ));
+    }
+
+    public function rundownList()
+    {
+        $events = Event::visibleTo(auth()->user())
+            ->latest()
+            ->get();
+
+        return view(
+            'events.rundown-list',
+            compact('events')
+        );
+    }
+
+    public function rundownPage($id)
+    {
+        $event = Event::visibleTo(auth()->user())
+            ->with('rundowns')
+            ->findOrFail($id);
+
+        $canManageRundown =
+            $event->canManageRundownBy(auth()->user());
+
+        return view(
+            'events.rundown',
+            compact(
+                'event',
+                'canManageRundown'
+            )
+        );
     }
 
     // =========================
@@ -282,7 +324,7 @@ class EventController extends Controller
             'id_event' => $id,
             'id_user' => $request->id_user,
             'id_divisi' => $request->id_divisi,
-            'jabatan' => $request->jabatan,
+            'jabatan' => $request->jabatan, 
         ]);
 
         return back()->with('success', 'Member berhasil ditambahkan');
@@ -566,29 +608,77 @@ class EventController extends Controller
 
     public function storeDocument(Request $request, $eventId)
     {
-        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
-        abort_unless($event->canManageDocumentBy(auth()->user()), 403, 'Tidak punya akses');
+        $event = Event::visibleTo(auth()->user())
+            ->findOrFail($eventId);
 
-        $request->validate([
-            'document_type' => ['required', Rule::in(['proposal', 'lpj', 'invitation_letter', 'mou_partner', 'certificate', 'other'])],
-            'title' => 'required|string|max:255',
-            'file_url' => 'nullable|string|max:2048',
-            'status' => ['required', Rule::in(['draft', 'generated', 'final', 'archived', 'failed'])],
-            'notes' => 'nullable|string',
+        abort_unless(
+            $event->canManageDocumentBy(auth()->user()),
+            403
+        );
+
+        // =========================
+        // SAVE PAYLOAD
+        // =========================
+
+        $payload = $request->except([
+            '_token',
+            'title',
+            'document_type',
+            'status',
+            'notes',
         ]);
 
-        GeneratedDocument::create([
-            'id_event' => $event->id_event,
-            'document_type' => $request->document_type,
-            'title' => $request->title,
-            'file_url' => $request->file_url,
-            'status' => $request->status,
-            'generated_by' => auth()->user()->id_user,
+        // =========================
+        // CREATE DOCUMENT
+        // =========================
+
+        $document = \App\Models\GeneratedDocument::create([
+
+            'id_event' =>
+                $event->id_event,
+
+            'document_type' =>
+                $request->document_type,
+
+            'title' =>
+                $request->title,
+
+            'status' =>
+                'draft',
+
+            'notes' =>
+                $request->notes,
+
+            'snapshot_data' => $payload,
+
+            'generated_by' =>
+                auth()->id(),
+        ]);
+
+        // =========================
+        // GENERATE PDF
+        // =========================
+
+        $service = new \App\Services\DocumentService();
+
+        $fileUrl = $service->generate(
+            $document->id_document
+        );
+
+        // =========================
+        // UPDATE FILE URL
+        // =========================
+
+        $document->update([
+            'file_url' => $fileUrl,
+            'status' => 'generated',
             'generated_at' => now(),
-            'notes' => $request->notes,
         ]);
 
-        return back()->with('success', 'Document berhasil ditambahkan');
+        return back()->with(
+            'success',
+            'Document berhasil di-generate'
+        );
     }
 
     public function updateDocument(Request $request, $eventId, $documentId)
@@ -653,5 +743,380 @@ class EventController extends Controller
         $event->delete();
 
         return redirect('/events')->with('success', 'Event berhasil dihapus');
+    }
+
+   public function exportRundown($eventId)
+    {
+       $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+
+        abort_unless(
+            $event->canManageRundownBy(auth()->user()),
+            403,
+            'Tidak punya akses'
+        );
+
+        $filename = 'rundown_' . $event->id_event . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(
+            new RundownExport($eventId),
+            $filename
+        );
+    }
+
+    public function importRundown(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageRundownBy(auth()->user()), 403, 'Tidak punya akses');
+
+        $request->validate([
+            'file' => 'required|file|mimes:csv,xlsx,xls',
+        ]);
+
+        try {
+            $import = new RundownImport($eventId);
+            Excel::import($import, $request->file('file'));
+
+            $imported = $import->getImported();
+            $errors = $import->getErrors();
+
+            if ($imported === 0 && count($errors) > 0) {
+                // Jika gagal semua, tampilkan semua error
+                $message = "Gagal import! " . count($errors) . " baris gagal: " . implode("; ", array_slice($errors, 0, 5));
+                return back()->with('error', $message);
+            }
+
+            $message = "Berhasil import $imported rundown";
+            if (count($errors) > 0) {
+                $message .= ". " . count($errors) . " baris gagal";
+                if (count($errors) <= 3) {
+                    $message .= ": " . implode("; ", $errors);
+                } else {
+                    $message .= ": " . implode("; ", array_slice($errors, 0, 3)) . " dan " . (count($errors) - 3) . " lainnya";
+                }
+            }
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal import file: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        $filename = 'template_rundown_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        return Excel::download(new RundownTemplateExport(), $filename);
+    }
+
+    // ===========================
+    // CERTIFICATE MANAGEMENT
+    // ===========================
+    public function uploadCertificateTemplate(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageCertificateBy(auth()->user()), 403, 'Tidak punya akses');
+
+        $request->validate([
+            'template_file' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        $path = $request->file('template_file')->store('certificate-templates', 'public');
+
+        return back()->with('success', 'Template certificate berhasil diupload')->with('template_path', $path);
+    }
+
+    public function bulkInsertCertificates(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageCertificateBy(auth()->user()), 403, 'Tidak punya akses');
+
+        $request->validate([
+            'recipients_file' => 'nullable|file|mimes:csv,xlsx,xls',
+            'nama_penerima' => 'nullable|array',
+            'email_penerima' => 'nullable|array',
+        ]);
+
+        $recipients = [];
+        
+        // Handle manual input
+        if ($request->has('nama_penerima') && count($request->nama_penerima) > 0) {
+            $names = $request->input('nama_penerima');
+            $emails = $request->input('email_penerima', []);
+            
+            foreach ($names as $index => $name) {
+                if (!empty(trim($name))) {
+                    $recipients[] = [
+                        'nama_penerima' => trim($name),
+                        'email_penerima' => trim($emails[$index] ?? ''),
+                    ];
+                }
+            }
+        } 
+        // Handle file upload
+        elseif ($request->hasFile('recipients_file')) {
+            $file = $request->file('recipients_file');
+            $filename = $file->getClientOriginalName();
+            
+            // Detect file type
+            if (in_array($file->getClientOriginalExtension(), ['xlsx', 'xls'])) {
+                // Use Laravel Excel for Excel files
+                try {
+                    $data = Excel::toArray(new CertificateImport(), $file);
+                    
+                    if (isset($data[0]) && is_array($data[0])) {
+                        foreach ($data[0] as $row) {
+                            $nama = trim($row['nama_lengkap'] ?? $row['Nama Lengkap'] ?? $row['nama_penerima'] ?? '');
+                            $email = trim($row['email_penerima'] ?? $row['Email Penerima'] ?? $row['email'] ?? '');
+                            
+                            if (!empty($nama) && !empty($email)) {
+                                $recipients[] = [
+                                    'nama_penerima' => $nama,
+                                    'email_penerima' => $email,
+                                ];
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    return back()->with('error', 'Gagal membaca file Excel: ' . $e->getMessage());
+                }
+            } else {
+                // Manual CSV parsing
+                $path = $file->store('temp');
+                $fullPath = storage_path('app/' . $path);
+
+                $handle = fopen($fullPath, 'r');
+                $header = null;
+
+                while (($row = fgetcsv($handle, 0, ',', '"')) !== false) {
+                    if ($header === null) {
+                        $header = array_map('trim', $row);
+                        continue;
+                    }
+
+                    if (count($row) >= 2) {
+                        $recipients[] = [
+                            'nama_penerima' => trim($row[0] ?? ''),
+                            'email_penerima' => trim($row[1] ?? ''),
+                        ];
+                    }
+                }
+                fclose($handle);
+                \Illuminate\Support\Facades\Storage::delete($path);
+            }
+        }
+
+        $created = 0;
+        $errors = [];
+
+        foreach ($recipients as $index => $recipient) {
+            try {
+                if (empty($recipient['nama_penerima']) || empty($recipient['email_penerima'])) {
+                    $errors[] = "Baris " . ($index + 2) . ": Nama atau email kosong";
+                    continue;
+                }
+
+                // Check if already exists
+                $exists = Certificate::where('id_event', $eventId)
+                    ->where('email_penerima', $recipient['email_penerima'])
+                    ->exists();
+
+                if ($exists) {
+                    $errors[] = "Baris " . ($index + 2) . ": Email {$recipient['email_penerima']} sudah ada";
+                    continue;
+                }
+
+                Certificate::create([
+                    'id_event' => $eventId,
+                    'nama_penerima' => $recipient['nama_penerima'],
+                    'email_penerima' => $recipient['email_penerima'],
+                    'qr_token' => (string) Str::uuid(),
+                ]);
+
+                $created++;
+            } catch (\Exception $e) {
+                $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+            }
+        }
+
+        $message = "Berhasil tambah $created recipient";
+        if (count($errors) > 0) {
+            $message .= ". " . count($errors) . " error";
+        }
+
+        return back()->with('success', $message);
+    }
+
+    public function downloadCertificateTemplate()
+    {
+        $filename = 'template_certificate_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        return Excel::download(new CertificateTemplateExport(), $filename);
+    }
+
+    public function generateCertificates(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageCertificateBy(auth()->user()), 403, 'Tidak punya akses');
+
+        $request->validate([
+            'template_path' => 'required|string',
+        ]);
+
+        $templatePath = $request->input('template_path');
+
+        // Validate template exists
+        if (!Storage::disk('public')->exists($templatePath)) {
+            return back()->with('error', 'Template tidak ditemukan');
+        }
+
+        $service = new \App\Services\CertificateService();
+
+        // Get configuration from session
+        $config = session('certificate_config_' . $eventId);
+
+        // Get certificates without file_url
+        $certificates = Certificate::where('id_event', $eventId)
+            ->whereNull('file_url')
+            ->get();
+
+        $generated = 0;
+        $errors = [];
+
+        foreach ($certificates as $cert) {
+            try {
+               $filePath = $service->generateCertificate(
+                    $templatePath,
+                    $cert->nama_penerima,
+                    $cert->qr_token,
+                    $cert->email_penerima,
+                    null,
+                    $config
+                );
+
+                $cert->update(['file_url' => $filePath]);
+                \Mail::to($cert->email_penerima)
+                    ->send(
+                        new \App\Mail\CertificateMail(
+                            $cert,
+                            $event
+                        )
+                    );
+                $generated++;
+            } catch (\Exception $e) {
+                $errors[] = $cert->nama_penerima . ": " . $e->getMessage();
+            }
+        }
+
+        $message = "Berhasil generate $generated certificate";
+        if (count($errors) > 0) {
+            $message .= ". " . count($errors) . " error";
+        }
+
+        return back()->with('success', $message);
+    }
+
+    public function saveCertificateConfig(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageCertificateBy(auth()->user()), 403, 'Tidak punya akses');
+
+        try {
+            $config = $request->validate([
+                'imageWidth' => 'nullable|numeric',
+                'imageHeight' => 'nullable|numeric',
+                'canvasWidth' => 'nullable|numeric',
+                'canvasHeight' => 'nullable|numeric',
+                'canvasScale' => 'nullable|numeric',
+                'textBoxes' => 'required|array',
+                'textBoxes.*.text' => 'string',
+                'textBoxes.*.type' => 'nullable|string',
+                'textBoxes.*.left' => 'numeric',
+                'textBoxes.*.top' => 'numeric',
+                'textBoxes.*.fontSize' => 'numeric',
+                'textBoxes.*.fontFamily' => 'string',
+                'textBoxes.*.fontWeight' => 'string',
+                'textBoxes.*.fill' => 'string',
+                'textBoxes.*.textAlign' => 'string',
+            ]);
+
+            // Store in session
+            session(['certificate_config_' . $eventId => $config]);
+
+            \Log::info('Certificate config saved', [
+                'eventId' => $eventId,
+                'textBoxCount' => count($config['textBoxes']),
+                'config' => $config
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuration saved successfully'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('Certificate config validation failed', [
+                'eventId' => $eventId,
+                'errors' => $e->errors()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . implode(', ', array_values(array_flatten($e->errors()))),
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Certificate config save error', [
+                'eventId' => $eventId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving configuration: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function sendCertificates(Request $request, $eventId)
+    {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageCertificateBy(auth()->user()), 403, 'Tidak punya akses');
+
+        $request->validate([
+            'cert_ids' => 'required|array|min:1',
+            'cert_ids.*' => 'required|integer|exists:certificates,id_cert',
+        ]);
+
+        $certificates = Certificate::whereIn('id_cert', $request->input('cert_ids'))
+            ->where('id_event', $eventId)
+            ->get();
+
+        $sent = 0;
+        $errors = [];
+
+        foreach ($certificates as $cert) {
+            try {
+                if (empty($cert->file_url)) {
+                    $errors[] = $cert->nama_penerima . ": Certificate belum di-generate";
+                    continue;
+                }
+
+                Mail::to($cert->email_penerima)->send(
+                    new \App\Mail\SendCertificate($cert, $event->nama_event)
+                );
+
+                $cert->update(['sent_at' => now()]);
+                $sent++;
+            } catch (\Exception $e) {
+
+                dd($e->getMessage());
+
+                $errors[] = $cert->nama_penerima . ": " . $e->getMessage();
+            }
+        }
+
+        $message = "Berhasil kirim $sent certificate";
+        if (count($errors) > 0) {
+            $message .= ". " . count($errors) . " error";
+        }
+
+        return back()->with('success', $message);
     }
 }

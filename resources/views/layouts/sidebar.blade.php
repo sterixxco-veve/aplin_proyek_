@@ -37,7 +37,7 @@
             <span class="fw-bold small">Documents</span>
         </a>
 
-        <a href="#" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
+        <a href="{{ route('web.rundown.index') }}" class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
             <i class="bi bi-clock-history"></i>
             <span class="fw-bold small">Rundown</span>
         </a>
