@@ -187,7 +187,10 @@
                                 data-bs-dismiss="modal"></button>
                     </div>
 
-                    <form method="POST" action="/events/{{ $event->id_event }}/documents">
+                    <form
+                        method="POST"
+                        action="/events/{{ $event->id_event }}/documents"
+                        enctype="multipart/form-data">
                         @csrf
 
                         <div class="row g-3">
@@ -300,7 +303,7 @@
 
         const dynamicDocumentFields = {
 
-            proposal: `
+           proposal: `
                 <div class="col-12">
                     <label class="form-label small text-muted">
                         Nama Event
@@ -313,16 +316,76 @@
                         placeholder="Nama event">
                 </div>
 
-                <div class="col-12">
+                <div class="col-md-6">
                     <label class="form-label small text-muted">
-                        Tema Event
+                        Nama Organisasi
                     </label>
 
                     <input
                         type="text"
-                        name="event_theme"
+                        name="organization_name"
                         class="form-control"
-                        placeholder="Tema kegiatan">
+                        placeholder="Contoh: KMK ISTTS">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Logo Organisasi
+                    </label>
+
+                    <input
+                        type="file"
+                        name="organization_logo"
+                        class="form-control"
+                        accept="image/*">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Tahun Akademik
+                    </label>
+
+                    <input
+                        type="text"
+                        name="academic_year"
+                        class="form-control"
+                        placeholder="2025/2026">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">
+                        Target SMA/SMK
+                    </label>
+
+                    <input
+                        type="number"
+                        name="target_sma"
+                        class="form-control"
+                        value="0">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">
+                        Target Mahasiswa
+                    </label>
+
+                    <input
+                        type="number"
+                        name="target_mahasiswa"
+                        class="form-control"
+                        value="0">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">
+                        Target Umum
+                    </label>
+
+                    <input
+                        type="number"
+                        name="target_umum"
+                        class="form-control"
+                        value="0">
                 </div>
 
                 <div class="col-12">
@@ -331,7 +394,18 @@
                     </label>
 
                     <textarea
-                        name="background"
+                        name="background_text"
+                        class="form-control"
+                        rows="4"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Tujuan Kegiatan
+                    </label>
+
+                    <textarea
+                        name="objectives"
                         class="form-control"
                         rows="4"></textarea>
                 </div>
@@ -347,7 +421,46 @@
                         class="form-control">
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">
+                            Waktu Mulai
+                        </label>
+
+                        <input
+                            type="time"
+                            name="start_time"
+                            class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">
+                            Waktu Selesai
+                        </label>
+
+                        <input
+                            type="time"
+                            name="end_time"
+                            class="form-control">
+                    </div>
+                </div>
+                
                 <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Jumlah Tanda Tangan
+                    </label>
+
+                    <select
+                        name="signature_count"
+                        class="form-select">
+
+                        <option value="2">2 TTD</option>
+                        <option value="3">3 TTD</option>
+                        <option value="4">4 TTD</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
                     <label class="form-label small text-muted">
                         Tempat
                     </label>
@@ -355,7 +468,8 @@
                     <input
                         type="text"
                         name="venue"
-                        class="form-control">
+                        class="form-control"
+                        placeholder="Lokasi kegiatan">
                 </div>
 
                 <div class="col-12">
@@ -364,7 +478,7 @@
                     </label>
 
                     <textarea
-                        name="description"
+                        name="description_text"
                         class="form-control"
                         rows="4"></textarea>
                 </div>

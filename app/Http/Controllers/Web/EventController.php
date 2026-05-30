@@ -628,6 +628,16 @@ class EventController extends Controller
             'notes',
         ]);
 
+        // upload logo organisasi
+        if ($request->hasFile('organization_logo')) {
+
+            $logoPath = $request
+                ->file('organization_logo')
+                ->store('document-logos', 'public');
+
+            $payload['organization_logo'] = $logoPath;
+        }
+
         // =========================
         // CREATE DOCUMENT
         // =========================
