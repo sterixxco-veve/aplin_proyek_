@@ -27,6 +27,7 @@ use App\Imports\CertificateImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class EventController extends Controller
 {
@@ -1128,5 +1129,60 @@ class EventController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+    public function downloadCertificatesZip(Request $request, $eventId)
+    {
+        $request->validate([
+            'cert_ids' => 'required|array|min:1'
+        ]);
+    
+        $certificates = Certificate::whereIn(
+            'id_cert',
+            $request->cert_ids
+        )->get();
+    
+        $zipName =
+            'certificates_' .
+            now()->format('YmdHis') .
+            '.zip';
+    
+        $zipPath =
+            storage_path('app/temp/' . $zipName);
+    
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0777, true);
+        }
+    
+        $zip = new ZipArchive();
+    
+        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+    
+            foreach ($certificates as $cert) {
+    
+                if (!$cert->file_url) {
+                    continue;
+                }
+    
+                $file =
+                    storage_path(
+                        'app/public/' .
+                        $cert->file_url
+                    );
+    
+                if (file_exists($file)) {
+    
+                    $zip->addFile(
+                        $file,
+                        basename($file)
+                    );
+                }
+            }
+    
+            $zip->close();
+        }
+    
+        return response()
+            ->download($zipPath)
+            ->deleteFileAfterSend(true);
     }
 }

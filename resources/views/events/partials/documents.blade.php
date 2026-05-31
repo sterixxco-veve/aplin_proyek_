@@ -458,7 +458,6 @@
                         class="form-select">
 
                         <option value="2">2 TTD</option>
-                        <option value="3">3 TTD</option>
                         <option value="4">4 TTD</option>
                     </select>
                 </div>
@@ -560,202 +559,229 @@
             `,
 
             invitation_letter: `
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Nomor Surat
-                    </label>
+                <div class="row g-3">
+                    <!-- ORGANIZER INFORMATION & LOGO -->
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">1. Organizer Profile & Letterhead</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted font-weight-bold">Organization / Community Name</label>
+                        <input type="text" name="organization_name" value="{{ $event->organization?->nama_org ?? 'Google Developer Group Surabaya' }}" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted font-weight-bold">Official Website URL (Optional)</label>
+                        <input type="text" name="organization_url" placeholder="e.g. https://gdg.community.dev/gdg-surabaya/" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small text-muted font-weight-bold">Upload Organizer Logo</label>
+                        <input type="file" name="organization_logo" class="form-control" accept="image/*">
+                        <div class="form-text text-muted small">Select a transparent PNG/JPG logo file to print on the top-left of the letterhead.</div>
+                    </div>
 
-                    <input
-                        type="text"
-                        name="letter_number"
-                        class="form-control">
-                </div>
+                    <!-- LETTER METADATA -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">2. Document Metadata</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Letter Number</label>
+                        <input type="text" name="letter_number" value="060/GDG/INV/X/2026" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Attachment</label>
+                        <input type="text" name="attachment" value="-" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Date Sent</label>
+                        <input type="date" name="date_sent" value="{{ date('Y-m-d') }}" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small text-muted font-weight-bold">Subject / Purpose of Letter</label>
+                        <input type="text" name="subject" value="Invitation as Speaker" class="form-control" required>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Nama Penerima
-                    </label>
+                    <!-- RECIPIENT INFORMATION -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">3. Recipient Information</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Recipient Name</label>
+                        <input type="text" name="recipient_name" value="Mr. Ibnu Sina Wardy" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Recipient Title / Affiliation</label>
+                        <input type="text" name="recipient_role" value="CTO @Carte WMS & Google Developer Expert @Cloud & AI" class="form-control" required>
+                    </div>
 
-                    <input
-                        type="text"
-                        name="recipient_name"
-                        class="form-control">
-                </div>
+                    <!-- EVENT DETAILS -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">4. Event Execution Details</h5>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Event Name</label>
+                        <input type="text" name="event_name" value="{{ $event->nama_event }}" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Event Date</label>
+                        <input type="date" name="event_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Event Time Range</label>
+                        <input type="text" name="event_time" value="13:00 - 18:00 WIB" class="form-control" required>
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label small text-muted">Venue (Room & Detailed Address)</label>
+                        <input type="text" name="event_location" value="Institut Sains dan Teknologi Terpadu Surabaya (ISTTS) Jl. Ngagel Jaya Tengah No. 73-77, Surabaya" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Expected Participants</label>
+                        <input type="number" name="participant_total" value="100" class="form-control" required>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Jabatan Penerima
-                    </label>
-
-                    <input
-                        type="text"
-                        name="recipient_role"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Jumlah Peserta
-                    </label>
-
-                    <input
-                        type="number"
-                        name="participant_total"
-                        class="form-control">
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Nama Event
-                    </label>
-
-                    <input
-                        type="text"
-                        name="event_name"
-                        value="{{ $event->nama_event }}"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Tanggal Event
-                    </label>
-
-                    <input
-                        type="date"
-                        name="event_date"
-                        value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Lokasi Event
-                    </label>
-
-                    <input
-                        type="text"
-                        name="event_location"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Waktu Event
-                    </label>
-
-                    <input
-                        type="text"
-                        name="event_time"
-                        class="form-control"
-                        placeholder="Contoh: 09.00 - selesai">
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Subject Surat
-                    </label>
-
-                    <input
-                        type="text"
-                        name="subject"
-                        class="form-control"
-                        value="Undangan {{ $event->nama_event }}">
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Isi Surat
-                    </label>
-
-                    <textarea
-                        name="invitation_body_text"
-                        class="form-control"
-                        rows="4"
-                        placeholder="Tulis isi undangan di sini"></textarea>
+                    <!-- NARRATION & SIGNATORY -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">5. Letter Narration & Signatory</h5>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small text-muted font-weight-bold">Additional Event Description / Collaboration Details</label>
+                        <textarea name="additional_description" class="form-control" rows="4" required>Flutter Fusion Conference is a collaborative initiative by Google Developer Groups (GDG) Surabaya, AI/ML Surabaya, and Flutter Surabaya. It explores "Fusion"—the synergy between Flutter (Frontend), AI (Intelligence), and Cloud (Backend)—empowering our community to build the next generation of innovative solutions.</textarea>
+                        <div class="form-text text-muted small">This paragraph will be dynamically embedded in the main invitation body.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Sender Name (Signatory)</label>
+                        <input type="text" name="sender_name" value="Esther Irawati Setiawan" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Sender Position / Title</label>
+                        <input type="text" name="sender_role" placeholder="Leave empty for auto-generated 'Lead [Event Name]'" class="form-control">
+                    </div>
                 </div>
             `,
 
             mou_partner: `
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Nama Pihak Pertama
-                    </label>
+                <div class="row g-3">
+                    <!-- INFO DOKUMEN -->
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">1. Informasi Umum Perjanjian</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted font-weight-bold">Tempat Penandatanganan MoU (Kota)</label>
+                        <input type="text" name="signing_place"  class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted font-weight-bold">Tanggal Penandatanganan MoU</label>
+                        <input type="date" name="signing_date" value="{{ date('Y-m-d') }}" class="form-control" required>
+                    </div>
 
-                    <input
-                        type="text"
-                        name="first_party"
-                        value="{{ $event->organization?->nama_org ?? '' }}"
-                        class="form-control">
-                </div>
+                    <!-- PIHAK PERTAMA -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">2. Profil Pihak Pertama (Internal)</h5>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Nama Lembaga Pihak Pertama</label>
+                        <input type="text" name="first_party_name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Nama Representatif Pihak Pertama</label>
+                        <input type="text" name="first_party_representative" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Jabatan Representatif</label>
+                        <input type="text" name="first_party_role"class="form-control" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Alamat Kantor</label>
+                        <input type="text" name="first_party_address"  class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Email Resmi</label>
+                        <input type="email" name="first_party_email" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">No. Telepon</label>
+                        <input type="text" name="first_party_phone"  class="form-control" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Bertindak Selaku (Peran Legal)</label>
+                        <input type="text" name="first_party_action_as" class="form-control" required>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Nama Pihak Kedua
-                    </label>
+                    <!-- PIHAK KEDUA -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">3. Profil Pihak Kedua (Mitra/Partner)</h5>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Nama Lembaga Pihak Kedua</label>
+                        <input type="text" name="second_party_name" placeholder="cth. Google Developer Student Clubs Surabaya" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Nama Representatif Pihak Kedua</label>
+                        <input type="text" name="second_party_representative" placeholder="cth. Alvin" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Jabatan Representatif</label>
+                        <input type="text" name="second_party_role" placeholder="cth. Lead GDG On Campus" class="form-control" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Alamat Kantor/Instansi</label>
+                        <input type="text" name="second_party_address" placeholder="Masukkan alamat lengkap mitra" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Email Mitra</label>
+                        <input type="email" name="second_party_email" placeholder="Masukkan email mitra" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">No. Telepon Mitra</label>
+                        <input type="text" name="second_party_phone" placeholder="Masukkan nomor telepon" class="form-control" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Bertindak Selaku (Peran Legal)</label>
+                        <input type="text" name="second_party_action_as" placeholder="cth. Perwakilan Utama GDSC Institut STTS" class="form-control" required>
+                    </div>
 
-                    <input
-                        type="text"
-                        name="second_party"
-                        class="form-control">
-                </div>
+                    <!-- DETAIL KERJA SAMA -->
+                    <div class="col-12 mt-4">
+                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">4. Detail Kontrak & Kerja Sama</h5>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Judul / Bentuk Kerja Sama</label>
+                        <input type="text" name="cooperation_title" placeholder="cth. Penyelenggaraan Seminar Gabungan" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Waktu Pelaksanaan</label>
+                        <input type="text" name="cooperation_time" placeholder="cth. Jumat, 5 Desember 2025" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Tempat Pelaksanaan</label>
+                        <input type="text" name="cooperation_venue" placeholder="cth. Auditorium ISTTS" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted font-weight-bold">Tanggal Mulai Berlaku MoU</label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted font-weight-bold">Tanggal Berakhir MoU</label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Tujuan Kerja Sama</label>
+                        <textarea name="cooperation_purpose" class="form-control" rows="3" placeholder="cth. mensinergikan potensi kedua lembaga dalam peningkatan mutu pendidikan..." required></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Lingkup Kerja Sama</label>
+                        <textarea name="cooperation_scope" class="form-control" rows="3" placeholder="cth. penyediaan pemateri, kerja sama publikasi, dan penyediaan fasilitas bersama..." required></textarea>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Jabatan Pihak Pertama
-                    </label>
-
-                    <input
-                        type="text"
-                        name="first_party_role"
-                        value="Pihak Pertama"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Jabatan Pihak Kedua
-                    </label>
-
-                    <input
-                        type="text"
-                        name="second_party_role"
-                        value="Pihak Kedua"
-                        class="form-control">
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Bentuk Kerja Sama
-                    </label>
-
-                    <textarea
-                        name="cooperation"
-                        class="form-control"
-                        rows="4"></textarea>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Tanggal Mulai
-                    </label>
-
-                    <input
-                        type="date"
-                        name="start_date"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Tanggal Selesai
-                    </label>
-
-                    <input
-                        type="date"
-                        name="end_date"
-                        class="form-control">
-                </div>
+                    <!-- TANGGUNG JAWAB -->
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Kewajiban & Tanggung Jawab Pihak Pertama</label>
+                        <textarea name="obligations_first_party" class="form-control" rows="3" placeholder="cth. menyediakan ruang auditorium, menyiapkan logistik acara..." required></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small text-muted">Kewajiban & Tanggung Jawab Pihak Kedua</label>
+                        <textarea name="obligations_second_party" class="form-control" rows="3" placeholder="cth. mengirimkan perwakilan pembicara, menyediakan materi publikasi..." required></textarea>
+                    </div>
+                </div>     
             `
         };
 

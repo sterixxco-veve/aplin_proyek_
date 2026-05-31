@@ -12,18 +12,27 @@ class CertificateController extends Controller
         $user = auth()->user();
 
         $events = Event::visibleTo($user)
-            ->with(['certificates'])
+            ->withCount('certificates')
             ->latest()
             ->get();
 
-        $certificates = $events->flatMap(function ($event) {
-            return $event->certificates->map(function ($certificate) use ($event) {
-                $certificate->setRelation('event', $event);
+        return view(
+            'certificates.index',
+            compact('events')
+        );
+    }
 
-                return $certificate;
-            });
-        })->values();
+    public function showEvent($eventId)
+    {
+        $event = Event::visibleTo(auth()->user())
+            ->with('certificates')
+            ->findOrFail($eventId);
 
-        return view('certificates.index', compact('certificates'));
+        return view('certificates.show', [
+            'event' => $event,
+            'certificates' => $event->certificates,
+            'canManageCertificate' => $event->canManageCertificateBy(auth()->user()),
+            'templatePath' => session('template_path')
+        ]);
     }
 }

@@ -118,6 +118,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{eventId}/documents',[DocumentController::class, 'index'])->name('web.events.documents');
     Route::get('/partners', [PartnerController::class, 'index'])->name('web.partners.index');
     Route::get('/certificates', [CertificateController::class, 'index'])->name('web.certificates.index');
+    Route::get('/certificates/{eventId}',[CertificateController::class, 'showEvent'])->name('web.certificates.show');
+    Route::post('/events/{event}/certificates/download-zip',[EventController::class, 'downloadCertificatesZip']);
     Route::post('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);

@@ -1,6 +1,7 @@
 @php
-    $certificates = $event->certificates;
-    $templatePath = session('template_path');
+    $certificates = $certificates ?? collect();
+    $templatePath = $templatePath ?? null;
+    $canManageCertificate = $canManageCertificate ?? false;
 @endphp
 
 <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
@@ -173,23 +174,50 @@
             </button>
 
         </div>
-        @if($canManageCertificate && $certificates->count() > 0 && $templatePath)
+        @if($canManageCertificate && $certificates->count() > 0)
             <div class="d-flex gap-2 flex-wrap">
-                <form method="POST" action="/events/{{ $event->id_event }}/certificates/generate" style="display: inline;">
+
+                @if($templatePath)
+                <form method="POST"
+                    action="/events/{{ $event->id_event }}/certificates/generate">
                     @csrf
-                    <input type="hidden" name="template_path" value="{{ $templatePath }}">
-                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Generate certificate untuk semua penerima?')">
-                        <i class="bi bi-sparkles me-1"></i>Generate Certificates
+
+                    <input
+                        type="hidden"
+                        name="template_path"
+                        value="{{ $templatePath }}">
+
+                    <button
+                        type="submit"
+                        class="btn btn-sm btn-success">
+
+                        <i class="bi bi-sparkles me-1"></i>
+                        Generate Certificates
                     </button>
                 </form>
-
-                @if($certificates->whereNotNull('file_url')->count() > 0)
-                    <button type="button" class="btn btn-sm btn-info" id="openSendEmailModalBtn" data-bs-toggle="modal" data-bs-target="#sendEmailModal">
-                        <i class="bi bi-envelope me-1"></i>Send Email
-                    </button>
                 @endif
+
+                <form
+                    id="downloadZipForm"
+                    method="POST"
+                    action="/events/{{ $event->id_event }}/certificates/download-zip">
+
+                    @csrf
+
+                    <div id="downloadZipInputs"></div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-sm btn-warning">
+
+                        <i class="bi bi-file-earmark-zip me-1"></i>
+                        Download ZIP
+                    </button>
+
+                </form>
+ 
             </div>
-        @endif
+            @endif
     </div>
 
     <div class="card-body p-0">
@@ -263,13 +291,32 @@
                             </td>
                             @if($canManageCertificate)
                                 <td class="text-end pe-4">
-                                    <form method="POST" action="/events/{{ $event->id_event }}/certificates/{{ $cert->id_cert }}" style="display: inline;" onsubmit="return confirm('Hapus penerima ini?')">
+                                    @if($cert->file_url)
+                                        <a
+                                            href="{{ asset('storage/' . $cert->file_url) }}"
+                                            download
+                                            class="btn btn-sm btn-outline-success">
+
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    @endif
+
+                                    <form
+                                        method="POST"
+                                        action="/events/{{ $event->id_event }}/certificates/{{ $cert->id_cert }}"
+                                        style="display:inline"
+                                        onsubmit="return confirm('Hapus penerima ini?')">
+
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Hapus</button>
+
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            Hapus
+                                        </button>
                                     </form>
+
                                 </td>
-                            @endif
+                                @endif
                         </tr>
                     @empty
                         <tr>
@@ -424,7 +471,12 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('selectedInputsContainer');
 
     function updateSelectedRecipients() {
+        const downloadZipInputs =
+            document.getElementById('downloadZipInputs');
 
+        if (downloadZipInputs) {
+            downloadZipInputs.innerHTML = '';
+        }
         const selected =
             Array.from(checkboxes)
                 .filter(cb => cb.checked);
@@ -459,6 +511,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             ${cb.dataset.email}
                         </div>
                     </div>
+                `;
+            }
+
+            if (downloadZipInputs) {
+                downloadZipInputs.innerHTML += `
+                    <input
+                        type="hidden"
+                        name="cert_ids[]"
+                        value="${cb.value}">
                 `;
             }
 
