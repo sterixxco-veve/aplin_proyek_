@@ -313,6 +313,7 @@
                         type="text"
                         name="event_name"
                         class="form-control"
+                        value="{{ $event->nama_event }}"
                         placeholder="Nama event">
                 </div>
 
@@ -325,6 +326,7 @@
                         type="text"
                         name="organization_name"
                         class="form-control"
+                        value="{{ $event->organization?->nama_org ?? '' }}"
                         placeholder="Contoh: KMK ISTTS">
                 </div>
 
@@ -418,6 +420,7 @@
                     <input
                         type="date"
                         name="event_date"
+                        value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}"
                         class="form-control">
                 </div>
 
@@ -493,6 +496,7 @@
                     <input
                         type="text"
                         name="event_name"
+                        value="{{ $event->nama_event }}"
                         class="form-control">
                 </div>
 
@@ -504,6 +508,7 @@
                     <input
                         type="number"
                         name="participant_count"
+                        value="0"
                         class="form-control">
                 </div>
 
@@ -515,7 +520,20 @@
                     <input
                         type="date"
                         name="realization_date"
+                        value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}"
                         class="form-control">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Tempat Realisasi
+                    </label>
+
+                    <input
+                        type="text"
+                        name="realized_venue"
+                        class="form-control"
+                        placeholder="Lokasi pelaksanaan">
                 </div>
 
                 <div class="col-12">
@@ -594,6 +612,7 @@
                     <input
                         type="text"
                         name="event_name"
+                        value="{{ $event->nama_event }}"
                         class="form-control">
                 </div>
 
@@ -605,6 +624,7 @@
                     <input
                         type="date"
                         name="event_date"
+                        value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}"
                         class="form-control">
                 </div>
 
@@ -618,6 +638,42 @@
                         name="event_location"
                         class="form-control">
                 </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">
+                        Waktu Event
+                    </label>
+
+                    <input
+                        type="text"
+                        name="event_time"
+                        class="form-control"
+                        placeholder="Contoh: 09.00 - selesai">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Subject Surat
+                    </label>
+
+                    <input
+                        type="text"
+                        name="subject"
+                        class="form-control"
+                        value="Undangan {{ $event->nama_event }}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label small text-muted">
+                        Isi Surat
+                    </label>
+
+                    <textarea
+                        name="invitation_body_text"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Tulis isi undangan di sini"></textarea>
+                </div>
             `,
 
             mou_partner: `
@@ -629,6 +685,7 @@
                     <input
                         type="text"
                         name="first_party"
+                        value="{{ $event->organization?->nama_org ?? '' }}"
                         class="form-control">
                 </div>
 
@@ -651,6 +708,7 @@
                     <input
                         type="text"
                         name="first_party_role"
+                        value="Pihak Pertama"
                         class="form-control">
                 </div>
 
@@ -662,6 +720,7 @@
                     <input
                         type="text"
                         name="second_party_role"
+                        value="Pihak Kedua"
                         class="form-control">
                 </div>
 

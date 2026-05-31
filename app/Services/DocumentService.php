@@ -23,6 +23,9 @@ class DocumentService
         // =========================
 
         $data = $doc->snapshot_data ?? [];
+        $event = $doc->event;
+        $organization = $event?->organization;
+        $eventDate = $event?->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai) : null;
 
         // =========================
         // FALLBACK DATA
@@ -30,72 +33,62 @@ class DocumentService
 
         $data['title'] = $doc->title;
         $data['document'] = $doc;
-        $data['event'] = $doc->event;
+        $data['event'] = $event;
+        $data['event_name'] = $data['event_name'] ?? $event?->nama_event;
+        $data['organization'] = $organization;
+        $data['organization_name'] = $data['organization_name'] ?? $organization?->nama_org;
+        $data['organization_logo'] = $data['organization_logo'] ?? $organization?->logo_path;
+        $data['academic_year'] = $data['academic_year'] ?? ($eventDate
+            ? $eventDate->format('Y') . '/' . $eventDate->copy()->addYear()->format('Y')
+            : null);
+        $data['event_date'] = $data['event_date'] ?? ($eventDate?->format('Y-m-d'));
+        $data['venue'] = $data['venue'] ?? $data['event_location'] ?? $data['realized_venue'] ?? null;
+        $data['event_location'] = $data['event_location'] ?? $data['venue'] ?? null;
+        $data['date_sent'] = $data['date_sent'] ?? now()->format('d F Y');
+        $data['subject'] = $data['subject'] ?? ('Undangan ' . ($event?->nama_event ?? 'Kegiatan'));
+        $data['invitation_body_text'] = $data['invitation_body_text'] ?? 'Dengan hormat, kami mengundang Bapak/Ibu untuk menghadiri kegiatan tersebut.';
+        $data['realized_date'] = $data['realized_date'] ?? $data['realization_date'] ?? ($eventDate?->format('Y-m-d'));
+        $data['realized_venue'] = $data['realized_venue'] ?? $data['venue'] ?? $data['event_location'] ?? null;
+        $data['participant_count'] = $data['participant_count'] ?? 0;
+        $data['internal_count'] = $data['internal_count'] ?? 0;
+        $data['public_count'] = $data['public_count'] ?? 0;
+        $data['execution_summary'] = $data['execution_summary'] ?? $data['implementation'] ?? null;
+        $data['first_party'] = $data['first_party'] ?? $organization?->nama_org;
+        $data['first_party_role'] = $data['first_party_role'] ?? 'Pihak Pertama';
+        $data['second_party_role'] = $data['second_party_role'] ?? 'Pihak Kedua';
 
         // =========================
         // ORGANIZATION
         // =========================
 
-        $data['organization'] =
-            $doc->event->organization ?? null;
+        $data['organization'] = $organization;
 
         // =========================
         // RUNDOWN
         // =========================
-
         $data['rundowns'] =
-            $doc->event->rundowns ?? collect();
+            $event?->rundowns ?? collect();
 
         // =========================
         // COMMITTEE
         // =========================
 
         $data['committees'] =
-            $doc->event->committees ?? collect();
+            $event?->committees ?? collect();
 
         // =========================
         // BUDGET
         // =========================
 
         $data['budgets'] =
-            $doc->event->budgets ?? collect();
-
-        // =========================
-        // DEFAULT ORGANIZATION NAME
-        // =========================
-
-        if (
-            empty($data['organization_name']) &&
-            isset($doc->event->organization)
-        ) {
-            $data['organization_name'] =
-                $doc->event->organization->nama_org;
-        }
-
-        // =========================
-        // DEFAULT LOGO
-        // =========================
-
-        if (
-            empty($data['organization_logo']) &&
-            isset($doc->event->organization)
-        ) {
-            $data['organization_logo'] =
-                $doc->event->organization->logo_path;
-        }
+            $event?->budgets ?? collect();
 
         // =========================
         // DEFAULT TARGET
         // =========================
-
-        $data['target_sma'] =
-            $data['target_sma'] ?? 0;
-
-        $data['target_mahasiswa'] =
-            $data['target_mahasiswa'] ?? 0;
-
-        $data['target_umum'] =
-            $data['target_umum'] ?? 0;
+        $data['target_sma'] = $data['target_sma'] ?? 0;
+        $data['target_mahasiswa'] = $data['target_mahasiswa'] ?? 0;
+        $data['target_umum'] = $data['target_umum'] ?? 0;
 
         // =========================
         // TEMPLATE MAPPING

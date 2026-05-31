@@ -4,49 +4,87 @@
     <meta charset="utf-8">
     <title>LPJ Acara</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 40px; }
-        .header-lpj { text-align: center; font-weight: bold; margin-bottom: 30px; }
-        .section { margin-top: 20px; }
-        .table-rundown { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .table-rundown th, .table-rundown td { border: 1px solid #000; padding: 8px; text-align: left; }
+        @page { margin: 24px; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000;
+        }
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 15pt;
+            margin-bottom: 22px;
+        }
+        .section { margin-top: 18px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            vertical-align: top;
+        }
+        .muted { color: #555; }
     </style>
 </head>
 <body>
-    <div class="header-lpj">
-        LAPORAN PERTANGGUNG JAWABAN ACARA<br>
-        {{ $event_title }} [cite: 250]
-    </div>
+@php
+    $eventName = $event_name ?? $event->nama_event ?? '-';
+    $realizationDate = $realization_date ?? $realized_date ?? ($event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : null);
+    $realizedVenue = $realized_venue ?? $venue ?? '-';
+@endphp
 
-    <div class="section">
-        <strong>I. WAKTU DAN TEMPAT REALISASI</strong>
-        <p>Hari/Tanggal: {{ $realized_date }}<br>
-        Waktu: {{ $realized_time }}<br>
-        Tempat: {{ $realized_venue }} [cite: 265]</p>
-    </div>
+<div class="header">
+    LAPORAN PERTANGGUNGJAWABAN ACARA<br>
+    {{ $eventName }}
+</div>
 
-    <div class="section">
-        <strong>II. PELAKSANAAN ACARA</strong>
-        <p>{{ $execution_summary }} [cite: 267, 384]</p>
-    </div>
+<div class="section">
+    <strong>I. WAKTU DAN TEMPAT REALISASI</strong>
+    <table style="margin-top: 8px;">
+        <tr><td width="30%">Tanggal</td><td>{{ $realizationDate ? \Carbon\Carbon::parse($realizationDate)->locale('id')->translatedFormat('l, d F Y') : '-' }}</td></tr>
+        <tr><td>Tempat</td><td>{{ $realizedVenue }}</td></tr>
+        <tr><td>Jumlah Peserta</td><td>{{ $participant_count ?? 0 }} orang</td></tr>
+    </table>
+</div>
 
-    <div class="section">
-        <strong>III. TARGET PESERTA</strong>
-        <ul>
-            <li>Internal: {{ $internal_count }} Orang</li>
-            <li>Umum: {{ $public_count }} Orang [cite: 279]</li>
-        </ul>
-    </div>
+<div class="section">
+    <strong>II. PELAKSANAAN ACARA</strong>
+    <p>{!! nl2br(e($implementation ?? '-')) !!}</p>
+</div>
 
-    <div class="section">
-        <strong>IV. RUNDOWN KEGIATAN</strong>
-        <table class="table-rundown">
-            <thead>
-                <tr><th>Waktu</th><th>Durasi</th><th>Kegiatan</th></tr>
-            </thead>
-            <tbody>
-                {{ $rundown_rows }} [cite: 275]
-            </tbody>
-        </table>
-    </div>
+<div class="section">
+    <strong>III. EVALUASI</strong>
+    <p>{!! nl2br(e($evaluation ?? '-')) !!}</p>
+</div>
+
+<div class="section">
+    <strong>IV. RUNDOWN KEGIATAN</strong>
+    <table style="margin-top: 8px;">
+        <thead>
+            <tr>
+                <th style="width: 20%;">Waktu</th>
+                <th style="width: 20%;">Durasi</th>
+                <th>Kegiatan</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($rundowns as $item)
+                <tr>
+                    <td>{{ substr((string) ($item->waktu_mulai ?? ''), 0, 5) }} - {{ substr((string) ($item->waktu_selesai ?? ''), 0, 5) }}</td>
+                    <td>{{ $item->durasi ?? '-' }}</td>
+                    <td>{{ $item->kegiatan ?? '-' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="3" class="muted">Belum ada rundown yang tersimpan.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 </body>
 </html>

@@ -1,50 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Invitation Letter - GDG Surabaya</title>
+    <title>Invitation Letter</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
-        .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .date { text-align: left; margin-bottom: 20px; }
-        .info-table td { padding-right: 20px; vertical-align: top; }
-        .event-details { background: #f9f9f9; padding: 15px; margin: 20px 0; border: 1px solid #ddd; }
+        @page { margin: 28px; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #000;
+        }
+        .header {
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 18px;
+        }
+        .info-table td {
+            padding-right: 18px;
+            vertical-align: top;
+        }
+        .event-details {
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+            padding: 12px 14px;
+            margin: 18px 0;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <strong>GDG Surabaya</strong><br>
-        Google Developer Group Surabaya<br>
-        https://gdg.community.dev/gdg-surabaya/ 
-    </div>
+@php
+    $eventName = $event_name ?? $event->nama_event ?? '-';
+    $eventDate = $event_date ?? ($event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : null);
+    $subject = $subject ?? ('Undangan ' . $eventName);
+@endphp
 
-    <div class="date">Surabaya, {{ $date_sent }}</div>
+<div class="header">
+    <strong>{{ $organization_name ?? ($event->organization?->nama_org ?? 'Organisasi') }}</strong><br>
+    {{ $subject }}
+</div>
 
+<p>Surabaya, {{ $date_sent ?? \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}</p>
+
+<table class="info-table">
+    <tr><td>Nomor</td><td>: {{ $letter_number ?? '-' }}</td></tr>
+    <tr><td>Perihal</td><td>: {{ $subject }}</td></tr>
+</table>
+
+<p>
+    Kepada Yth.<br>
+    {{ $recipient_name ?? '-' }}<br>
+    {{ $recipient_role ?? '-' }}
+</p>
+
+<p>Dengan hormat,</p>
+<p>
+    Sehubungan dengan kegiatan <strong>{{ $eventName }}</strong>, kami mengundang Bapak/Ibu/Saudara untuk hadir pada:
+</p>
+
+<div class="event-details">
     <table class="info-table">
-        <tr><td>Number</td><td>: {{ $letter_number }}</td></tr>
-        <tr><td>Subject</td><td>: {{ $subject }}</td></tr>
+        <tr><td>Hari/Tanggal</td><td>: {{ $eventDate ? \Carbon\Carbon::parse($eventDate)->locale('id')->translatedFormat('l, d F Y') : '-' }}</td></tr>
+        <tr><td>Waktu</td><td>: {{ $event_time ?? '-' }}</td></tr>
+        <tr><td>Tempat</td><td>: {{ $event_location ?? '-' }}</td></tr>
+        <tr><td>Peserta</td><td>: {{ $participant_total ?? 0 }} orang</td></tr>
     </table>
+</div>
 
-    <div style="margin-top: 20px;">
-        To {{ $recipient_name }}<br>
-        {{ $recipient_role }} 
-    </div>
+<p>{!! nl2br(e($invitation_body_text ?? 'Kami berharap kehadiran Bapak/Ibu/Saudara. Atas perhatian dan kerja samanya kami ucapkan terima kasih.')) !!}</p>
 
-    <p>Dear Sir/Madam,</p>
-    <p>Regarding the upcoming <strong>{{ $event_name }}</strong> event organized by Google Developer Group (GDG) Surabaya on: </p>
-
-    <div class="event-details">
-        <table class="info-table">
-            <tr><td>Day/Date</td><td>: {{ $event_day_date }}</td></tr>
-            <tr><td>Time</td><td>: {{ $event_time }}</td></tr>
-            <tr><td>Venue</td><td>: {{ $venue }}</td></tr>
-            <tr><td>Participants</td><td>: {{ $participant_total }} participants</td></tr>
-        </table>
-    </div>
-
-    <p>{{ $invitation_body_text }}</p>
-
-    <p>Sincerely,<br><br><br>
-    Organizing Committee</p>
+<p>Hormat kami,<br><br><br><br>
+    Organizing Committee
+</p>
 </body>
 </html>

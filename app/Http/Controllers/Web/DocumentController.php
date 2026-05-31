@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use App\Models\EventDocument;
+use App\Models\GeneratedDocument;
 use App\Services\DocumentService;
 use Illuminate\Http\Request;
 
@@ -53,7 +53,7 @@ class DocumentController extends Controller
     {
         $service = new DocumentService();
 
-        $path = $service->generate($docId);
+        $service->generate($docId);
 
         return back()->with(
             'success',
@@ -67,11 +67,15 @@ class DocumentController extends Controller
 
     public function store(Request $request, $eventId)
     {
-        $event = Event::findOrFail($eventId);
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        abort_unless($event->canManageDocumentBy(auth()->user()), 403, 'Tidak punya akses');
 
-        // =========================
-        // SAVE FORM PAYLOAD
-        // =========================
+        $request->validate([
+            'document_type' => ['required', 'in:proposal,lpj,invitation_letter,mou_partner,certificate,other'],
+            'title' => ['required', 'string', 'max:255'],
+            'status' => ['nullable', 'in:draft,generated,final,archived,failed'],
+            'notes' => ['nullable', 'string'],
+        ]);
 
         $payload = $request->except([
             '_token',
@@ -81,61 +85,28 @@ class DocumentController extends Controller
             'notes',
         ]);
 
-        // =========================
-        // CREATE DOCUMENT ROW
-        // =========================
-
-        $document = EventDocument::create([
-
-            'id_event' =>
-                $event->id_event,
-
-            'document_type' =>
-                $request->document_type,
-
-            'title' =>
-                $request->title,
-
-            'status' =>
-                'draft',
-
-            'notes' =>
-                $request->notes,
-
-            'generated_payload' =>
-                json_encode($payload),
-
-            'generated_by' =>
-                auth()->id(),
-        ]);
-
-        // =========================
-        // AUTO GENERATE PDF
-        // =========================
-
-      $service = new \App\Services\DocumentService();
-
-        try {
-            $filePath = $service->generate(
-                $document->id_document
-            );
-
-            dd($filePath);
-
-        } catch (\Exception $e) {
-
-            dd($e->getMessage());
+        if ($request->hasFile('organization_logo')) {
+            $payload['organization_logo'] = $request->file('organization_logo')->store('document-logos', 'public');
         }
 
-        $document->update([
-            'file_url' => $filePath,
-            'status' => 'generated',
+        $document = GeneratedDocument::create([
+            'id_event' => $event->id_event,
+            'document_type' => $request->document_type,
+            'title' => $request->title,
+            'status' => 'draft',
+            'notes' => $request->notes,
+            'snapshot_data' => $payload,
+            'generated_by' => auth()->id(),
         ]);
-        return redirect()
-            ->back()
-            ->with(
-                'success',
-                'Document berhasil di-generate'
-            );
+
+        $fileUrl = (new DocumentService())->generate($document->id_document);
+
+        $document->update([
+            'file_url' => $fileUrl,
+            'status' => 'generated',
+            'generated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Document berhasil di-generate');
     }
 }
