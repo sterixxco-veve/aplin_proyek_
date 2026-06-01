@@ -555,6 +555,7 @@ class EventController extends Controller
         $request->validate([
             'nama_penerima' => 'required|string|max:255',
             'email_penerima' => 'required|email|max:255',
+            'nrp_penerima' => 'nullable|string|max:50',
             'file_url' => 'nullable|string|max:2048',
         ]);
 
@@ -562,6 +563,7 @@ class EventController extends Controller
             'id_event' => $event->id_event,
             'nama_penerima' => $request->nama_penerima,
             'email_penerima' => $request->email_penerima,
+            'nrp_penerima' => $request->nrp_penerima,
             'qr_token' => (string) Str::uuid(),
             'file_url' => $request->file_url,
         ]);
@@ -577,6 +579,7 @@ class EventController extends Controller
         $request->validate([
             'nama_penerima' => 'required|string|max:255',
             'email_penerima' => 'required|email|max:255',
+            'nrp_penerima' => 'nullable|string|max:50',
             'file_url' => 'nullable|string|max:2048',
         ]);
 
@@ -587,6 +590,7 @@ class EventController extends Controller
         $cert->update([
             'nama_penerima' => $request->nama_penerima,
             'email_penerima' => $request->email_penerima,
+            'nrp_penerima' => $request->nrp_penerima,
             'file_url' => $request->file_url,
         ]);
 
@@ -844,6 +848,7 @@ class EventController extends Controller
             'recipients_file' => 'nullable|file|mimes:csv,xlsx,xls',
             'nama_penerima' => 'nullable|array',
             'email_penerima' => 'nullable|array',
+            'nrp_penerima' => 'nullable|array',
         ]);
 
         $recipients = [];
@@ -852,12 +857,13 @@ class EventController extends Controller
         if ($request->has('nama_penerima') && count($request->nama_penerima) > 0) {
             $names = $request->input('nama_penerima');
             $emails = $request->input('email_penerima', []);
-            
+            $nrp = $request->input('nrp_penerima', []);
             foreach ($names as $index => $name) {
                 if (!empty(trim($name))) {
                     $recipients[] = [
                         'nama_penerima' => trim($name),
                         'email_penerima' => trim($emails[$index] ?? ''),
+                        'nrp_penerima' => trim($nrp[$index] ?? ''),
                     ];
                 }
             }
@@ -877,11 +883,12 @@ class EventController extends Controller
                         foreach ($data[0] as $row) {
                             $nama = trim($row['nama_lengkap'] ?? $row['Nama Lengkap'] ?? $row['nama_penerima'] ?? '');
                             $email = trim($row['email_penerima'] ?? $row['Email Penerima'] ?? $row['email'] ?? '');
-                            
+                            $nrp = trim($row['nrp_penerima'] ?? $row['NRP Penerima'] ?? $row['nrp'] ?? '');
                             if (!empty($nama) && !empty($email)) {
                                 $recipients[] = [
                                     'nama_penerima' => $nama,
                                     'email_penerima' => $email,
+                                    'nrp_penerima' => $nrp,
                                 ];
                             }
                         }
@@ -907,6 +914,7 @@ class EventController extends Controller
                         $recipients[] = [
                             'nama_penerima' => trim($row[0] ?? ''),
                             'email_penerima' => trim($row[1] ?? ''),
+                            'nrp_penerima' => trim($row[2] ?? ''),
                         ];
                     }
                 }
@@ -939,6 +947,7 @@ class EventController extends Controller
                     'id_event' => $eventId,
                     'nama_penerima' => $recipient['nama_penerima'],
                     'email_penerima' => $recipient['email_penerima'],
+                    'nrp_penerima' => $recipient['nrp_penerima'],
                     'qr_token' => (string) Str::uuid(),
                 ]);
 
@@ -1003,13 +1012,6 @@ class EventController extends Controller
                 );
 
                 $cert->update(['file_url' => $filePath]);
-                \Mail::to($cert->email_penerima)
-                    ->send(
-                        new \App\Mail\CertificateMail(
-                            $cert,
-                            $event
-                        )
-                    );
                 $generated++;
             } catch (\Exception $e) {
                 $errors[] = $cert->nama_penerima . ": " . $e->getMessage();

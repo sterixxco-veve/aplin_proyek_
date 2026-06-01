@@ -22,9 +22,11 @@
                     </div>
                 </div>
 
+                @if($event->canManageCertificateBy(auth()->user()))
                 <a href="/events/{{ $event->id_event }}/edit" class="btn btn-primary px-4 rounded-pill">
                     Edit Event
                 </a>
+                @endif
             </div>
         </div>
 
@@ -36,11 +38,17 @@
             {{-- TAB NAVIGASI --}}
             <div class="d-flex gap-4 border-bottom mb-4 overflow-auto pb-2" style="white-space: nowrap;">
                 <button class="tab-btn active" data-tab="rundown">Rundown</button>
+                @if($event->canManageCertificateBy(auth()->user()))
                 <button class="tab-btn" data-tab="budget">Budget</button>
+                @endif
                 <button class="tab-btn" data-tab="finance">Finance</button>
+                @if($event->canManageCertificateBy(auth()->user()))
                 <button class="tab-btn" data-tab="documents">Documents</button>
+                @endif
                 <button class="tab-btn" data-tab="partners">Partners</button>
+                @if($event->canManageCertificateBy(auth()->user()))
                 <button class="tab-btn" data-tab="certificates">Certificates</button>
+                @endif
                 <button class="tab-btn" data-tab="committee">Committee</button>
                 <button class="tab-btn" data-tab="tasks">Tasks</button>
             </div>
@@ -50,15 +58,12 @@
                 <div id="rundown" class="tab-content">
                     @include('events.partials.rundown')
                 </div>
-
                 <div id="budget" class="tab-content d-none">
                     @include('events.partials.budget')
                 </div>
-
                 <div id="finance" class="tab-content d-none">
                     @include('events.partials.finance')
                 </div>
-
                 <div id="documents" class="tab-content d-none">
                     @include('events.partials.documents')
                 </div>
@@ -66,7 +71,6 @@
                 <div id="partners" class="tab-content d-none">
                     @include('events.partials.partners')
                 </div>
-
                 <div id="certificates" class="tab-content d-none">
                     @include('events.partials.certificates')
                 </div>
@@ -83,6 +87,7 @@
                     </div>
 
                     {{-- Form Tambah Committee --}}
+                    @if($event->canManageCertificateBy(auth()->user()))
                     <div class="card border-0 shadow-sm mb-4 bg-light">
                         <div class="card-body p-4">
                             <h6 class="fw-bold mb-3">Tambah Committee</h6>
@@ -125,6 +130,7 @@
                             </form>
                         </div>
                     </div>
+                    @endif
 
                     {{-- Tabel Daftar Committee --}}
                     <div class="card border-0 shadow-sm">
@@ -159,8 +165,10 @@
                                                             @method('DELETE')
                                                             <button class="btn btn-sm btn-outline-danger">Hapus</button>
                                                         </form>
-                                                    @else
+                                                    @elseif($event->committees->count() <= 1)
                                                         <span class="text-muted small">Minimal 1 committee</span>
+                                                    @else
+                                                        <span class="text-muted small">Tidak punya akses</span>
                                                     @endif
                                                 </td>
                                             </tr>

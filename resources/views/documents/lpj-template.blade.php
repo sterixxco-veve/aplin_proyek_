@@ -222,73 +222,22 @@
         // First add the 26 committees
         foreach ($committeeItems as $comm) {
             $pointItems[] = (object)[
-                'name' => $comm->name,
-                'nrp' => $comm->nrp,
-                'prodi' => $comm->prodi,
-                'jabatan' => strtoupper($comm->jabatan),
+                'name' => $comm->user?->name ?? $comm->name ?? '-',
+                'nrp' => $comm->user?->nrp ?? $comm->nrp ?? '-',
+                'prodi' => $comm->user?->prodi ?? $comm->prodi ?? '-',
+                'jabatan' => strtoupper($comm->user?->jabatan ?? $comm->jabatan ?? '-'),
                 'poin' => '100%'
             ];
         }
         // Then add extra participants from PDF page 10-14
-        $extraParticipants = [
-            ['name' => 'REZA PRATAMA TANDJUNG', 'nrp' => '221116984', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'RICHARD DANIEL HARSONO', 'nrp' => '221116985', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'JENIFER. CHRISDIO', 'nrp' => '221180536', 'prodi' => 'S1-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'FERNAN WIN EIFELLINE MARSYANDA', 'nrp' => '222117010', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'JASSON PUTRA SANJAYA GU', 'nrp' => '222117020', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'KENNETH ELLIOT', 'nrp' => '222117040', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'KENT TRAVIS DONOVAN', 'nrp' => '222117041', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'KEDRICK ADYATMA NGADI', 'nrp' => '222180560', 'prodi' => 'S1-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'VALENTINO TAN SEBASTIAN', 'nrp' => '222180568', 'prodi' => 'S1-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'AARON JASON HOLIWONO', 'nrp' => '223117070', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'BRYAN ALEXIS YUWIANTO', 'nrp' => '223117072', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'CHRISTOPHANI GREGORIUS PHILLIP WONGES', 'nrp' => '223117073', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'CHRISTOPHER OCTAVE SINJAYA', 'nrp' => '223117074', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'DARREL TAN', 'nrp' => '223117077', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'EGBERT WANGARRY', 'nrp' => '223117080', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'GIVEN LEE', 'nrp' => '223117082', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'HANS CHRISTIAN KURNIAWAN', 'nrp' => '223117084', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'GO, GREGORY AARON GOSAL', 'nrp' => '223117085', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'JASON JUAN ALBERTO JOE', 'nrp' => '223117089', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'JOHANNES WINSTON JIEWANDANA', 'nrp' => '223117091', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'KENJI KRISNA KHOHARI', 'nrp' => '223117092', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'MIKAEL PRAJOGO NOER', 'nrp' => '223117098', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'NICHOLAS NATHANAEL TJANDRA', 'nrp' => '223117099', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'OPHELIA CALYSTA FEODORA', 'nrp' => '223117100', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'RAFAEL JOVE WICAKSONO', 'nrp' => '223117102', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'RAOUL STANLEY KHO', 'nrp' => '223117103', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'RICHARD TIRTO SURAJIMAN', 'nrp' => '223117105', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'SEAN CORNELLIUS PUTRA CHRISYANTO', 'nrp' => '223117107', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'TREVIS ARTAGRANTDY KURNIAWAN', 'nrp' => '223117114', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'MICHAEL HERONIMUS RENGKUAN', 'nrp' => '224011704', 'prodi' => 'D3-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'BENNY HOH', 'nrp' => '224117120', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'BRYAN STEVANO DEVEN', 'nrp' => '224117123', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'MARCO SUTEDJO', 'nrp' => '224117136', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'SURYA HIA', 'nrp' => '224117140', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'GABRIEL EXCELLINO HAGUS', 'nrp' => '224170677', 'prodi' => 'S1-Desain Komunikasi Visual', 'jabatan' => 'PESERTA'],
-            ['name' => 'SHANE WILBERT HERLIANTO', 'nrp' => '224170691', 'prodi' => 'S1-Desain Komunikasi Visual', 'jabatan' => 'PESERTA'],
-            ['name' => 'DUSTIN IVANDER', 'nrp' => '225117159', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'KENNY CORNELLIUS', 'nrp' => '225117171', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA'],
-            ['name' => 'GERALDO TIMOTHY PRASETIO', 'nrp' => '225170699', 'prodi' => 'S1-Desain Komunikasi Visual', 'jabatan' => 'PESERTA'],
-            ['name' => 'VICKY LEE AMITY', 'nrp' => '225170717', 'prodi' => 'S1-Desain Komunikasi Visual', 'jabatan' => 'PESERTA'],
-            ['name' => 'MICHAEL FELIX SUGIARTO', 'nrp' => '225180602', 'prodi' => 'S1-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'NICHOLAS DAVE SISWANTO', 'nrp' => '225180603', 'prodi' => 'S1-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'WILLIAM FABIAN SETIADI', 'nrp' => '225180606', 'prodi' => 'S1-Sistem Informasi', 'jabatan' => 'PESERTA'],
-            ['name' => 'CHRISTALIN JEANICE SUTEDJO', 'nrp' => '225380001', 'prodi' => 'S1-Manajemen Bisnis Digital', 'jabatan' => 'PESERTA'],
-            ['name' => 'ELLEONA CHRISTABELLE SUGIANTO', 'nrp' => '225380004', 'prodi' => 'S1-Manajemen Bisnis Digital', 'jabatan' => 'PESERTA'],
-            ['name' => 'FLORENCIA ARLIN PRAJITNO', 'nrp' => '225380005', 'prodi' => 'S1-Manajemen Bisnis Digital', 'jabatan' => 'PESERTA'],
-            ['name' => 'INNANI FIDDINILLAH', 'nrp' => '225380008', 'prodi' => 'S1-Manajemen Bisnis Digital', 'jabatan' => 'PESERTA'],
-            ['name' => 'NORCE CHINTIA RAMBU KUBA TUAF', 'nrp' => '225380014', 'prodi' => 'S1-Manajemen Bisnis Digital', 'jabatan' => 'PESERTA'],
-            ['name' => 'YOSPHINCE KAWAITOUW', 'nrp' => '225380019', 'prodi' => 'S1-Manajemen Bisnis Digital', 'jabatan' => 'PESERTA'],
-            ['name' => 'OWEN MOSES', 'nrp' => '223117101', 'prodi' => 'S1-Informatika', 'jabatan' => 'PESERTA']
-        ];
-        foreach ($extraParticipants as $p) {
+        $participantItems = $participants ?? [];
+        foreach ($participantItems as $p) {
             $pointItems[] = (object)[
-                'name' => $p['name'],
-                'nrp' => $p['nrp'],
-                'prodi' => $p['prodi'],
-                'jabatan' => $p['jabatan'],
-                'poin' => '100%'
+                'name' => $p->name ?? '',
+                'nrp' => $p->nrp ?? '',
+                'prodi' => $p->prodi ?? '',
+                'jabatan' => 'Peserta',
+                'poin' => '100%',
             ];
         }
     }

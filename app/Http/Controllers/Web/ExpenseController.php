@@ -38,13 +38,16 @@ class ExpenseController extends Controller
             ->latest('id_expense')
             ->get();
         $categories = ExpenseCategory::all();
+        $expenseCategories = ExpenseCategory::all();
+
 
         return view('events.finance', compact(
             'event',
             'expenses',
             'eventId',
             'summary',
-            'categories' // 🔥 WAJIB
+            'categories', // 🔥 WAJIB
+            'expenseCategories'
         ));
     }
 

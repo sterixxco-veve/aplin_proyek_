@@ -1,6 +1,6 @@
 @php
-    $certificates = $certificates ?? collect();
-    $templatePath = $templatePath ?? null;
+    $certificates = $event->certificates ?? collect();
+    $templatePath = session('template_path') ?? null;
     $canManageCertificate = $canManageCertificate ?? false;
 @endphp
 

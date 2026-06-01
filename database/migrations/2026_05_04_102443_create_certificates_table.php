@@ -16,6 +16,7 @@ return new class extends Migration
 
             $table->string('nama_penerima');
             $table->string('email_penerima');
+            $table->string('nrp_penerima')->nullable();
 
             $table->string('qr_token')->unique();
 

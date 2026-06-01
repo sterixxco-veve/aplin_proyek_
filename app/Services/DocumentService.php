@@ -77,6 +77,17 @@ class DocumentService
             $event?->committees ?? collect();
 
         // =========================
+        // PARTICIPANTS
+        // =========================
+
+       $data['participants'] = ($event?->certificates ?? collect())
+         ->map(fn ($cert) => (object) [
+            'name' => $cert->nama_penerima,
+            'nrp' => $cert->nrp_penerima??'',
+            'prodi' => $cert->prodi ?? '',
+        ]);
+
+        // =========================
         // BUDGET
         // =========================
 

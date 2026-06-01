@@ -12,6 +12,7 @@ class Certificate extends Model
         'id_event',
         'nama_penerima',
         'email_penerima',
+        'nrp_penerima',
         'qr_token',
         'file_url'
     ];

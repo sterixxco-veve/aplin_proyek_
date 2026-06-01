@@ -22,17 +22,17 @@ class CertificateTemplateExport implements
     {
         // 5 empty rows untuk template
         return [
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
-            ['', ''],
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', ''],
         ];
     }
 
     public function headings(): array
     {
-        return ['Nama Lengkap', 'Email Penerima'];
+        return ['Nama Lengkap', 'Email Penerima', 'NRP Penerima'];
     }
 
     public function styles(Worksheet $sheet): array
