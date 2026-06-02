@@ -89,18 +89,71 @@
                                                     Custom Division
                                                 </span>
                                             @endif
-                                        </td>
+                                       </td>
                                         <td class="text-end pe-4">
                                             <div class="d-flex justify-content-end gap-1">
-                                                <button class="btn btn-sm btn-outline-secondary border-0 rounded-circle p-2" title="Edit">
+                                                {{-- Tombol Edit --}}
+                                                <button class="btn btn-sm btn-outline-secondary border-0 rounded-circle p-2" 
+                                                        data-bs-toggle="modal" data-bs-target="#editModal{{ $divisi->id_divisi }}" title="Edit">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2" title="Hapus">
+                                                {{-- Tombol Hapus --}}
+                                                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ $divisi->id_divisi }}" title="Hapus">
                                                     <i class="bi bi-trash3-fill"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
+
+                                    {{-- Modal Edit --}}
+                                    <div class="modal fade" id="editModal{{ $divisi->id_divisi }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                                                <div class="modal-header border-0 pt-4 px-4">
+                                                    <h5 class="fw-bold">Edit Divisi</h5>
+                                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="/divisions/{{ $divisi->id_divisi }}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <div class="modal-body px-4">
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Nama Divisi</label>
+                                                            <input type="text" name="nama_divisi" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" value="{{ $divisi->nama_divisi }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-0 pb-4 px-4">
+                                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                                                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Update Perubahan</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Modal Hapus Custom --}}
+                                    <div class="modal fade" id="deleteModal{{ $divisi->id_divisi }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                                            <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                                                <div class="modal-body p-4 text-center">
+                                                    <div class="text-danger mb-3">
+                                                        <i class="bi bi-exclamation-circle-fill" style="font-size: 3rem;"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold mb-2">Hapus Divisi?</h5>
+                                                    <p class="text-muted small mb-4">Hapus <strong>{{ $divisi->nama_divisi }}</strong>? Tindakan ini permanen.</p>
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-light w-100 rounded-pill fw-bold" data-bs-dismiss="modal">Batal</button>
+                                                        <form action="/divisions/{{ $divisi->id_divisi }}" method="POST" class="w-100">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold">Ya, Hapus</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @empty
                                     <tr>
                                         <td colspan="3" class="text-center py-5">
@@ -118,20 +171,11 @@
             </div>
         </div>
     </div>
-</div>
 
 <style>
-    .transition-all {
-        transition: all 0.2s ease;
-    }
-    .table-hover tbody tr:hover {
-        background-color: rgba(66, 133, 244, 0.02) !important;
-    }
-    .btn:active {
-        transform: scale(0.98);
-    }
-    .form-control:focus {
-        background-color: #fff !important;
-    }
+    .transition-all { transition: all 0.2s ease; }
+    .table-hover tbody tr:hover { background-color: rgba(66, 133, 244, 0.02) !important; }
+    .btn:active { transform: scale(0.98); }
+    .form-control:focus { background-color: #fff !important; box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.1) !important; }
 </style>
 @endsection
