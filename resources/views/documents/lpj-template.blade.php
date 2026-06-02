@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <title>Laporan Pertanggungjawaban Acara</title>
     <style>
-        @page { 
-            margin: 24px; 
+        @page {
+            margin: 24px;
         }
         body {
             font-family: "Times New Roman", serif;
@@ -14,12 +14,12 @@
             color: #000;
             padding: 20px;
         }
-        .cover { 
-            text-align: center; 
-            margin-top: 50px; 
+        .cover {
+            text-align: center;
+            margin-top: 50px;
             height: 100%;
         }
-        
+
         /* Mengatur agar setiap bab otomatis mulai di halaman baru dengan kop surat */
         .bab-page {
             page-break-before: always;
@@ -31,7 +31,7 @@
             margin: 18px 0 15px;
             text-transform: uppercase;
         }
-        
+
         /* Pengaturan tabel rapi dengan border hitam tipis sesuai standar */
         table {
             width: 100%;
@@ -50,27 +50,27 @@
             font-weight: bold;
             text-align: center;
         }
-        .text-center { 
-            text-align: center; 
+        .text-center {
+            text-align: center;
         }
-        .text-right { 
-            text-align: right; 
+        .text-right {
+            text-align: right;
         }
-        .muted { 
-            color: #444; 
+        .muted {
+            color: #444;
         }
 
         /* Tabel Khusus Tanpa Border */
-        .no-border, .no-border tr, .no-border td { 
-            border: none !important; 
+        .no-border, .no-border tr, .no-border td {
+            border: none !important;
             padding: 4px;
         }
-        
+
         /* Kop Surat (Header) */
         .header-proposal {
             width: 100%;
             border-bottom: 4px solid #000;
-            padding-bottom: 8px;
+            padding-bottom: 0px;
             margin-bottom: 25px;
             page-break-inside: avoid;
         }
@@ -78,6 +78,7 @@
         .header-table {
             width: 100%;
             border: none;
+            margin-bottom: 0;
         }
 
         .header-table td {
@@ -86,12 +87,12 @@
         }
 
         .header-logo-left {
-            width: 90px;
+            width: 110px;
             text-align: center;
         }
 
         .header-logo-right {
-            width: 120px;
+            width: 110px;
             text-align: center;
         }
 
@@ -108,13 +109,13 @@
 
         .header-title h3 {
             margin: 3px 0;
-            font-size: 11pt;
+            font-size: 14pt;
             font-weight: bold;
         }
 
         .header-title p {
             margin: 0;
-            font-size: 8.5pt;
+            font-size: 12pt;
         }
 
         /* Area Tanda Tangan */
@@ -129,25 +130,25 @@
     // --- STREAMING_CHUNK: Inisialisasi variabel dan fallback data LPJ dari database ---
     $eventName = $event_name ?? $event->nama_event ?? 'STOP COPY-PASTING, START ENGINEERING: THE "CORRECT" WAY TO USE AI TOOLS';
     $organizationName = $organization_name ?? $organization?->nama_org ?? 'Google Developer Groups On Campus institut STTS';
-    
-    $realizationDate = $realization_date ?? $realized_date ?? ($event->tgl_mulai 
-        ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') 
-        : '2025-12-05'); 
+
+    $realizationDate = $realization_date ?? $realized_date ?? ($event->tgl_mulai
+        ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d')
+        : '2025-12-05');
 
     $startTime = $start_time ?? '15:30';
     $endTime = $end_time ?? '17:00';
     $venueName = $realized_venue ?? $venue ?? 'Auditorium ISTTS';
     $academicYear = $academic_year ?? 'GOOGLE DEVELOPER STUDENT CLUB ISTTS GASAL 2025/2026';
-    
+
     // Background, Objectives & Implementation Fallbacks
     $backgroundText = $background_text ?? "Perkembangan teknologi Artificial Intelligence (AI) kini telah mengubah cara Software Development dan Software Testing dilakukan. Berbagai alat berbasis Al mampu menghasilkan kode dan skenario pengujian dengan sangat cepat. Namun, kemudahan ini sering menyebabkan para profesional hanya melakukan copy-paste tanpa melalui proses rekayasa perangkat lunak yang benar, seperti analisis, verifikasi, dan validasi.\n\nPenggunaan Al secara pasif seperti ini dapat menimbulkan risiko besar, mulai dari celah keamanan, kegagalan integrasi sistem, hingga menurunnya kualitas arsitektur perangkat lunak. Karena itu, industri perlu segera mengubah peran Developer dan Tester agar mampu memanfaatkan Al secara strategis bukan sekadar sebagai alat pembuat kode, tetapi sebagai Co-Engineer yang mendukung proses rekayasa perangkat lunak secara profesional.\n\nSeminar ini diadakan untuk menjawab kebutuhan tersebut, memastikan bahwa inovasi Al dimanfaatkan dengan cara yang bertanggung jawab, profesional, dan sesuai dengan standar industri modern.";
     $objectivesText = $objectives ?? "1. Meningkatkan pemahaman peserta mengenai peran Al dalam Software Development dan Software Testing secara profesional.\n2. Mendorong peserta untuk mengembangkan pola pikir kritis dalam memanfaatkan Al, tidak hanya menerima hasil secara langsung tetapi juga mampu mengevaluasi kualitasnya.\n3. Membekali peserta dengan kemampuan melakukan analisis, verifikasi, dan validasi meskipun menggunakan Al sebagai assistive tool.\n4. Menyediakan forum diskusi dan berbagi pengalaman antarpelaku industri, akademisi, dan praktisi teknologi untuk meningkatkan kualitas praktik pengembangan perangkat lunak di era AI.";
-    
+
     $implementationText = $implementation ?? "Kegiatan seminar \"Stop Copy-Pasting, Start Engineering: The Correct Way to Use AI Tools\" telah terlaksana pada hari Jumat, 5 Desember 2025, bertempat di Auditorium ISTTS. Rangkaian acara dimulai dengan persiapan panitia dan registrasi peserta pada pukul 15.00 WIB. Acara dibuka secara resmi oleh pembawa acara (MC) pada pukul 15.30 WIB, yang kemudian dilanjutkan dengan sambutan pembuka dari Bu Esther. Memasuki agenda utama, materi disampaikan oleh Pak Alvin mengenai penggunaan perangkat kecerdasan buatan (Al tools) dengan pendekatan teknis yang tepat. Selanjutnya, kegiatan dilanjutkan dengan sesi interaktif berupa kuis Kahoot dan sesi tanya jawab yang dipandu oleh MC. Agenda berikutnya adalah pemberian apresiasi kepada pemenang kuis serta penyerahan penghargaan bagi peserta yang telah menyelesaikan sertifikasi Google Cloud. Sebelum acara berakhir, dilakukan sesi dokumentasi foto bersama antara narasumber dan peserta. Salah satu agenda penting dalam kegiatan ini adalah prosesi penandatanganan Nota Kesepahaman (MOU) antara pihak ISTTS dan NBS. Seluruh rangkaian acara ditutup pada pukul 17.25 WIB dan diakhiri dengan rapat evaluasi panitia.";
 
     // Evaluasi, Kritik, Saran
     $evaluationText = $evaluation ?? "Secara garis besar, acara \"Stop Copy-Pasting, Start Engineering\" berjalan dengan lancar dan materi yang dibawakan sebenarnya sangat diminati. Hal ini terbukti dari banyaknya pertanyaan yang masuk lewat aplikasi Slido. Namun, tantangan terbesar ada pada kedisiplinan peserta dan pengaturan waktu sesi tanya jawab.";
-    
+
     $critiqueItems = $critiques ?? [
         "Pembukaan Acara Mundur: Acara tidak bisa dimulai tepat waktu (on-time). Alasannya, saat jam seharusnya mulai, jumlah peserta yang hadir di dalam ruangan masih sedikit. Panitia terpaksa menunda pembukaan beberapa saat untuk menunggu peserta berkumpul agar kursi terisi.",
         "Peserta Keluar-Masuk Ruangan: Suasana di dalam ruangan agak terganggu karena pergerakan peserta yang tidak tertib. Terpantau banyak mahasiswa yang masuk, duduk sebentar, lalu keluar lagi saat acara sedang berlangsung. Hal ini membuat fokus peserta lain terganggu dan bangku kembali kosong di tengah acara.",
@@ -251,8 +252,8 @@
     $signatureCount = (int) ($signature_count ?? 4);
     $signatureCount = in_array($signatureCount, [2,4], true) ? $signatureCount : 4;
 
-    $signatureDate = $signature_date ?? ($realizationDate 
-        ? \Carbon\Carbon::parse($realizationDate)->addDays(14)->locale('id')->translatedFormat('d F Y') 
+    $signatureDate = $signature_date ?? ($realizationDate
+        ? \Carbon\Carbon::parse($realizationDate)->addDays(14)->locale('id')->translatedFormat('d F Y')
         : '19 Desember 2025');
 
     // Budgets Realisasi Fallback
@@ -302,7 +303,7 @@
 <!-- ================= COVER PAGE ================= -->
 <div class="cover">
     <h1 style="margin-top: 30px; margin-bottom: 20px; font-size: 22pt; font-weight: bold; letter-spacing: 1px;">LAPORAN PERTANGGUNG JAWABAN</h1>
-    
+
     <div style="margin: 40px 0; min-height: 80px;">
         <h2 style="margin: 0; font-size: 16pt; font-weight: bold; line-height: 1.4;">{{ strtoupper($eventName) }}</h2>
     </div>
@@ -316,7 +317,7 @@
         @if(!empty($organization_logo))
             <img src="{{ storage_path('app/public/' . $organization_logo) }}" style="max-width: 220px; max-height: 140px; margin-bottom: 20px;" alt="Logo Organisasi">
         @endif
-        
+
         <div style="margin-top: 10px;">
             @if($hasLogoIstts)
                 <img src="{{ $logoIsttsPath }}" style="width: 150px; height: auto;" alt="Logo ISTTS">
@@ -459,45 +460,60 @@
     <p style="text-align: justify; margin-bottom: 25px;">{!! nl2br(e($implementationText)) !!}</p>
 
     <h4 style="margin-bottom: 10px; font-weight: bold; text-transform: uppercase; font-size: 11pt;">Rundown Kegiatan</h4>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 8%;">NO.</th>
-                <th style="width: 25%;">WAKTUMULAI - SELESAI</th>
-                <th style="width: 18%;">DURASI</th>
-                <th>KEGIATAN</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($rundownItems as $index => $item)
-                @php
-                    $duration = '-';
-                    if (!empty($item->waktu_mulai) && !empty($item->waktu_selesai)) {
-                        try {
-                            $start = \Carbon\Carbon::parse($item->waktu_mulai);
-                            $end = \Carbon\Carbon::parse($item->waktu_selesai);
-                            $diffMins = $start->diffInMinutes($end);
-                            $h = floor($diffMins / 60);
-                            $m = $diffMins % 60;
-                            $duration = sprintf('%02d:%02d:00', $h, $m);
-                        } catch (\Exception $e) {
-                            $duration = $item->durasi ?? '-';
-                        }
-                    }
-                @endphp
+
+    @php
+        $groupedRundowns = collect($rundownItems)->groupBy(function($item) {
+            return $item->day_number ?? 1;
+        })->sortKeys();
+    @endphp
+
+    @foreach($groupedRundowns as $day => $items)
+        <table style="margin-bottom: 20px;">
+            <thead>
                 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">
-                        {{ substr((string) ($item->waktu_mulai ?? ''), 0, 5) }}
-                        -
-                        {{ substr((string) ($item->waktu_selesai ?? ''), 0, 5) }}
-                    </td>
-                    <td class="text-center">{{ $duration }}</td>
-                    <td>{{ $item->kegiatan ?? '-' }}</td>
+                    <th colspan="4" style="background-color: #ffffff; text-align: center; padding: 5px; font-size: 11pt; text-transform: uppercase;">
+                        HARI {{ $day }}
+                    </th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+                <tr style="background-color: #ffffff;">
+                    <th style="width: 8%; background-color: #ffffff;">NO.</th>
+                    <th style="width: 28%; background-color: #ffffff;">WAKTU MULAI - SELESAI</th>
+                    <th style="width: 18%; background-color: #ffffff;">DURASI</th>
+                    <th style="background-color: #ffffff;">KEGIATAN</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php $no = 1; @endphp
+                @foreach($items as $item)
+                    @php
+                        $duration = '-';
+                        if (!empty($item->waktu_mulai) && !empty($item->waktu_selesai)) {
+                            try {
+                                $start = \Carbon\Carbon::parse($item->waktu_mulai);
+                                $end = \Carbon\Carbon::parse($item->waktu_selesai);
+                                $diffMins = $start->diffInMinutes($end);
+                                $h = floor($diffMins / 60);
+                                $m = $diffMins % 60;
+                                $duration = sprintf('%02d:%02d:00', $h, $m);
+                            } catch (\Exception $e) {
+                                $duration = $item->durasi ?? '-';
+                            }
+                        }
+                    @endphp
+                    <tr>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td class="text-center">
+                            {{ substr((string) ($item->waktu_mulai ?? ''), 0, 5) }}
+                            -
+                            {{ substr((string) ($item->waktu_selesai ?? ''), 0, 5) }}
+                        </td>
+                        <td class="text-center">{{ $duration }}</td>
+                        <td>{{ $item->kegiatan ?? '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endforeach
 </div>
 
 
@@ -677,7 +693,7 @@
     </div>
 
     <div class="section-title">VII. EVALUASI & KRITIK SARAN</div>
-    
+
     <strong style="display: block; margin-bottom: 8px; text-transform: uppercase;">a. Evaluasi</strong>
     <p style="text-align: justify; margin-top: 0;">{!! nl2br(e($evaluationText)) !!}</p>
 
@@ -723,7 +739,7 @@
     </div>
 
     <div class="section-title">VIII. ANGGARAN DANA</div>
-    
+
     <h4 style="margin: 15px 0 8px; font-weight: bold; text-transform: uppercase; font-size: 11pt;">A. PEMASUKAN</h4>
     <table>
         <thead>
@@ -738,7 +754,7 @@
         <tbody>
             @php $totalPemasukan = 0; @endphp
             @foreach($pemasukanItems as $index => $pem)
-                @php 
+                @php
                     $nominal = (int)($pem->nominal ?? $pem->nominal_realisasi ?? 0);
                     $qty = (int)($pem->qty ?? 1);
                     $subTotal = (int)($pem->total ?? $pem->sub_total ?? ($nominal * $qty));
@@ -773,7 +789,7 @@
         <tbody>
             @php $totalPengeluaran = 0; @endphp
             @foreach($pengeluaranItems as $index => $peng)
-                @php 
+                @php
                     $nominal = (int)($peng->nominal ?? $peng->nominal_realisasi ?? 0);
                     $qty = (int)($peng->qty ?? 1);
                     $subTotal = (int)($peng->total ?? $peng->sub_total ?? ($nominal * $qty));

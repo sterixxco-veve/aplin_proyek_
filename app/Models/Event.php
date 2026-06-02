@@ -140,19 +140,34 @@ class Event extends Model
     {
         $userId = $user instanceof User ? $user->id_user : $user;
 
-        return $this->id_creator === $userId;
+        if ($this->id_creator === $userId) {
+            return true;
+        }
+
+        return $this->hasCommitteeRole($user, $this->bphRoles());
     }
 
-    protected function operationalRoles(): array
+    protected function bphRoles(): array
     {
         return [
-            'koordinator',
             'ketua',
             'wakil ketua',
             'sekretaris',
             'bendahara',
             'ketua acara',
         ];
+    }
+
+    protected function koorRoles(): array
+    {
+        return [
+            'koordinator',
+        ];
+    }
+
+    protected function operationalRoles(): array
+    {
+        return array_merge($this->bphRoles(), $this->koorRoles());
     }
 
     protected function hasCommitteeRole($user, array $roles): bool

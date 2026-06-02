@@ -4,7 +4,10 @@
         ?? ($event->financial_summary ?? ['total_budget' => 0, 'total_expense' => 0, 'remaining' => 0]);
     $canManageFinance = $event->canManageOperationalBy(auth()->user());
     $reimbursedCount = $expenses->where('is_reimbursed', true)->count();
-    $pendingReimburseCount = $expenses->where('is_reimbursed', false)->count();
+    $pendingReimburseCount = $expenses
+        ->where('approval_status', 'accepted')
+        ->where('is_reimbursed', false)
+        ->count();
 @endphp
 
 <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
@@ -152,25 +155,32 @@
                 <tbody>
                     @forelse($expenses as $exp)
                         @php
+                            // Normalisasi status lama bila pernah ada data "declined".
+                            // UI menampilkan Declined, tetapi database seharusnya menyimpan rejected.
                             $approvalStatus = $exp->approval_status ?? 'pending';
-                            $isDeclined = in_array($approvalStatus, ['rejected', 'declined'], true);
-                            $isRealisasi = $approvalStatus === 'accepted' || $exp->is_reimbursed;
+                            $normalizedStatus = $approvalStatus === 'declined' ? 'rejected' : $approvalStatus;
+                            $isDeclined = $normalizedStatus === 'rejected';
+                            $isAccepted = $normalizedStatus === 'accepted';
+                            $isReimbursed = $isAccepted && (bool) $exp->is_reimbursed;
+                            $isRealisasi = $isAccepted;
+
                             if ($isRealisasi) {
                                 $total += $exp->sub_total;
                             }
+
                             $displayStatus = $isDeclined
                                 ? 'declined'
-                                : ($exp->is_reimbursed ? 'reimbursed' : $approvalStatus);
+                                : ($isReimbursed ? 'reimbursed' : $normalizedStatus);
                             $statusLabel = $isDeclined
                                 ? 'Declined'
-                                : ($exp->is_reimbursed
+                                : ($isReimbursed
                                     ? 'Reimbursed'
-                                    : ($approvalStatus === 'accepted' ? 'Accepted' : 'Pending'));
+                                    : ($isAccepted ? 'Accepted' : 'Pending'));
                             $statusClass = $isDeclined
                                 ? 'bg-danger-subtle text-danger'
-                                : ($exp->is_reimbursed
+                                : ($isReimbursed
                                     ? 'bg-success-subtle text-success'
-                                    : ($approvalStatus === 'accepted'
+                                    : ($isAccepted
                                         ? 'bg-primary-subtle text-primary'
                                         : 'bg-warning-subtle text-warning'));
                         @endphp
@@ -203,10 +213,10 @@
                             <td class="text-nowrap">
                                 @if($canManageFinance)
                                     <select class="form-select form-select-sm status-dropdown" data-id="{{ $exp->id_expense }}" data-current-status="{{ $displayStatus }}" style="width: auto; min-width: 120px;">
-                                        <option value="pending" {{ $approvalStatus === 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="accepted" {{ $approvalStatus === 'accepted' && !$exp->is_reimbursed ? 'selected' : '' }}>Accepted</option>
+                                        <option value="pending" {{ $normalizedStatus === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="accepted" {{ $isAccepted && !$isReimbursed ? 'selected' : '' }}>Accepted</option>
                                         <option value="declined" {{ $isDeclined ? 'selected' : '' }}>Declined</option>
-                                        <option value="reimbursed" {{ $exp->is_reimbursed ? 'selected' : '' }}>Reimbursed</option>
+                                        <option value="reimbursed" {{ $isReimbursed ? 'selected' : '' }}>Reimbursed</option>
                                     </select>
                                 @else
                                     <span class="badge {{ $statusClass }} rounded-pill">{{ $statusLabel }}</span>
