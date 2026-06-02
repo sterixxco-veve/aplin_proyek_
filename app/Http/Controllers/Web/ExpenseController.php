@@ -32,7 +32,7 @@ class ExpenseController extends Controller
     public function page($eventId)
     {
         $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
-        $summary = $event->financial_summary;
+        $financial_summary = $event->financial_summary;
         $expenses = ExpenseReport::with(['category', 'user'])
             ->where('id_event', $eventId)
             ->latest('id_expense')
@@ -45,7 +45,7 @@ class ExpenseController extends Controller
             'event',
             'expenses',
             'eventId',
-            'summary',
+            'financial_summary',
             'categories', // 🔥 WAJIB
             'expenseCategories'
         ));
@@ -223,6 +223,8 @@ class ExpenseController extends Controller
 
     public function store(Request $request, $eventId)
     {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+
         $request->validate([
             'nama_pengeluaran' => 'required',
             'id_expense_category' => 'required',
@@ -239,7 +241,7 @@ class ExpenseController extends Controller
         }
 
        ExpenseReport::create([
-            'id_event' => $eventId,
+           'id_event' => $event->id_event,
             'id_user' => auth()->user()->id_user,
             'id_expense_category' => $request->id_expense_category, // 🔥 WAJIB
             'nama_pengeluaran' => $request->nama_pengeluaran,
@@ -255,8 +257,9 @@ class ExpenseController extends Controller
     public function update(Request $request, $id)
     {
         $expense = ExpenseReport::findOrFail($id);
+        $event = Event::visibleTo(auth()->user())->findOrFail($expense->id_event);
 
-        abort_if($expense->isLockedForModification(), 403, 'Expense yang sudah accepted/declined tidak bisa diubah');
+        abort_unless($event->canManageOperationalBy(auth()->user()), 403, 'Anda tidak punya akses untuk mengubah expense ini.');
 
         $request->validate([
             'nama_pengeluaran' => 'required',
@@ -280,8 +283,9 @@ class ExpenseController extends Controller
     public function destroy($id)
     {
         $expense = ExpenseReport::findOrFail($id);
+        $event = Event::visibleTo(auth()->user())->findOrFail($expense->id_event);
 
-        abort_if($expense->isLockedForModification(), 403, 'Expense yang sudah accepted/declined tidak bisa dihapus');
+        abort_unless($event->canManageOperationalBy(auth()->user()), 403, 'Anda tidak punya akses untuk menghapus expense ini.');
 
         // optional: delete file juga
         if ($expense->bukti_nota_path) {
@@ -297,23 +301,31 @@ class ExpenseController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,accepted,declined,reimbursed',
+            'rejection_reason' => 'required_if:status,declined|nullable|string|max:1000',
         ]);
 
         $expense = ExpenseReport::findOrFail($id);
+        $event = Event::visibleTo(auth()->user())->findOrFail($expense->id_event);
+
+        abort_unless($event->canManageOperationalBy(auth()->user()), 403, 'Anda tidak punya akses untuk mengubah status expense ini.');
 
         if ($request->input('status') === 'declined') {
-            $expense->approval_status = 'declined';
+            $expense->approval_status = 'rejected';
             $expense->is_reimbursed = false;
+            $expense->rejection_reason = trim((string) $request->input('rejection_reason', ''));
         } elseif ($request->input('status') === 'accepted') {
             $expense->approval_status = 'accepted';
             $expense->is_reimbursed = false;
+            $expense->rejection_reason = null;
         } elseif ($request->input('status') === 'reimbursed') {
             $expense->approval_status = 'accepted';
             $expense->is_reimbursed = true;
+            $expense->rejection_reason = null;
         } else {
             // pending
             $expense->approval_status = 'pending';
             $expense->is_reimbursed = false;
+            $expense->rejection_reason = null;
         }
 
         $expense->save();

@@ -143,53 +143,61 @@ class Event extends Model
         return $this->id_creator === $userId;
     }
 
-    public function canManageRundownBy($user): bool
+    protected function operationalRoles(): array
     {
-        $userId = $user instanceof User ? $user->id_user : $user;
-
-        if ($this->id_creator === $userId) {
-            return true;
-        }
-
-        return $this->committees()
-            ->where('id_user', $userId)
-            ->where('jabatan', 'koordinator')
-            ->exists();
+        return [
+            'koordinator',
+            'ketua',
+            'wakil ketua',
+            'sekretaris',
+            'bendahara',
+            'ketua acara',
+        ];
     }
 
-    public function canManagePartnerBy($user): bool
-    {
-        return $this->canManageRundownBy($user);
-    }
-
-    public function canManageCertificateBy($user): bool
+    protected function hasCommitteeRole($user, array $roles): bool
     {
         $userId = $user instanceof User ? $user->id_user : $user;
-
-        if ($this->id_creator === $userId) {
-            return true;
-        }
 
         return $this->committees()
             ->where('id_user', $userId)
             ->get()
-            ->contains(function ($committee) {
+            ->contains(function ($committee) use ($roles) {
                 $role = Str::lower(trim($committee->jabatan ?? ''));
 
-                return in_array($role, [
-                    'koordinator',
-                    'ketua',
-                    'wakil ketua',
-                    'sekretaris',
-                    'bendahara',
-                    'ketua acara',
-                ], true);
+                return in_array($role, $roles, true);
             });
+    }
+
+    public function canManageOperationalBy($user): bool
+    {
+        $userId = $user instanceof User ? $user->id_user : $user;
+
+        if ($this->id_creator === $userId) {
+            return true;
+        }
+
+        return $this->hasCommitteeRole($user, $this->operationalRoles());
+    }
+
+    public function canManageRundownBy($user): bool
+    {
+        return $this->canManageOperationalBy($user);
+    }
+
+    public function canManagePartnerBy($user): bool
+    {
+        return $this->canManageOperationalBy($user);
+    }
+
+    public function canManageCertificateBy($user): bool
+    {
+        return $this->canManageOperationalBy($user);
     }
 
     public function canManageDocumentBy($user): bool
     {
-        return $this->canManageRundownBy($user);
+        return $this->canManageOperationalBy($user);
     }
 
     
@@ -215,7 +223,12 @@ class Event extends Model
 
     public function getTotalExpenseAttribute()
     {
-        return (float) $this->expenses()->sum('sub_total');
+        return (float) $this->expenses()
+            ->where(function ($query) {
+                $query->where('approval_status', 'accepted')
+                    ->orWhere('is_reimbursed', true);
+            })
+            ->sum('sub_total');
     }
 
     public function getRemainingBudgetAttribute()

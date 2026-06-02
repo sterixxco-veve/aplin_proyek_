@@ -51,6 +51,6 @@ class ExpenseReport extends Model
 
     public function isLockedForModification(): bool
     {
-        return in_array($this->approval_status, ['accepted', 'rejected', 'declined'], true);
+        return false;
     }
 }
