@@ -51,20 +51,19 @@
 
                             {{-- Event Info --}}
                             <h5 class="fw-bold mb-3 text-dark">{{ $event->nama_event }}</h5>
-                            
                             <div class="mb-4">
                                 <div class="d-flex align-items-center mb-2 text-muted small">
                                     <i class="bi bi-calendar3 me-2 text-muted"></i>
                                     <span>{{ \Carbon\Carbon::parse($event->tgl_mulai)->format('M d, Y') }}</span>
                                 </div>
-                                <div class="d-flex align-items-center mb-2 text-muted small">
+                                <!-- <div class="d-flex align-items-center mb-2 text-muted small">
                                     <i class="bi bi-geo-alt me-2 text-muted"></i>
-                                    <span>{{ $event->lokasi ?? 'Jakarta Convention Center' }}</span>
-                                </div>
-                                <div class="d-flex align-items-center text-muted small">
+                                    <span>{{ $event->location ?? 'Jakarta Convention Center' }}</span>
+                                </div> -->
+                                <!-- <div class="d-flex align-items-center text-muted small">
                                     <i class="bi bi-people me-2 text-muted"></i>
                                     <span>{{ $event->attendees_count ?? '250' }} attendees</span>
-                                </div>
+                                </div> -->
                             </div>
 
                             {{-- Member Avatars --}}
