@@ -70,7 +70,7 @@
         .header-proposal {
             width: 100%;
             border-bottom: 4px solid #000;
-            padding-bottom: 8px;
+            padding-bottom: 0px;
             margin-bottom: 25px;
             page-break-inside: avoid;
         }
@@ -78,6 +78,7 @@
         .header-table {
             width: 100%;
             border: none;
+            margin-bottom: 0;
         }
 
         .header-table td {
@@ -86,12 +87,12 @@
         }
 
         .header-logo-left {
-            width: 90px;
+            width: 110px;
             text-align: center;
         }
 
         .header-logo-right {
-            width: 120px;
+            width: 110px;
             text-align: center;
         }
 
@@ -102,19 +103,19 @@
 
         .header-title h2 {
             margin: 0;
-            font-size: 13pt;
+            font-size: 16pt;
             font-weight: bold;
         }
 
         .header-title h3 {
             margin: 3px 0;
-            font-size: 11pt;
+            font-size: 14pt;
             font-weight: bold;
         }
 
         .header-title p {
             margin: 0;
-            font-size: 8.5pt;
+            font-size: 12pt;
         }
 
         /* Area Tanda Tangan */
@@ -380,45 +381,60 @@
     <p style="text-align: justify; margin-bottom: 25px;">{!! nl2br(e($descriptionText)) !!}</p>
 
     <h4 style="margin-bottom: 10px; font-weight: bold; text-transform: uppercase; font-size: 11pt;">Rundown Kegiatan</h4>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 8%;">NO.</th>
-                <th style="width: 25%;">WAKTUMULAI - SELESAI</th>
-                <th style="width: 18%;">DURASI</th>
-                <th>KEGIATAN</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($rundownItems as $index => $item)
-                @php
-                    $duration = '-';
-                    if (!empty($item->waktu_mulai) && !empty($item->waktu_selesai)) {
-                        try {
-                            $start = \Carbon\Carbon::parse($item->waktu_mulai);
-                            $end = \Carbon\Carbon::parse($item->waktu_selesai);
-                            $diffMins = $start->diffInMinutes($end);
-                            $h = floor($diffMins / 60);
-                            $m = $diffMins % 60;
-                            $duration = sprintf('%02d:%02d:00', $h, $m);
-                        } catch (\Exception $e) {
-                            $duration = $item->durasi ?? '-';
-                        }
-                    }
-                @endphp
+    
+    @php
+        $groupedRundowns = collect($rundownItems)->groupBy(function($item) {
+            return $item->day_number ?? 1;
+        })->sortKeys();
+    @endphp
+
+    @foreach($groupedRundowns as $day => $items)
+        <table style="margin-bottom: 20px;">
+            <thead>
                 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">
-                        {{ substr((string) ($item->waktu_mulai ?? ''), 0, 5) }}
-                        -
-                        {{ substr((string) ($item->waktu_selesai ?? ''), 0, 5) }}
-                    </td>
-                    <td class="text-center">{{ $duration }}</td>
-                    <td>{{ $item->kegiatan ?? '-' }}</td>
+                    <th colspan="4" style="background-color: #ffffff; text-align: center; padding: 5px; font-size: 11pt; text-transform: uppercase;">
+                        HARI {{ $day }}
+                    </th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+                <tr style="background-color: #ffffff;">
+                    <th style="width: 8%; background-color: #ffffff;">NO.</th>
+                    <th style="width: 28%; background-color: #ffffff;">WAKTU MULAI - SELESAI</th>
+                    <th style="width: 18%; background-color: #ffffff;">DURASI</th>
+                    <th style="background-color: #ffffff;">KEGIATAN</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php $no = 1; @endphp
+                @foreach($items as $item)
+                    @php
+                        $duration = '-';
+                        if (!empty($item->waktu_mulai) && !empty($item->waktu_selesai)) {
+                            try {
+                                $start = \Carbon\Carbon::parse($item->waktu_mulai);
+                                $end = \Carbon\Carbon::parse($item->waktu_selesai);
+                                $diffMins = $start->diffInMinutes($end);
+                                $h = floor($diffMins / 60);
+                                $m = $diffMins % 60;
+                                $duration = sprintf('%02d:%02d:00', $h, $m);
+                            } catch (\Exception $e) {
+                                $duration = $item->durasi ?? '-';
+                            }
+                        }
+                    @endphp
+                    <tr>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td class="text-center">
+                            {{ substr((string) ($item->waktu_mulai ?? ''), 0, 5) }}
+                            -
+                            {{ substr((string) ($item->waktu_selesai ?? ''), 0, 5) }}
+                        </td>
+                        <td class="text-center">{{ $duration }}</td>
+                        <td>{{ $item->kegiatan ?? '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endforeach
 </div>
 
 
