@@ -66,29 +66,7 @@
             </div>
     </div>
 
-    <div class="row g-4 mb-5">
-            @php
-                $finance = $financeSummary ?? ['total_budget' => 0, 'total_expense' => 0, 'remaining' => 0];
-            @endphp
-            <div class="col-md-4">
-                <div class="card p-4 border-0 shadow-sm h-100">
-                    <small class="text-muted fw-medium d-block mb-1">Total Proposal</small>
-                    <h3 class="fw-bold mb-0 text-dark">Rp {{ number_format($finance['total_budget']) }}</h3>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card p-4 border-0 shadow-sm h-100">
-                    <small class="text-muted fw-medium d-block mb-1">Total Realisasi</small>
-                    <h3 class="fw-bold mb-0 text-danger">Rp {{ number_format($finance['total_expense']) }}</h3>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card p-4 border-0 shadow-sm h-100">
-                    <small class="text-muted fw-medium d-block mb-1">Sisa Anggaran</small>
-                    <h3 class="fw-bold mb-0 text-success">Rp {{ number_format($finance['remaining']) }}</h3>
-                </div>
-            </div>
-    </div>
+
 
     <div class="row g-4 mb-5">
 
