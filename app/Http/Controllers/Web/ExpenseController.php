@@ -32,7 +32,7 @@ class ExpenseController extends Controller
     public function page($eventId)
     {
         $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
-        $summary = $event->financial_summary;
+        $financial_summary = $event->financial_summary;
         $expenses = ExpenseReport::with(['category', 'user'])
             ->where('id_event', $eventId)
             ->latest('id_expense')
@@ -45,7 +45,7 @@ class ExpenseController extends Controller
             'event',
             'expenses',
             'eventId',
-            'summary',
+            'financial_summary',
             'categories', // 🔥 WAJIB
             'expenseCategories'
         ));
@@ -188,6 +188,23 @@ class ExpenseController extends Controller
 
             $isReimbursed = in_array(strtolower((string) ($row['is_reimbursed'] ?? '0')), ['1', 'true', 'yes', 'ya'], true);
 
+            // Normalisasi status UI/CSV ke status database.
+            // UI boleh memakai "declined", tetapi database tetap memakai "rejected".
+            // Reimbursed secara logika harus sudah accepted.
+            if ($isReimbursed) {
+                $approvalStatus = 'accepted';
+            }
+
+            if ($approvalStatus === 'rejected') {
+                $isReimbursed = false;
+            }
+
+            $rejectionReason = $approvalStatus === 'rejected'
+                ? ($row['rejection_reason'] ?? null)
+                : null;
+
+            $isAccepted = $approvalStatus === 'accepted';
+
             $rows[] = [
                 'id_event' => $event->id_event,
                 'id_user' => auth()->user()->id_user,
@@ -198,9 +215,9 @@ class ExpenseController extends Controller
                 'nomor_rekening' => $nomorRekening,
                 'bukti_nota_path' => $row['bukti_nota_path'] ?? null,
                 'approval_status' => $approvalStatus,
-                'rejection_reason' => $row['rejection_reason'] ?? null,
-                'approved_by' => $approvalStatus === 'accepted' ? auth()->user()->id_user : null,
-                'approved_at' => $approvalStatus === 'accepted' ? now() : null,
+                'rejection_reason' => $rejectionReason,
+                'approved_by' => $isAccepted ? auth()->user()->id_user : null,
+                'approved_at' => $isAccepted ? now() : null,
                 'is_reimbursed' => $isReimbursed,
                 'reimbursed_at' => $isReimbursed ? now() : null,
             ];
@@ -223,6 +240,8 @@ class ExpenseController extends Controller
 
     public function store(Request $request, $eventId)
     {
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+
         $request->validate([
             'nama_pengeluaran' => 'required',
             'id_expense_category' => 'required',
@@ -238,15 +257,21 @@ class ExpenseController extends Controller
             $path = $request->file('bukti_nota')->store('expenses', 'public');
         }
 
-       ExpenseReport::create([
-            'id_event' => $eventId,
+        ExpenseReport::create([
+            'id_event' => $event->id_event,
             'id_user' => auth()->user()->id_user,
             'id_expense_category' => $request->id_expense_category, // 🔥 WAJIB
             'nama_pengeluaran' => $request->nama_pengeluaran,
             'nominal' => $request->nominal,
             'qty' => $request->qty,
             'bukti_nota_path' => $path,
-            'nomor_rekening' => $request->nomor_rekening
+            'nomor_rekening' => $request->nomor_rekening,
+            'approval_status' => 'pending',
+            'rejection_reason' => null,
+            'approved_by' => null,
+            'approved_at' => null,
+            'is_reimbursed' => false,
+            'reimbursed_at' => null,
         ]);
 
         return back();
@@ -255,8 +280,9 @@ class ExpenseController extends Controller
     public function update(Request $request, $id)
     {
         $expense = ExpenseReport::findOrFail($id);
+        $event = Event::visibleTo(auth()->user())->findOrFail($expense->id_event);
 
-        abort_if($expense->isLockedForModification(), 403, 'Expense yang sudah accepted/declined tidak bisa diubah');
+        abort_unless($event->canManageOperationalBy(auth()->user()), 403, 'Anda tidak punya akses untuk mengubah expense ini.');
 
         $request->validate([
             'nama_pengeluaran' => 'required',
@@ -280,8 +306,9 @@ class ExpenseController extends Controller
     public function destroy($id)
     {
         $expense = ExpenseReport::findOrFail($id);
+        $event = Event::visibleTo(auth()->user())->findOrFail($expense->id_event);
 
-        abort_if($expense->isLockedForModification(), 403, 'Expense yang sudah accepted/declined tidak bisa dihapus');
+        abort_unless($event->canManageOperationalBy(auth()->user()), 403, 'Anda tidak punya akses untuk menghapus expense ini.');
 
         // optional: delete file juga
         if ($expense->bukti_nota_path) {
@@ -296,31 +323,61 @@ class ExpenseController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
+            // "declined" hanya dipakai oleh UI. Nilai yang disimpan ke database tetap "rejected".
             'status' => 'required|in:pending,accepted,declined,reimbursed',
+            'rejection_reason' => 'required_if:status,declined|nullable|string|max:1000',
         ]);
 
         $expense = ExpenseReport::findOrFail($id);
+        $event = Event::visibleTo(auth()->user())->findOrFail($expense->id_event);
 
-        if ($request->input('status') === 'declined') {
-            $expense->approval_status = 'declined';
+        abort_unless($event->canManageOperationalBy(auth()->user()), 403, 'Anda tidak punya akses untuk mengubah status expense ini.');
+
+        $status = strtolower((string) $request->input('status'));
+
+        if ($status === 'declined') {
+            $expense->approval_status = 'rejected';
             $expense->is_reimbursed = false;
-        } elseif ($request->input('status') === 'accepted') {
+            $expense->rejection_reason = trim((string) $request->input('rejection_reason', ''));
+            $expense->approved_by = null;
+            $expense->approved_at = null;
+            $expense->reimbursed_at = null;
+        } elseif ($status === 'accepted') {
             $expense->approval_status = 'accepted';
             $expense->is_reimbursed = false;
-        } elseif ($request->input('status') === 'reimbursed') {
+            $expense->rejection_reason = null;
+            $expense->approved_by = auth()->user()->id_user;
+            $expense->approved_at = $expense->approved_at ?? now();
+            $expense->reimbursed_at = null;
+        } elseif ($status === 'reimbursed') {
             $expense->approval_status = 'accepted';
             $expense->is_reimbursed = true;
+            $expense->rejection_reason = null;
+            $expense->approved_by = $expense->approved_by ?: auth()->user()->id_user;
+            $expense->approved_at = $expense->approved_at ?? now();
+            $expense->reimbursed_at = $expense->reimbursed_at ?? now();
         } else {
             // pending
             $expense->approval_status = 'pending';
             $expense->is_reimbursed = false;
+            $expense->rejection_reason = null;
+            $expense->approved_by = null;
+            $expense->approved_at = null;
+            $expense->reimbursed_at = null;
         }
 
         $expense->save();
 
+        $displayStatus = $expense->approval_status === 'rejected'
+            ? 'declined'
+            : ($expense->is_reimbursed ? 'reimbursed' : $expense->approval_status);
+
         return response()->json([
             'success' => true,
             'message' => 'Status updated',
+            'approval_status' => $expense->approval_status,
+            'display_status' => $displayStatus,
+            'is_reimbursed' => (bool) $expense->is_reimbursed,
         ]);
     }
 }

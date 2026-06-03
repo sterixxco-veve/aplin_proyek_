@@ -143,7 +143,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::put('/expenses/{id}', [ExpenseController::class, 'update']);
     Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy']);
-    Route::post('/expenses/{id}/status', [ExpenseController::class, 'updateStatus']);
+    Route::post('/expenses/{id}/status', [ExpenseController::class, 'updateStatus']) ->middleware('auth') ->name('web.expenses.status');
 
     Route::get('/expense-categories', [ExpenseCategoryController::class, 'index']);
     Route::post('/expense-categories', [ExpenseCategoryController::class, 'store']);

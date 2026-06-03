@@ -1,7 +1,13 @@
 @php
-    $financial = $financial_summary ?? ['total_budget' => 0, 'total_expense' => 0, 'remaining' => 0];
+    $financial = $financial_summary
+        ?? $summary
+        ?? ($event->financial_summary ?? ['total_budget' => 0, 'total_expense' => 0, 'remaining' => 0]);
+    $canManageFinance = $event->canManageOperationalBy(auth()->user());
     $reimbursedCount = $expenses->where('is_reimbursed', true)->count();
-    $pendingReimburseCount = $expenses->where('is_reimbursed', false)->count();
+    $pendingReimburseCount = $expenses
+        ->where('approval_status', 'accepted')
+        ->where('is_reimbursed', false)
+        ->count();
 @endphp
 
 <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
@@ -149,20 +155,32 @@
                 <tbody>
                     @forelse($expenses as $exp)
                         @php
-                            $total += $exp->sub_total;
+                            // Normalisasi status lama bila pernah ada data "declined".
+                            // UI menampilkan Declined, tetapi database seharusnya menyimpan rejected.
                             $approvalStatus = $exp->approval_status ?? 'pending';
-                            $isDeclined = in_array($approvalStatus, ['rejected', 'declined'], true);
-                            $isLocked = in_array($approvalStatus, ['accepted', 'rejected', 'declined'], true);
+                            $normalizedStatus = $approvalStatus === 'declined' ? 'rejected' : $approvalStatus;
+                            $isDeclined = $normalizedStatus === 'rejected';
+                            $isAccepted = $normalizedStatus === 'accepted';
+                            $isReimbursed = $isAccepted && (bool) $exp->is_reimbursed;
+                            $isRealisasi = $isAccepted;
+
+                            if ($isRealisasi) {
+                                $total += $exp->sub_total;
+                            }
+
+                            $displayStatus = $isDeclined
+                                ? 'declined'
+                                : ($isReimbursed ? 'reimbursed' : $normalizedStatus);
                             $statusLabel = $isDeclined
                                 ? 'Declined'
-                                : ($exp->is_reimbursed
+                                : ($isReimbursed
                                     ? 'Reimbursed'
-                                    : ($approvalStatus === 'accepted' ? 'Accepted' : 'Pending'));
+                                    : ($isAccepted ? 'Accepted' : 'Pending'));
                             $statusClass = $isDeclined
                                 ? 'bg-danger-subtle text-danger'
-                                : ($exp->is_reimbursed
+                                : ($isReimbursed
                                     ? 'bg-success-subtle text-success'
-                                    : ($approvalStatus === 'accepted'
+                                    : ($isAccepted
                                         ? 'bg-primary-subtle text-primary'
                                         : 'bg-warning-subtle text-warning'));
                         @endphp
@@ -193,12 +211,16 @@
                                 @endif
                             </td>
                             <td class="text-nowrap">
-                                <select class="form-select form-select-sm status-dropdown" data-id="{{ $exp->id_expense }}" style="width: auto; min-width: 120px;">
-                                    <option value="pending" {{ $approvalStatus === 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="accepted" {{ $approvalStatus === 'accepted' && !$exp->is_reimbursed ? 'selected' : '' }}>Accepted</option>
-                                    <option value="declined" {{ $approvalStatus === 'declined' ? 'selected' : '' }}>Declined</option>
-                                    <option value="reimbursed" {{ $exp->is_reimbursed ? 'selected' : '' }}>Reimbursed</option>
-                                </select>
+                                @if($canManageFinance)
+                                    <select class="form-select form-select-sm status-dropdown" data-id="{{ $exp->id_expense }}" data-current-status="{{ $displayStatus }}" style="width: auto; min-width: 120px;">
+                                        <option value="pending" {{ $normalizedStatus === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="accepted" {{ $isAccepted && !$isReimbursed ? 'selected' : '' }}>Accepted</option>
+                                        <option value="declined" {{ $isDeclined ? 'selected' : '' }}>Declined</option>
+                                        <option value="reimbursed" {{ $isReimbursed ? 'selected' : '' }}>Reimbursed</option>
+                                    </select>
+                                @else
+                                    <span class="badge {{ $statusClass }} rounded-pill">{{ $statusLabel }}</span>
+                                @endif
                             </td>
                             <td>
                                 @if($isDeclined && filled($exp->rejection_reason))
@@ -208,9 +230,7 @@
                                 @endif
                             </td>
                             <td class="text-end pe-4 text-nowrap">
-                                @if($isLocked)
-                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">Terkunci</span>
-                                @else
+                                @if($canManageFinance)
                                     <div class="d-flex gap-2 justify-content-end">
                                         <button
                                             class="btn btn-sm btn-outline-warning edit-btn"
@@ -230,7 +250,36 @@
                                             <button class="btn btn-sm btn-outline-danger">Hapus</button>
                                         </form>
                                     </div>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">Upload only</span>
                                 @endif
+                            </td>
+                        </tr>
+                        <tr id="decline-row-{{ $exp->id_expense }}" class="decline-row d-none">
+                            <td colspan="9" class="px-4 pb-4">
+                                <div class="card border-danger-subtle bg-danger-subtle">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold mb-1">Alasan Declined</div>
+                                                <p class="text-muted small mb-2">Tuliskan alasan penolakan sebelum status disimpan.</p>
+                                                <textarea
+                                                    class="form-control decline-reason-input"
+                                                    rows="3"
+                                                    data-id="{{ $exp->id_expense }}"
+                                                    placeholder="Contoh: Tidak sesuai budget proposal">{{ $exp->rejection_reason }}</textarea>
+                                            </div>
+                                            <div class="d-flex gap-2 ms-auto">
+                                                <button type="button" class="btn btn-light cancel-decline-btn" data-id="{{ $exp->id_expense }}">
+                                                    Batal
+                                                </button>
+                                                <button type="button" class="btn btn-danger save-decline-btn" data-id="{{ $exp->id_expense }}">
+                                                    Simpan Alasan
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -274,31 +323,112 @@ document.querySelectorAll('.status-dropdown').forEach(select => {
     select.addEventListener('change', function() {
         const expenseId = this.dataset.id;
         const newStatus = this.value;
-        const selectElement = this;
+        const previousStatus = this.dataset.currentStatus || 'pending';
 
-        fetch(`/expenses/${expenseId}/status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            },
-            body: JSON.stringify({ status: newStatus }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Optional: show toast/alert
-                console.log('Status updated:', newStatus);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal update status');
-            // Revert the dropdown
-            location.reload();
+        if (newStatus === 'declined') {
+            showDeclineCard(expenseId);
+            return;
+        }
+
+        hideDeclineCard(expenseId);
+        updateExpenseStatus(expenseId, newStatus, null, () => {
+            window.location.reload();
+        }, () => {
+            this.value = previousStatus;
         });
     });
 });
+
+document.querySelectorAll('.save-decline-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const expenseId = this.dataset.id;
+        const textarea = document.querySelector(`.decline-reason-input[data-id="${expenseId}"]`);
+        const reason = textarea?.value?.trim();
+        const select = document.querySelector(`.status-dropdown[data-id="${expenseId}"]`);
+
+        if (!reason) {
+            alert('Alasan declined wajib diisi.');
+            textarea?.focus();
+            return;
+        }
+
+        updateExpenseStatus(expenseId, 'declined', reason, () => {
+            window.location.reload();
+        }, () => {
+            if (select) {
+                select.value = select.dataset.currentStatus || 'pending';
+            }
+        });
+    });
+});
+
+document.querySelectorAll('.cancel-decline-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const expenseId = this.dataset.id;
+        const select = document.querySelector(`.status-dropdown[data-id="${expenseId}"]`);
+        if (select) {
+            select.value = select.dataset.currentStatus || 'pending';
+        }
+        hideDeclineCard(expenseId);
+    });
+});
+
+function showDeclineCard(expenseId) {
+    const row = document.getElementById(`decline-row-${expenseId}`);
+    if (row) {
+        row.classList.remove('d-none');
+    }
+}
+
+function hideDeclineCard(expenseId) {
+    const row = document.getElementById(`decline-row-${expenseId}`);
+    if (row) {
+        row.classList.add('d-none');
+    }
+}
+
+function updateExpenseStatus(expenseId, status, rejectionReason = null, onSuccess = null, onError = null) {
+    fetch(`/expenses/${expenseId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({
+            status,
+            rejection_reason: rejectionReason,
+        }),
+    })
+    .then(async response => {
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Gagal update status');
+            }
+
+            return data;
+        }
+
+        const text = await response.text();
+        throw new Error(text || 'Gagal update status');
+    })
+    .then(data => {
+        if (typeof onSuccess === 'function') {
+            onSuccess(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(error.message || 'Gagal update status');
+        if (typeof onError === 'function') {
+            onError(error);
+        }
+    });
+}
 
 // EDIT CLICK
 document.querySelectorAll('.edit-btn').forEach(btn => {
