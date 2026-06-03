@@ -152,8 +152,13 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::get('/divisions', [DivisionController::class, 'index']);
-Route::post('/divisions', [DivisionController::class, 'store']);
+    Route::get('/divisions', [DivisionController::class, 'index']);
+    Route::post('/divisions', [DivisionController::class, 'store']);
+    Route::prefix('divisions')->name('divisions.')->group(function () {
+    Route::get('/{id}/edit', [DivisionController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [DivisionController::class, 'update'])->name('update');
+    Route::delete('/{id}', [DivisionController::class, 'destroy'])->name('destroy');
+});
 
 
 require __DIR__.'/auth.php';
