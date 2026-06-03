@@ -12,6 +12,7 @@ use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
 use BaconQrCode\Writer;
 use Illuminate\Support\Facades\Storage;
 
+
 class CertificateService
 {
     /**
@@ -40,7 +41,8 @@ class CertificateService
 
             // Generate QR code sebagai PNG
             $qrPath = storage_path('app/public/temp_qr_' . uniqid() . '.png');
-            $this->generateQrCode($qrToken, $qrPath);
+            $verificationUrl = url('/verify-certificate/' . $qrToken);
+            $this->generateQrCode($verificationUrl,$qrPath);
 
             // Overlay nama penerima berdasarkan config atau default
             try {
@@ -77,7 +79,7 @@ class CertificateService
                       switch ($textBox['type'] ?? 'static') {
 
                         case 'recipient_name':
-                            $textContent = $namaOrang;
+                            $textContent = $this->shortenName($namaOrang);
                             break;
 
                         case 'recipient_email':
@@ -93,56 +95,58 @@ class CertificateService
                             (int)($textBox['fontSize'] * $scaleX)
                         );
 
-                        $bbox = imagettfbbox(
-                            $fontSize,
-                            0,
-                            public_path('fonts/GoogleSans-Bold.ttf'),
-                            $textContent
-                        );
+                        // $bbox = imagettfbbox(
+                        //     $fontSize,
+                        //     0,
+                        //     public_path('fonts/GoogleSans-Bold.ttf'),
+                        //     $textContent
+                        // );
 
-                        $textWidth = $bbox[2] - $bbox[0];  
+                        // $textWidth = $bbox[2] - $bbox[0];  
 
+                        // $posX = (int)(
+                        //     ($textBox['left'] * $scaleX)
+                        //     - ($textWidth / 2)
+                        // );
+                        // $posY = (int)($textBox['top'] * $scaleY);
                         $posX = (int)(
-                            ($textBox['left'] * $scaleX)
-                            - ($textWidth / 2)
+                            ($textBox['centerX'] ?? $textBox['left'])
+                            * $scaleX
                         );
-                        $posY = (int)($textBox['top'] * $scaleY);
+
+                        $posY = (int)(
+                            ($textBox['centerY'] ?? $textBox['top'])
+                            * $scaleY
+                        );
 
                         
                         $color = $this->hexToRgb(
                             $textBox['fill'] ?? '#000000'
                         );
                         $image->text(
-                            $textContent,
-                            $posX,
-                            $posY,
-                            function ($textObject) use (
-                                $fontSize,
-                                $color,
-                                $textBox
-                            ) {
-                                $textObject->filename(
-                                        public_path('fonts/GoogleSans-Bold.ttf')
-                                    );
+                        $textContent,
+                        $posX,
+                        $posY,
+                        function ($textObject) use (
+                            $fontSize,
+                            $textBox
+                        ) {
+                            $textObject->filename(
+                                public_path('fonts/GoogleSans-Bold.ttf')
+                            );
 
-                                $textObject->size($fontSize);
+                            $textObject->size($fontSize);
 
-                                 $textObject->color(
-                                     $textBox['fill'] ?? '#000000'
-                                 );
-                                // $textObject->color(
-                                //     $color['r'],
-                                //     $color['g'],
-                                //     $color['b']
-                                // );
+                            $textObject->color(
+                                $textBox['fill'] ?? '#000000'
+                            );
 
-                                $textObject->align(
-                                    $textBox['textAlign'] ?? 'center'
-                                );
+                            $textObject->align(
+                                $textBox['textAlign'] ?? 'center'
+                            );
 
-                                // $textObject->valign('center');
-
-                            }
+                            $textObject->valign('middle');
+                        }
                         );
                     }
                 } else {
@@ -179,7 +183,16 @@ class CertificateService
 
             // Save certificate
             if (!$outputPath) {
-                $outputPath = 'certificates/' . uniqid() . '.png';
+                $cleanName = preg_replace(
+                    '/[^A-Za-z0-9]/',
+                    '_',
+                    $namaOrang
+                );
+
+                $outputPath =
+                    'certificates/CERTIFICATE_GDP_' .
+                    $cleanName .
+                    '.png';
             }
 
             $fullOutputPath = storage_path('app/public/' . $outputPath);
@@ -230,74 +243,6 @@ private function generateQrCode($text, $outputPath)
         );
     }
 }
-//     private function generateQrCode($text, $outputPath)
-//     {
-//         try {
-//             // Use BaconQrCode to generate QR SVG
-//             $renderer = new ImageRenderer(
-//                 new \BaconQrCode\Renderer\RendererStyle\RendererStyle(200),
-//                 new SvgImageBackEnd()
-//             );
-            
-//             $writer = new Writer($renderer);
-//             $svgContent = $writer->writeString($text);
-            
-//             // Save SVG temporarily
-//             $tempSvg = storage_path(
-//     'app/public/temp_qr_' . uniqid() . '.svg'
-// );
-
-// file_put_contents($tempSvg, $svgContent);
-
-// $fullOutputPath = storage_path(
-//     'app/public/' . $outputPath
-// );
-
-// $escapedSvg = escapeshellarg($tempSvg);
-// $escapedOutput = escapeshellarg($fullOutputPath);
-
-// $command = "convert {$escapedSvg} -background white {$escapedOutput} 2>&1";
-
-// $output = shell_exec($command);
-
-// \Log::info('ImageMagick convert result', [
-//     'command' => $command,
-//     'output' => $output,
-//     'svg_exists' => file_exists($tempSvg),
-//     'png_exists' => file_exists($fullOutputPath),
-// ]);
-            
-//             // If convert command failed, try using imagick extension
-//             if (!file_exists($outputPath)) {
-//                 try {
-//                     if (extension_loaded('imagick')) {
-//                         $imagick = new \Imagick();
-//                         $imagick->readImage($tempSvg);
-//                         $imagick->setImageBackgroundColor('white');
-//                         $imagick->flattenImages();
-//                         $imagick->setImageFormat('png');
-//                         $imagick->writeImage($outputPath);
-//                         $imagick->clear();
-//                     }
-//                 } catch (\Exception $e) {
-//                     // Imagick failed, will need alternate approach
-//                     \Log::warning('Imagick conversion failed: ' . $e->getMessage());
-//                 }
-//             }
-            
-//             // Clean temp SVG
-//             @unlink($tempSvg);
-            
-//             // If still not created, use simple placeholder
-//             if (!file_exists($outputPath)) {
-//                 $this->createSimpleQrPlaceholder($text, $outputPath);
-//             }
-            
-//         } catch (\Exception $e) {
-//             // Create placeholder if QR generation fails
-//             $this->createSimpleQrPlaceholder($text, $outputPath);
-//         }
-//     }
 
     /**
      * Create simple QR code placeholder if proper generation fails
@@ -393,6 +338,28 @@ private function generateQrCode($text, $outputPath)
         }
 
         return $results;
+    }
+
+    private function shortenName($name)
+    {
+        $maxLength = 25;
+
+        if (mb_strlen($name) <= $maxLength) {
+            return $name;
+        }
+
+        $parts = explode(' ', trim($name));
+
+        if (count($parts) < 2) {
+            return $name;
+        }
+
+        $last = array_pop($parts);
+
+        return implode(' ', $parts)
+            . ' '
+            . strtoupper(substr($last, 0, 1))
+            . '.';
     }
 
     /**

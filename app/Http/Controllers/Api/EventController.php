@@ -39,8 +39,8 @@ class EventController extends Controller
         return new EventResource($event);
     }
 
-    
-public function update(UpdateEventRequest $request, $id)
+
+    public function update(UpdateEventRequest $request, $id)
     {
         $event = Event::findOrFail($id);
         $event->update($request->validated());

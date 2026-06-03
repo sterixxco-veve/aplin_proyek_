@@ -69,7 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{id}/details', [EventController::class, 'show'])->name('events.details');
     Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
     Route::delete('/events/{id}', [EventController::class, 'destroy']);
-    
+
 
     // 🔥 AUTO UPDATE PROGRESS
     Route::get('/events/{id}/progress', [EventController::class, 'progress']);
@@ -77,7 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/events/{id}/assign-bulk', [EventController::class, 'assignMembersBulk']);
     Route::delete('/events/{eventId}/committees/{committeeId}', [EventController::class, 'removeCommittee']);
     Route::post('/events/{id}/rundown', [EventController::class, 'storeRundown']);
-    Route::get('/events/{id}/rundown',[EventController::class, 'rundownPage']);
+    Route::get('/events/{id}/rundown', [EventController::class, 'rundownPage']);
     Route::put('/events/{eventId}/rundown/{rundownId}', [EventController::class, 'updateRundown']);
     Route::delete('/events/{eventId}/rundown/{rundownId}', [EventController::class, 'destroyRundown']);
     Route::get('/events/{eventId}/rundown/export', [EventController::class, 'exportRundown'])->name('web.events.rundown.export');
@@ -114,16 +114,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/tasks', [TaskController::class, 'listEvent']);
     Route::get('/tasks/event/{eventId}', [TaskController::class, 'index']);
-    Route::get('/documents',[DocumentController::class, 'listEvent'])->name('web.documents.index');
-    Route::get('/events/{eventId}/documents',[DocumentController::class, 'index'])->name('web.events.documents');
+    Route::get('/documents', [DocumentController::class, 'listEvent'])->name('web.documents.index');
+    Route::get('/events/{eventId}/documents', [DocumentController::class, 'index'])->name('web.events.documents');
     Route::get('/partners', [PartnerController::class, 'index'])->name('web.partners.index');
     Route::get('/certificates', [CertificateController::class, 'index'])->name('web.certificates.index');
-    Route::get('/certificates/{eventId}',[CertificateController::class, 'showEvent'])->name('web.certificates.show');
-    Route::post('/events/{event}/certificates/download-zip',[EventController::class, 'downloadCertificatesZip']);
+    Route::get('/certificates/{eventId}', [CertificateController::class, 'showEvent'])->name('web.certificates.show');
+    Route::post('/events/{event}/certificates/download-zip', [EventController::class, 'downloadCertificatesZip']);
     Route::post('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);
-Route::put('/tasks/{id}', [TaskController::class, 'update']);
+    Route::put('/tasks/{id}', [TaskController::class, 'update']);
 
 
 });
@@ -155,5 +155,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/divisions', [DivisionController::class, 'index']);
 Route::post('/divisions', [DivisionController::class, 'store']);
 
+Route::get('/verify-certificate/{token}', [CertificateController::class, 'verify'])->name('certificate.verify');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

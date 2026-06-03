@@ -56,7 +56,7 @@ class EventController extends Controller
         $availableMembers = $members->reject(function ($member) use ($event) {
             return $event->committees->contains('id_user', $member->id_user);
         })->values();
-        
+
         // Aturan Hak Akses Pengelolaan Modul
         $canManageRundown = $event->canManageRundownBy(auth()->user());
         $canManagePartner = $event->canManagePartnerBy(auth()->user());
@@ -68,7 +68,7 @@ class EventController extends Controller
         $tasks = Task::with('assignee')->where('id_event', $id)->get();
         $expenses = ExpenseReport::with(['category', 'user'])->where('id_event', $id)->latest('id_expense')->get();
         $expenseCategories = ExpenseCategory::all();
-        
+
         // Hitung Progress Pengerjaan
         $total = $tasks->count();
         $done = $tasks->where('status', 'done')->count();
@@ -147,7 +147,7 @@ class EventController extends Controller
 
         return response()->json($tasks);
     }
-    
+
     public function create()
     {
         $organizations = auth()->user()->organizations;
@@ -198,22 +198,22 @@ class EventController extends Controller
     public function storeBudget(Request $request, $id)
     {
         $request->validate([
-           'id_category' => 'required|exists:budget_categories,id_category',
-           'keterangan' => 'required|string|max:255',
-           'qty' => 'required|integer|min:1',
-           'nominal_rencana' => 'required|numeric|min:0',
+            'id_category' => 'required|exists:budget_categories,id_category',
+            'keterangan' => 'required|string|max:255',
+            'qty' => 'required|integer|min:1',
+            'nominal_rencana' => 'required|numeric|min:0',
         ]);
 
         $event = Event::visibleTo(auth()->user())->findOrFail($id);
         abort_unless($event->canManageBy(auth()->user()), 403, 'Tidak punya akses');
 
         EventBudget::create([
-           'id_event' => $event->id_event,
-           'id_user' => auth()->user()->id_user,
-           'id_category' => $request->id_category,
-           'keterangan' => $request->keterangan,
-           'qty' => $request->qty,
-           'nominal_rencana' => $request->nominal_rencana,
+            'id_event' => $event->id_event,
+            'id_user' => auth()->user()->id_user,
+            'id_category' => $request->id_category,
+            'keterangan' => $request->keterangan,
+            'qty' => $request->qty,
+            'nominal_rencana' => $request->nominal_rencana,
         ]);
 
         return back()->with('success', 'Budget berhasil ditambahkan');
@@ -262,10 +262,10 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-           'nama_event' => 'required|unique:events,nama_event', 
-           'id_org' => 'required|exists:organizations,id_org',
-           'id_event_category' => 'required|exists:event_categories,id_event_category',
-           'tgl_mulai' => 'required|date',
+            'nama_event' => 'required|unique:events,nama_event',
+            'id_org' => 'required|exists:organizations,id_org',
+            'id_event_category' => 'required|exists:event_categories,id_event_category',
+            'tgl_mulai' => 'required|date',
         ]);
 
         $isMember = auth()->user()->organizations
@@ -325,7 +325,7 @@ class EventController extends Controller
             'id_event' => $id,
             'id_user' => $request->id_user,
             'id_divisi' => $request->id_divisi,
-            'jabatan' => $request->jabatan, 
+            'jabatan' => $request->jabatan,
         ]);
 
         return back()->with('success', 'Member berhasil ditambahkan');
@@ -389,7 +389,7 @@ class EventController extends Controller
     {
         $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
         abort_unless($event->canManageCommitteeBy(auth()->user()), 403, 'Tidak punya akses');
-        
+
         $committee = EventCommittee::where('id_comm', $committeeId)
             ->where('id_event', $eventId)
             ->firstOrFail();
@@ -760,9 +760,9 @@ class EventController extends Controller
         return redirect('/events')->with('success', 'Event berhasil dihapus');
     }
 
-   public function exportRundown($eventId)
+    public function exportRundown($eventId)
     {
-       $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
+        $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
 
         abort_unless(
             $event->canManageRundownBy(auth()->user()),
@@ -852,7 +852,7 @@ class EventController extends Controller
         ]);
 
         $recipients = [];
-        
+
         // Handle manual input
         if ($request->has('nama_penerima') && count($request->nama_penerima) > 0) {
             $names = $request->input('nama_penerima');
@@ -867,18 +867,18 @@ class EventController extends Controller
                     ];
                 }
             }
-        } 
+        }
         // Handle file upload
         elseif ($request->hasFile('recipients_file')) {
             $file = $request->file('recipients_file');
             $filename = $file->getClientOriginalName();
-            
+
             // Detect file type
             if (in_array($file->getClientOriginalExtension(), ['xlsx', 'xls'])) {
                 // Use Laravel Excel for Excel files
                 try {
                     $data = Excel::toArray(new CertificateImport(), $file);
-                    
+
                     if (isset($data[0]) && is_array($data[0])) {
                         foreach ($data[0] as $row) {
                             $nama = trim($row['nama_lengkap'] ?? $row['Nama Lengkap'] ?? $row['nama_penerima'] ?? '');
@@ -1002,7 +1002,7 @@ class EventController extends Controller
 
         foreach ($certificates as $cert) {
             try {
-               $filePath = $service->generateCertificate(
+                $filePath = $service->generateCertificate(
                     $templatePath,
                     $cert->nama_penerima,
                     $cert->qr_token,
@@ -1137,52 +1137,68 @@ class EventController extends Controller
         $request->validate([
             'cert_ids' => 'required|array|min:1'
         ]);
-    
+
         $certificates = Certificate::whereIn(
             'id_cert',
             $request->cert_ids
         )->get();
-    
+
+        // $zipName =
+        //     'certificates_' .
+        //     now()->format('YmdHis') .
+        //     '.zip';
+
+        $firstCert = $certificates->first();
+
+        $eventName =
+            $firstCert?->event?->nama_event ??
+            'EVENT';
+
+        $safeEventName = preg_replace(
+            '/[^A-Za-z0-9]/',
+            '_',
+            $eventName
+        );
+
         $zipName =
             'certificates_' .
-            now()->format('YmdHis') .
+            strtoupper($safeEventName) .
             '.zip';
-    
         $zipPath =
             storage_path('app/temp/' . $zipName);
-    
+
         if (!file_exists(storage_path('app/temp'))) {
             mkdir(storage_path('app/temp'), 0777, true);
         }
-    
+
         $zip = new ZipArchive();
-    
+
         if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
-    
+
             foreach ($certificates as $cert) {
-    
+
                 if (!$cert->file_url) {
                     continue;
                 }
-    
+
                 $file =
                     storage_path(
                         'app/public/' .
                         $cert->file_url
                     );
-    
+
                 if (file_exists($file)) {
-    
+
                     $zip->addFile(
                         $file,
                         basename($file)
                     );
                 }
             }
-    
+
             $zip->close();
         }
-    
+
         return response()
             ->download($zipPath)
             ->deleteFileAfterSend(true);

@@ -1,5 +1,6 @@
 <!-- CERTIFICATE TEMPLATE EDITOR MODAL -->
-<div class="modal fade" id="templateEditorModal" tabindex="-1" aria-hidden="true" data-event-id="{{ $event->id_event }}">
+<div class="modal fade" id="templateEditorModal" tabindex="-1" aria-hidden="true"
+    data-event-id="{{ $event->id_event }}">
     <div class="modal-dialog modal-fullscreen" style="max-width: 1200px; margin: auto;">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-light border-0 d-flex justify-content-between align-items-center">
@@ -14,9 +15,11 @@
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body p-3 d-flex flex-column" style="height: 600px;">
                                 <h6 class="text-muted mb-3 small">Preview & Edit (Drag to position text)</h6>
-                                <div id="canvas-container" class="flex-grow-1 d-flex align-items-center justify-content-center" 
+                                <div id="canvas-container"
+                                    class="flex-grow-1 d-flex align-items-center justify-content-center"
                                     style="border: 2px dashed #dee2e6; border-radius: 8px; overflow: hidden; background-color: #fff;">
-                                    <canvas id="fabricCanvas" style="display: block; border: none; cursor: move;"></canvas>
+                                    <canvas id="fabricCanvas"
+                                        style="display: block; border: none; cursor: move;"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -32,16 +35,18 @@
                                 <!-- Text Content -->
                                 <div class="mb-3">
                                     <label class="form-label small text-muted">Preview Text</label>
-                                    <input type="text" id="textContent" class="form-control" 
+                                    <input type="text" id="textContent" class="form-control"
                                         placeholder="e.g., John Doe" value="Participant Name">
-                                    <small class="text-muted d-block mt-1">This will be replaced with actual participant names on generation.</small>
+                                    <small class="text-muted d-block mt-1">This will be replaced with actual participant
+                                        names on generation.</small>
                                 </div>
 
                                 <!-- Font Size -->
                                 <div class="mb-3">
                                     <label class="form-label small text-muted">Font Size</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="range" id="fontSize" class="form-range" min="12" max="100" value="40">
+                                        <input type="range" id="fontSize" class="form-range" min="12" max="100"
+                                            value="40">
                                         <span class="input-group-text" id="fontSizeValue">40px</span>
                                     </div>
                                 </div>
@@ -71,24 +76,28 @@
                                 <!-- Text Color -->
                                 <div class="mb-3">
                                     <label class="form-label small text-muted">Text Color</label>
-                                    <input type="color" id="textColor" class="form-control form-control-color" value="#000000">
+                                    <input type="color" id="textColor" class="form-control form-control-color"
+                                        value="#000000">
                                 </div>
 
                                 <!-- Text Alignment -->
                                 <div class="mb-3">
                                     <label class="form-label small text-muted">Alignment</label>
                                     <div class="btn-group w-100" role="group">
-                                        <input type="radio" class="btn-check" name="textAlign" value="left" id="alignLeft">
+                                        <input type="radio" class="btn-check" name="textAlign" value="left"
+                                            id="alignLeft">
                                         <label class="btn btn-outline-secondary btn-sm" for="alignLeft">
                                             <i class="bi bi-text-left"></i>
                                         </label>
 
-                                        <input type="radio" class="btn-check" name="textAlign" value="center" id="alignCenter" checked>
+                                        <input type="radio" class="btn-check" name="textAlign" value="center"
+                                            id="alignCenter" checked>
                                         <label class="btn btn-outline-secondary btn-sm" for="alignCenter">
                                             <i class="bi bi-text-center"></i>
                                         </label>
 
-                                        <input type="radio" class="btn-check" name="textAlign" value="right" id="alignRight">
+                                        <input type="radio" class="btn-check" name="textAlign" value="right"
+                                            id="alignRight">
                                         <label class="btn btn-outline-secondary btn-sm" for="alignRight">
                                             <i class="bi bi-text-right"></i>
                                         </label>
@@ -110,37 +119,30 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-grid gap-2">
-                                    <button type="button"
-                                        class="btn btn-primary btn-sm"
+                                    <button type="button" class="btn btn-primary btn-sm"
                                         onclick="addTextBox('recipient_name')">
                                         <i class="bi bi-person me-1"></i>
                                         Add Recipient Name
                                     </button>
 
-                                    <button type="button"
-                                        class="btn btn-outline-primary btn-sm"
+                                    <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="addTextBox('recipient_email')">
                                         <i class="bi bi-envelope me-1"></i>
                                         Add Recipient Email
                                     </button>
 
-                                    <button type="button"
-                                        class="btn btn-outline-secondary btn-sm"
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
                                         onclick="addTextBox('static')">
                                         <i class="bi bi-fonts me-1"></i>
                                         Add Static Text
                                     </button>
 
-                                    <button type="button"
-                                        class="btn btn-warning btn-sm"
-                                        id="removeTextBtn">
+                                    <button type="button" class="btn btn-warning btn-sm" id="removeTextBtn">
                                         <i class="bi bi-trash me-1"></i>
                                         Remove Selected
                                     </button>
 
-                                    <button type="button"
-                                        class="btn btn-light btn-sm"
-                                        id="resetTextBtn">
+                                    <button type="button" class="btn btn-light btn-sm" id="resetTextBtn">
                                         <i class="bi bi-arrow-counterclockwise me-1"></i>
                                         Reset
                                     </button>
@@ -172,7 +174,7 @@
     let originalImageDimensions = { width: null, height: null };
     let canvasScale = 1;
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         initializeFabricCanvas();
         setupEventListeners();
         loadTemplateImage();
@@ -181,7 +183,7 @@
     // Reinitialize when modal is shown
     const modalElement = document.getElementById('templateEditorModal');
     if (modalElement) {
-        modalElement.addEventListener('shown.bs.modal', function() {
+        modalElement.addEventListener('shown.bs.modal', function () {
             console.log('Modal shown, reloading template...');
             // Dispose old canvas and create new one
             if (canvas) {
@@ -196,7 +198,7 @@
 
     function initializeFabricCanvas() {
         const container = document.getElementById('canvas-container');
-        
+
         // Get actual container dimensions
         const width = container.clientWidth || 800;
         const height = container.clientHeight || 600;
@@ -232,9 +234,9 @@
 
     function loadTemplateImage() {
         const templatePath = '{{ $templatePath ?? null }}';
-        
+
         console.log('Template path from session:', templatePath);
-        
+
         if (!templatePath) {
             console.warn('No template path available');
             addDefaultMessage();
@@ -243,7 +245,7 @@
 
         // Build correct URL for the image
         const imageUrl = '/storage/' + templatePath;
-        
+
         console.log('Loading template from URL:', imageUrl);
 
         // Test if image is accessible
@@ -254,20 +256,20 @@
                     addDefaultMessage();
                     return;
                 }
-                
+
                 // Image exists, now load it with Fabric.js
                 fabric.Image.fromURL(imageUrl, (img) => {
                     console.log('Image loaded successfully, original size:', img.width, 'x', img.height);
-                    
+
                     // Store original dimensions
                     originalImageDimensions = {
                         width: img.width,
                         height: img.height
                     };
-                    
+
                     // Clear canvas
                     canvas.clear();
-                    
+
                     const container = document.getElementById('canvas-container');
                     const maxWidth = container.offsetWidth || 900;
                     const maxHeight = container.offsetHeight || 600;
@@ -276,7 +278,7 @@
                     const scaleX = maxWidth / img.width;
                     const scaleY = maxHeight / img.height;
                     const scale = Math.min(scaleX, scaleY, 1); // Don't scale up
-                    
+
                     // Store scale for later use
                     canvasScale = scale;
 
@@ -285,10 +287,10 @@
                     // Update canvas size
                     const newWidth = img.width * scale;
                     const newHeight = img.height * scale;
-                    
+
                     canvas.setWidth(newWidth);
                     canvas.setHeight(newHeight);
-                    
+
                     // Set as background image
                     canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
                         top: canvas.height / 2,
@@ -375,40 +377,40 @@
         });
     }
 
-        function addTextBox(type = 'static') {
+    function addTextBox(type = 'static') {
 
-            let defaultText = document.getElementById('textContent').value;
+        let defaultText = document.getElementById('textContent').value;
 
-            // Dynamic placeholders
-            if (type === 'recipient_name') {
-                defaultText = '{NAMA}';
-            }
-
-            if (type === 'recipient_email') {
-                defaultText = '{EMAIL}';
-            }
-
-            const text = new fabric.Text(defaultText, {
-                left: canvas.width / 2,
-                top: canvas.height / 2,
-                fontSize: parseInt(document.getElementById('fontSize').value),
-                fontFamily: document.getElementById('fontFamily').value,
-                fontWeight: document.getElementById('fontWeight').value,
-                fill: document.getElementById('textColor').value,
-                textAlign: document.querySelector('input[name="textAlign"]:checked').value,
-                originX: 'center',
-                originY: 'center'
-            });
-
-            // IMPORTANT
-            text.customType = type;
-
-            canvas.add(text);
-            canvas.setActiveObject(text);
-            canvas.renderAll();
-
-            textObjects.push(text);
+        // Dynamic placeholders
+        if (type === 'recipient_name') {
+            defaultText = '{NAMA}';
         }
+
+        if (type === 'recipient_email') {
+            defaultText = '{EMAIL}';
+        }
+
+        const text = new fabric.Text(defaultText, {
+            left: canvas.width / 2,
+            top: canvas.height / 2,
+            fontSize: parseInt(document.getElementById('fontSize').value),
+            fontFamily: document.getElementById('fontFamily').value,
+            fontWeight: document.getElementById('fontWeight').value,
+            fill: document.getElementById('textColor').value,
+            textAlign: document.querySelector('input[name="textAlign"]:checked').value,
+            originX: 'center',
+            originY: 'center'
+        });
+
+        // IMPORTANT
+        text.customType = type;
+
+        canvas.add(text);
+        canvas.setActiveObject(text);
+        canvas.renderAll();
+
+        textObjects.push(text);
+    }
 
     function removeSelectedText() {
         if (selectedText) {
@@ -511,23 +513,23 @@
             },
             body: JSON.stringify(config)
         })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('SAVE RESPONSE:', data);
-            if (data.success) {
-                alert('Configuration saved successfully!');
-                const modal = bootstrap.Modal.getInstance(document.getElementById('templateEditorModal'));
-                modal.hide();
-            } else {
-                alert('Error: ' + (data.message || 'Unknown error'));
-            }
-        })
-        .catch(error => {
-            console.error('Save Error:', error);
-            alert('Failed to save configuration: ' + error.message);
-        });
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('SAVE RESPONSE:', data);
+                if (data.success) {
+                    alert('Configuration saved successfully!');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('templateEditorModal'));
+                    modal.hide();
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Save Error:', error);
+                alert('Failed to save configuration: ' + error.message);
+            });
     }
 </script>
