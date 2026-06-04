@@ -215,7 +215,7 @@ class Event extends Model
         return $this->canManageOperationalBy($user);
     }
 
-    
+
     // ✅ PROGRESS
     public function getProgressAttribute()
     {
@@ -258,5 +258,14 @@ class Event extends Model
             'total_expense' => round($this->total_expense, 2),
             'remaining' => round($this->remaining_budget, 2),
         ];
+    }
+
+    public function documentationLinks()
+    {
+        return $this->hasMany(
+            DocumentationLink::class,
+            'id_event',
+            'id_event'
+        );
     }
 }

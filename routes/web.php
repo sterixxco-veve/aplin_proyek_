@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Web\DocumentationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\EventController;
 use App\Http\Controllers\Web\DashboardController;
@@ -143,7 +144,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::put('/expenses/{id}', [ExpenseController::class, 'update']);
     Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy']);
-    Route::post('/expenses/{id}/status', [ExpenseController::class, 'updateStatus']) ->middleware('auth') ->name('web.expenses.status');
+    Route::post('/expenses/{id}/status', [ExpenseController::class, 'updateStatus'])->middleware('auth')->name('web.expenses.status');
 
     Route::get('/expense-categories', [ExpenseCategoryController::class, 'index']);
     Route::post('/expense-categories', [ExpenseCategoryController::class, 'store']);
@@ -152,9 +153,9 @@ Route::middleware('auth')->group(function () {
 });
 
 
-    Route::get('/divisions', [DivisionController::class, 'index']);
-    Route::post('/divisions', [DivisionController::class, 'store']);
-    Route::prefix('divisions')->name('divisions.')->group(function () {
+Route::get('/divisions', [DivisionController::class, 'index']);
+Route::post('/divisions', [DivisionController::class, 'store']);
+Route::prefix('divisions')->name('divisions.')->group(function () {
     Route::get('/{id}/edit', [DivisionController::class, 'edit'])->name('edit');
     Route::put('/{id}', [DivisionController::class, 'update'])->name('update');
     Route::delete('/{id}', [DivisionController::class, 'destroy'])->name('destroy');
@@ -162,4 +163,8 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/verify-certificate/{token}', [CertificateController::class, 'verify'])->name('certificate.verify');
 
+
+Route::get('/events/{event}/documentation', [DocumentationController::class, 'index'])->name('documentation.index');
+
+Route::post('/events/{event}/documentation', [DocumentationController::class, 'store'])->name('documentation.store');
 require __DIR__ . '/auth.php';
