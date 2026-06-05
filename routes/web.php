@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Web\DocumentationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\EventController;
 use App\Http\Controllers\Web\DashboardController;
@@ -16,6 +17,8 @@ use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\EventCommitteeController;
 use App\Http\Controllers\Api\ExpenseReportController;
 use App\Http\Controllers\Api\PartnerController as ApiPartnerController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 /*
@@ -32,6 +35,37 @@ use App\Http\Controllers\Api\PartnerController as ApiPartnerController;
 Route::get('/', function () {
     return redirect('/login');
 });
+
+Route::get(
+    '/profile/password',
+    [ProfileController::class, 'passwordPage']
+)->name('profile.password');
+
+Route::put(
+    '/profile/password',
+    [ProfileController::class, 'updatePassword']
+)->name('profile.password.update');
+
+
+Route::get(
+    '/forgot-password',
+    [ForgotPasswordController::class, 'create']
+)->name('password.request');
+
+Route::post(
+    '/forgot-password',
+    [ForgotPasswordController::class, 'store']
+)->name('password.email');
+
+Route::get(
+    '/reset-password/{token}',
+    [ResetPasswordController::class, 'create']
+)->name('password.reset');
+
+Route::post(
+    '/reset-password',
+    [ResetPasswordController::class, 'store']
+)->name('password.update');
 
 // AUTH ROUTES FROM API
 Route::post('/login', [ApiAuthController::class, 'login']);
@@ -112,6 +146,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'destroyBudget']);
     Route::get('/finance', [ExpenseController::class, 'home']);
 
+    Route::get(
+        '/budgets',
+        [EventController::class, 'budgetList']
+    )->name('web.budget.index');
+
+    Route::get(
+        '/budgets/{eventId}',
+        [EventController::class, 'budgetPage']
+    )->name('web.budget.show');
+
     Route::get('/tasks', [TaskController::class, 'listEvent']);
     Route::get('/tasks/event/{eventId}', [TaskController::class, 'index']);
     Route::get('/documents', [DocumentController::class, 'listEvent'])->name('web.documents.index');
@@ -143,7 +187,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::put('/expenses/{id}', [ExpenseController::class, 'update']);
     Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy']);
-    Route::post('/expenses/{id}/status', [ExpenseController::class, 'updateStatus']) ->middleware('auth') ->name('web.expenses.status');
+    Route::post('/expenses/{id}/status', [ExpenseController::class, 'updateStatus'])->middleware('auth')->name('web.expenses.status');
 
     Route::get('/expense-categories', [ExpenseCategoryController::class, 'index']);
     Route::post('/expense-categories', [ExpenseCategoryController::class, 'store']);
@@ -152,9 +196,9 @@ Route::middleware('auth')->group(function () {
 });
 
 
-    Route::get('/divisions', [DivisionController::class, 'index']);
-    Route::post('/divisions', [DivisionController::class, 'store']);
-    Route::prefix('divisions')->name('divisions.')->group(function () {
+Route::get('/divisions', [DivisionController::class, 'index']);
+Route::post('/divisions', [DivisionController::class, 'store']);
+Route::prefix('divisions')->name('divisions.')->group(function () {
     Route::get('/{id}/edit', [DivisionController::class, 'edit'])->name('edit');
     Route::put('/{id}', [DivisionController::class, 'update'])->name('update');
     Route::delete('/{id}', [DivisionController::class, 'destroy'])->name('destroy');
@@ -162,4 +206,23 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/verify-certificate/{token}', [CertificateController::class, 'verify'])->name('certificate.verify');
 
+
+Route::get('/events/{event}/documentation', [DocumentationController::class, 'index'])->name('documentation.index');
+
+Route::post('/events/{event}/documentation', [DocumentationController::class, 'store'])->name('documentation.store');
+
+Route::get(
+    '/documentation ',
+    [DocumentationController::class, 'index']
+)->name('documentation.index');
+
+Route::get(
+    '/documentation/{event}',
+    [DocumentationController::class, 'show']
+)->name('documentation.show');
+
+Route::post(
+    '/documentation/{event}',
+    [DocumentationController::class, 'store']
+)->name('documentation.store');
 require __DIR__ . '/auth.php';

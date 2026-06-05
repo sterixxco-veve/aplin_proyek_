@@ -7,9 +7,11 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use Notifiable;
     use HasApiTokens;
 
     protected $primaryKey = 'id_user';
@@ -52,7 +54,7 @@ class User extends Authenticatable
     protected function password(): Attribute
     {
         return Attribute::make(
-            set: fn ($value) => Hash::needsRehash($value) ? Hash::make($value) : $value,
+            set: fn($value) => Hash::needsRehash($value) ? Hash::make($value) : $value,
         );
     }
 
@@ -98,7 +100,7 @@ class User extends Authenticatable
             'id_org'
         )->withPivot('role')->withTimestamps();
     }
-    
+
     public function eventCommittees()
     {
         return $this->hasMany(EventCommittee::class, 'id_user', 'id_user');

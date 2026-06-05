@@ -14,9 +14,25 @@
             </div>
 
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
+
+                <h3 class="fw-bold mb-3">
+
+                    Password
+
+                </h3>
+
+                <p class="text-muted">
+
+                    Manage your account password.
+
+                </p>
+
+                <a href="{{ route('profile.password') }}" class="btn btn-primary">
+
+                    Change Password
+
+                </a>
+
             </div>
 
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
