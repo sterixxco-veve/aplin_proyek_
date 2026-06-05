@@ -1153,9 +1153,6 @@ class EventController extends Controller
                 $cert->update(['sent_at' => now()]);
                 $sent++;
             } catch (\Exception $e) {
-
-                dd($e->getMessage());
-
                 $errors[] = $cert->nama_penerima . ": " . $e->getMessage();
             }
         }

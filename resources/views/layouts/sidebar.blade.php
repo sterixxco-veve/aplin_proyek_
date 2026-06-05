@@ -77,6 +77,13 @@
         </a>
     </nav>
 
+    <a href="{{ route('profile.password') }}"
+        class="nav-link d-flex align-items-center gap-3 py-2 px-3 rounded-3 text-muted hover-sidebar">
+        <i class="bi bi-key"></i>
+        <span class="fw-bold small">
+            Change Password
+        </span>
+    </a>
     <!-- Logout di Bawah -->
     <div class="mt-4 pt-4 border-top border-light">
         <form method="POST" action="{{ route('logout') }}">

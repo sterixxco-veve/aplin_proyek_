@@ -25,12 +25,11 @@ class CertificateService
         $recipientEmail = null,
         $outputPath = null,
         $config = null
-    )
-    {
+    ) {
         try {
             // Baca template image
             $templateFullPath = storage_path('app/public/' . $templatePath);
-            
+
             if (!file_exists($templateFullPath)) {
                 throw new \Exception('Template file tidak ditemukan: ' . $templatePath);
             }
@@ -42,7 +41,7 @@ class CertificateService
             // Generate QR code sebagai PNG
             $qrPath = storage_path('app/public/temp_qr_' . uniqid() . '.png');
             $verificationUrl = url('/verify-certificate/' . $qrToken);
-            $this->generateQrCode($verificationUrl,$qrPath);
+            $this->generateQrCode($verificationUrl, $qrPath);
 
             // Overlay nama penerima berdasarkan config atau default
             try {
@@ -68,7 +67,7 @@ class CertificateService
                         ) {
                             $scaleY = $config['imageHeight'] / $config['canvasHeight'];
                         }
-                        
+
 
                         // =========================
                         // DYNAMIC TEXT CONTENT
@@ -76,23 +75,23 @@ class CertificateService
 
                         $textContent = $textBox['text'] ?? '';
 
-                      switch ($textBox['type'] ?? 'static') {
+                        switch ($textBox['type'] ?? 'static') {
 
-                        case 'recipient_name':
-                            $textContent = $this->shortenName($namaOrang);
-                            break;
+                            case 'recipient_name':
+                                $textContent = $this->shortenName($namaOrang);
+                                break;
 
-                        case 'recipient_email':
-                            $textContent = $recipientEmail ?? '';
-                            break;
+                            case 'recipient_email':
+                                $textContent = $recipientEmail ?? '';
+                                break;
 
-                        default:
-                            $textContent = $textBox['text'] ?? '';
-                            break;
-                    }
-                    $fontSize = max(
+                            default:
+                                $textContent = $textBox['text'] ?? '';
+                                break;
+                        }
+                        $fontSize = max(
                             12,
-                            (int)($textBox['fontSize'] * $scaleX)
+                            (int) ($textBox['fontSize'] * $scaleX)
                         );
 
                         // $bbox = imagettfbbox(
@@ -109,60 +108,58 @@ class CertificateService
                         //     - ($textWidth / 2)
                         // );
                         // $posY = (int)($textBox['top'] * $scaleY);
-                        $posX = (int)(
+                        $posX = (int) (
                             ($textBox['centerX'] ?? $textBox['left'])
                             * $scaleX
                         );
 
-                        $posY = (int)(
+                        $posY = (int) (
                             ($textBox['centerY'] ?? $textBox['top'])
                             * $scaleY
                         );
 
-                        
+
                         $color = $this->hexToRgb(
                             $textBox['fill'] ?? '#000000'
                         );
                         $image->text(
-                        $textContent,
-                        $posX,
-                        $posY,
-                        function ($textObject) use (
-                            $fontSize,
-                            $textBox
-                        ) {
-                            $textObject->filename(
-                                public_path('fonts/GoogleSans-Bold.ttf')
-                            );
+                            $textContent,
+                            $posX,
+                            $posY,
+                            function ($textObject) use ($fontSize, $textBox) {
+                                $textObject->filename(
+                                    public_path('fonts/GoogleSans-Bold.ttf')
+                                );
 
-                            $textObject->size($fontSize);
+                                $textObject->size($fontSize);
 
-                            $textObject->color(
-                                $textBox['fill'] ?? '#000000'
-                            );
+                                $textObject->color(
+                                    $textBox['fill'] ?? '#000000'
+                                );
 
-                            $textObject->align(
-                                $textBox['textAlign'] ?? 'center'
-                            );
+                                $textObject->align(
+                                    $textBox['textAlign'] ?? 'center'
+                                );
 
-                            $textObject->valign('middle');
-                        }
+                                $textObject->valign('middle');
+                            }
                         );
                     }
                 } else {
                     // Gunakan default positioning
-                    $image->text($namaOrang, 
-                        (int)($image->width() / 2), 
-                        (int)($image->height() / 2.5), 
+                    $image->text(
+                        $namaOrang,
+                        (int) ($image->width() / 2),
+                        (int) ($image->height() / 2.5),
                         function ($textObject) {
                             $textObject->filename(
-                                        public_path('fonts/GoogleSans-Bold.ttf')
-                                    );
+                                public_path('fonts/GoogleSans-Bold.ttf')
+                            );
                             $textObject->size(60);
                             // $textObject->color(0, 0, 0);
-                             $textObject->color(
-                                 $textBox['fill'] ?? '#000000'
-                             );
+                            $textObject->color(
+                                $textBox['fill'] ?? '#000000'
+                            );
                             $textObject->align('center');
                             // $textObject->valign('center');
                         }
@@ -170,7 +167,6 @@ class CertificateService
                 }
             } catch (\Exception $e) {
                 // Jika text overlay gagal, lanjut tanpa overlay
-                dd($e->getMessage());
                 \Log::warning('Text overlay failed: ' . $e->getMessage());
             }
 
@@ -196,10 +192,10 @@ class CertificateService
             }
 
             $fullOutputPath = storage_path('app/public/' . $outputPath);
-            
+
             // Ensure directory exists
             @mkdir(dirname($fullOutputPath), 0755, true);
-            
+
             $image->save($fullOutputPath);
 
             // Cleanup temp QR
@@ -216,33 +212,31 @@ class CertificateService
     /**
      * Generate QR code as PNG file
      */
-private function generateQrCode($text, $outputPath)
-{
-    try {
+    private function generateQrCode($text, $outputPath)
+    {
+        try {
 
-        @mkdir(dirname($fuoutputPathllOutputPath), 0755, true);
+            @mkdir(dirname($fuoutputPathllOutputPath), 0755, true);
 
-        $builder = new \Endroid\QrCode\Builder\Builder(
-            writer: new \Endroid\QrCode\Writer\PngWriter(),
-            data: $text,
-            size: 200,
-            margin: 10
-        );
+            $builder = new \Endroid\QrCode\Builder\Builder(
+                writer: new \Endroid\QrCode\Writer\PngWriter(),
+                data: $text,
+                size: 200,
+                margin: 10
+            );
 
-        $result = $builder->build();
+            $result = $builder->build();
 
-        $result->saveToFile($outputPath);
+            $result->saveToFile($outputPath);
 
-    } catch (\Exception $e) {
-
-        dd($e->getMessage());
-
-        $this->createSimpleQrPlaceholder(
-            $text,
-            $outputPath
-        );
+        } catch (\Exception $e) {
+            \Log::error('QR Generation failed: ' . $e->getMessage());
+            $this->createSimpleQrPlaceholder(
+                $text,
+                $outputPath
+            );
+        }
     }
-}
 
     /**
      * Create simple QR code placeholder if proper generation fails
@@ -252,22 +246,22 @@ private function generateQrCode($text, $outputPath)
         // Create a simple gray box with white center and text
         $width = 200;
         $height = 200;
-        
+
         $image = imagecreatetruecolor($width, $height);
         $white = imagecolorallocate($image, 255, 255, 255);
         $black = imagecolorallocate($image, 0, 0, 0);
         $gray = imagecolorallocate($image, 200, 200, 200);
-        
+
         // Fill background
         imagefill($image, 0, 0, $white);
-        
+
         // Draw border
         imagerectangle($image, 0, 0, $width - 1, $height - 1, $black);
-        
+
         // Add text (simplified token display)
         $shortToken = substr($text, 0, 12) . '...';
         imagestring($image, 1, 10, 90, 'QR: ' . $shortToken, $black);
-        
+
         // Save image
         imagepng($image, $outputPath);
         imagedestroy($image);
@@ -302,8 +296,7 @@ private function generateQrCode($text, $outputPath)
         $templatePath,
         $recipientsList,
         $config = null
-    )
-    {
+    ) {
         $results = [
             'success' => [],
             'errors' => [],
@@ -368,11 +361,11 @@ private function generateQrCode($text, $outputPath)
     private function hexToRgb($hex)
     {
         $hex = str_replace('#', '', $hex);
-        
+
         if (strlen($hex) == 3) {
             $hex = str_repeat($hex[0], 2) . str_repeat($hex[1], 2) . str_repeat($hex[2], 2);
         }
-        
+
         return [
             'r' => hexdec(substr($hex, 0, 2)),
             'g' => hexdec(substr($hex, 2, 2)),

@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\EventCommitteeController;
 use App\Http\Controllers\Api\ExpenseReportController;
 use App\Http\Controllers\Api\PartnerController as ApiPartnerController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 /*
@@ -33,6 +35,37 @@ use App\Http\Controllers\Api\PartnerController as ApiPartnerController;
 Route::get('/', function () {
     return redirect('/login');
 });
+
+Route::get(
+    '/profile/password',
+    [ProfileController::class, 'passwordPage']
+)->name('profile.password');
+
+Route::put(
+    '/profile/password',
+    [ProfileController::class, 'updatePassword']
+)->name('profile.password.update');
+
+
+Route::get(
+    '/forgot-password',
+    [ForgotPasswordController::class, 'create']
+)->name('password.request');
+
+Route::post(
+    '/forgot-password',
+    [ForgotPasswordController::class, 'store']
+)->name('password.email');
+
+Route::get(
+    '/reset-password/{token}',
+    [ResetPasswordController::class, 'create']
+)->name('password.reset');
+
+Route::post(
+    '/reset-password',
+    [ResetPasswordController::class, 'store']
+)->name('password.update');
 
 // AUTH ROUTES FROM API
 Route::post('/login', [ApiAuthController::class, 'login']);
