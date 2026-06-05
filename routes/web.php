@@ -113,6 +113,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'destroyBudget']);
     Route::get('/finance', [ExpenseController::class, 'home']);
 
+    Route::get(
+        '/budgets',
+        [EventController::class, 'budgetList']
+    )->name('web.budget.index');
+
+    Route::get(
+        '/budgets/{eventId}',
+        [EventController::class, 'budgetPage']
+    )->name('web.budget.show');
+
     Route::get('/tasks', [TaskController::class, 'listEvent']);
     Route::get('/tasks/event/{eventId}', [TaskController::class, 'index']);
     Route::get('/documents', [DocumentController::class, 'listEvent'])->name('web.documents.index');
@@ -167,4 +177,19 @@ Route::get('/verify-certificate/{token}', [CertificateController::class, 'verify
 Route::get('/events/{event}/documentation', [DocumentationController::class, 'index'])->name('documentation.index');
 
 Route::post('/events/{event}/documentation', [DocumentationController::class, 'store'])->name('documentation.store');
+
+Route::get(
+    '/documentation ',
+    [DocumentationController::class, 'index']
+)->name('documentation.index');
+
+Route::get(
+    '/documentation/{event}',
+    [DocumentationController::class, 'show']
+)->name('documentation.show');
+
+Route::post(
+    '/documentation/{event}',
+    [DocumentationController::class, 'store']
+)->name('documentation.store');
 require __DIR__ . '/auth.php';

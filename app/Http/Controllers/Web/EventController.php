@@ -259,6 +259,41 @@ class EventController extends Controller
         return back()->with('success', 'Budget berhasil dihapus');
     }
 
+    public function budgetList()
+    {
+        $events = Event::visibleTo(auth()->user())
+            ->latest()
+            ->get();
+
+        return view(
+            'events.budget-list',
+            compact('events')
+        );
+    }
+
+    public function budgetPage($eventId)
+    {
+        $event = Event::visibleTo(auth()->user())
+            ->with([
+                'budgets.category',
+                'budgets.user'
+            ])
+            ->findOrFail($eventId);
+
+        $budgetCategories =
+            BudgetCategory::orderBy(
+                'nama_kategori'
+            )->get();
+
+        return view(
+            'events.budget',
+            compact(
+                'event',
+                'budgetCategories'
+            )
+        );
+    }
+
     public function store(Request $request)
     {
         $request->validate([

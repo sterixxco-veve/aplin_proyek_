@@ -9,15 +9,21 @@ use Illuminate\Http\Request;
 
 class DocumentationController extends Controller
 {
-    public function index($eventId)
+    public function index()
     {
-        $event = Event::with('documentationLinks')
-            ->findOrFail($eventId);
+        $events = Event::visibleTo(auth()->user())
+            ->with('documentationLinks')
+            ->latest()
+            ->get();
 
-        return view(
-            'events.partials.documentation',
-            compact('event')
-        );
+        return view('documentation.index', compact('events'));
+    }
+
+    public function show(Event $event)
+    {
+        $event->load('documentationLinks');
+
+        return view('documentation.show', compact('event'));
     }
 
     public function store(Request $request, $eventId)
