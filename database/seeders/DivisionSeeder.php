@@ -11,6 +11,8 @@ class DivisionSeeder extends Seeder
     {
         DB::table('divisions')->insert([
             ['nama_divisi' => 'BPH', 'is_default' => true],
+            ['nama_divisi' => 'Sekretaris', 'is_default' => true],
+            ['nama_divisi' => 'Bendahara', 'is_default' => true],  
             ['nama_divisi' => 'Acara', 'is_default' => true],
             ['nama_divisi' => 'Konsumsi', 'is_default' => true],
             ['nama_divisi' => 'Publikasi', 'is_default' => true],

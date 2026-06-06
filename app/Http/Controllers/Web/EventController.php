@@ -318,10 +318,15 @@ class EventController extends Controller
             'tgl_mulai' => $request->tgl_mulai,
         ]);
 
+    $defaultDivision = \App\Models\Division::first();
+    
+    // Pastikan ada divisi di database agar tidak error null
+    $idDivisi = $defaultDivision ? $defaultDivision->id_divisi : null;
+
         \App\Models\EventCommittee::create([
             'id_event' => $event->id_event,
             'id_user' => auth()->user()->id_user,
-            'id_divisi' => 1,
+            'id_divisi' => $idDivisi,
             'jabatan' => 'Ketua Acara',
         ]);
 

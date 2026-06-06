@@ -35,6 +35,10 @@ class DivisionController extends Controller
     {
         $division = Division::findOrFail($id);
 
+        if ($division->is_default) {
+            return back()->with('error', 'Nama divisi sistem bawaan tidak boleh diubah!');
+        }
+
         $request->validate([
            
             'nama_divisi' => [
