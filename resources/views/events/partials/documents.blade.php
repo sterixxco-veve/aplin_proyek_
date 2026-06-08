@@ -17,6 +17,26 @@
     ];
 @endphp
 
+<style>
+    .gform-scroll-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .gform-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .gform-scroll-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .gform-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    .form-step {
+        transition: opacity 0.2s ease-in-out;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
     <div>
         <h5 class="fw-bold mb-1">Documents</h5>
@@ -35,31 +55,6 @@
         @endif
     </div>
 </div>
-
-<!-- <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="p-3 bg-light rounded-3">
-                    <small class="text-muted d-block">Total Document</small>
-                    <h4 class="mb-0">{{ $documents->count() }}</h4>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="p-3 bg-success-subtle rounded-3">
-                    <small class="text-muted d-block">Final</small>
-                    <h4 class="mb-0">{{ $documents->where('status', 'final')->count() }}</h4>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="p-3 bg-warning-subtle rounded-3">
-                    <small class="text-muted d-block">Mode Akses</small>
-                    <h4 class="mb-0">{{ $canManageDocument ? 'Edit' : 'Lihat Saja' }}</h4>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> -->
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
@@ -103,26 +98,10 @@
                             </td>
                             <td>
                                 @if($document->file_url)
-                                    <a href="{{ $document->file_url }}"
-                                    target="_blank"
-                                    class="btn btn-primary">
-
-                                        Preview
-                                    </a>
-
-                                    <a href="{{ $document->file_url }}"
-                                    download
-                                    class="btn btn-success">
-
-                                        Download
-                                    </a>
-
+                                    <a href="{{ $document->file_url }}" target="_blank" class="btn btn-primary">Preview</a>
+                                    <a href="{{ $document->file_url }}" download class="btn btn-success">Download</a>
                                 @else
-
-                                    <span class="text-muted small">
-                                        Belum ada file
-                                    </span>
-
+                                    <span class="text-muted small">Belum ada file</span>
                                 @endif
                             </td>
                             <td>
@@ -144,9 +123,7 @@
                                             Edit
                                         </button>
 
-                                        <form method="POST"
-                                              action="/events/{{ $event->id_event }}/documents/{{ $document->id_document }}"
-                                              onsubmit="return confirm('Hapus document ini?')">
+                                        <form method="POST" action="/events/{{ $event->id_event }}/documents/{{ $document->id_document }}" onsubmit="return confirm('Hapus document ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-sm btn-outline-danger">Hapus</button>
@@ -169,132 +146,74 @@
 </div>
 
 @if($canManageDocument)
-    <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 <div class="modal-body p-4">
 
-                    <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
                             <h4 class="fw-bold mb-1">Generate Document</h4>
-                            <p class="text-muted small mb-0">
-                                Form akan otomatis menyesuaikan jenis document.
-                            </p>
+                            <p class="text-muted small mb-0" id="stepIndicator">Langkah 1 dari 2: Informasi Dasar</p>
                         </div>
-
-                        <button type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
-                    <form
-                        method="POST"
-                        action="/events/{{ $event->id_event }}/documents"
-                        enctype="multipart/form-data">
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div class="progress-bar bg-primary" id="formProgressBar" role="progressbar" style="width: 50%;"></div>
+                    </div>
+
+                    <form method="POST" action="/events/{{ $event->id_event }}/documents" enctype="multipart/form-data" id="multiStepForm">
                         @csrf
 
-                        <div class="row g-3">
-
-                            <!-- DOCUMENT TYPE -->
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">
-                                    Jenis Document
-                                </label>
-
-                                <select
-                                    name="document_type"
-                                    id="documentType"
-                                    class="form-select @error('document_type') is-invalid @enderror"
-                                   >
-
-                                    <option value="proposal" {{ old('document_type') == 'proposal' ? 'selected' : '' }}>Proposal</option>
-                                    <option value="lpj" {{ old('document_type') == 'lpj' ? 'selected' : '' }}>Laporan Pertanggungjawaban</option>
-                                    <option value="invitation_letter" {{ old('document_type') == 'invitation_letter' ? 'selected' : '' }}>Invitation Letter</option>
-                                    <option value="mou_partner" {{ old('document_type') == 'mou_partner' ? 'selected' : '' }}>MOU</option>
-                                </select>
-                                @error('document_type')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
-                            </div>
-
-                            <!-- STATUS -->
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">
-                                    Status
-                                </label>
-
-                                <select
-                                    name="status"
-                                    class="form-select"
-                                   >
-
-                                    @foreach($statusLabels as $key => $label)
-                                        <option value="{{ $key }}">
-                                            {{ $label }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- TITLE -->
-                            <div class="col-12">
-                                <label class="form-label small text-muted">
-                                    Document Title
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="title"
-                                    class="form-control @error('title') is-invalid @enderror"
-                                    placeholder="Contoh: Proposal Seminar AI"
-                                    value="{{ old('title') }}"
-                                   >
-                                @error('title')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
-                            </div>
-
-                            <!-- DYNAMIC FORM -->
-                            <div id="dynamicDocumentFields" class="row g-3"></div>
-
-                            <!-- FILE URL -->
-                            <!-- <div class="col-12">
-                                <label class="form-label small text-muted">
-                                    File URL
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="file_url"
-                                    class="form-control"
-                                    placeholder="https://...">
-                            </div> -->
-
-                            <!-- NOTES -->
-                            <div class="col-12">
-                                <label class="form-label small text-muted">
-                                    Notes
-                                </label>
-
-                                <textarea
-                                    name="notes"
-                                    rows="3"
-                                    class="form-control"
-                                    placeholder="Tambahan informasi document"></textarea>
+                        <div class="form-step" id="step1">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Jenis Document</label>
+                                    <select name="document_type" id="documentType" class="form-select @error('document_type') is-invalid @enderror">
+                                        <option value="proposal" {{ old('document_type') == 'proposal' ? 'selected' : '' }}>Proposal</option>
+                                        <option value="lpj" {{ old('document_type') == 'lpj' ? 'selected' : '' }}>Laporan Pertanggungjawaban</option>
+                                        <option value="invitation_letter" {{ old('document_type') == 'invitation_letter' ? 'selected' : '' }}>Invitation Letter</option>
+                                        <option value="mou_partner" {{ old('document_type') == 'mou_partner' ? 'selected' : '' }}>MOU Partner</option>
+                                    </select>
+                                    @error('document_type')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Status</label>
+                                    <select name="status" class="form-select">
+                                        @foreach($statusLabels as $key => $label)
+                                            <option value="{{ $key }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small text-muted">Document Title</label>
+                                    <input type="text" name="title" id="documentTitleInput" class="form-control" placeholder="Contoh: Proposal Seminar AI" value="{{ old('title') }}">
+                                    <div class="invalid-feedback fw-semibold" id="titleErrorFeedback">
+                                        Mohon masukkan 'Document Title' terlebih dahulu sebelum melangkah ke halaman berikutnya.
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small text-muted">Notes</label>
+                                    <textarea name="notes" rows="4" class="form-control" placeholder="Tambahan informasi document"></textarea>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 mt-4">
-                            <button
-                                type="button"
-                                class="btn btn-light flex-fill"
-                                data-bs-dismiss="modal">
+                        <div class="form-step d-none" id="step2">
+                            <div id="dynamicDocumentFields" class="row g-3 gform-scroll-container" style="max-height: 52vh; overflow-y: auto; overflow-x: hidden; padding-right: 4px;">
+                                </div>
+                        </div>
 
-                                Cancel
-                            </button>
+                        <div class="form-step d-none" id="step3">
+                            <div id="dynamicDocumentFieldsStep3" class="row g-3 gform-scroll-container" style="max-height: 52vh; overflow-y: auto; overflow-x: hidden; padding-right: 4px;">
+                                </div>
+                        </div>
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary flex-fill">
-
-                                Generate Document
-                            </button>
+                        <div class="d-flex gap-2 mt-4 pt-2 border-top">
+                            <button type="button" class="btn btn-light flex-fill" id="btnBack" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary flex-fill" id="btnNext">Lanjutkan</button>
+                            <button type="submit" class="btn btn-success flex-fill d-none" id="btnSubmit">Generate Document</button>
                         </div>
                     </form>
                 </div>
@@ -302,576 +221,499 @@
         </div>
     </div>
 
-
     <script>
-        const dynamicDocumentFields = {
-
-           proposal: `
+        const dynamicDocumentFieldsStep2 = {
+            proposal: `
                 <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Nama Event
-                    </label>
-
-                    <input
-                        type="text"
-                        name="event_name"
-                        class="form-control"
-                        value="{{ $event->nama_event }}"
-                        placeholder="Nama event">
+                    <label class="form-label small text-muted">Nama Event</label>
+                    <input type="text" name="event_name" class="form-control" value="{{ $event->nama_event }}" placeholder="Nama event">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Nama Organisasi
-                    </label>
-
-                    <input
-                        type="text"
-                        name="organization_name"
-                        class="form-control"
-                        value="{{ $event->organization?->nama_org ?? '' }}"
-                        placeholder="Contoh: KMK ISTTS">
+                    <label class="form-label small text-muted">Nama Organisasi</label>
+                    <input type="text" name="organization_name" class="form-control" value="{{ $event->organization?->nama_org ?? '' }}" placeholder="Contoh: KMK ISTTS">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Logo Organisasi
-                    </label>
-
-                    <input
-                        type="file"
-                        name="organization_logo"
-                        class="form-control"
-                        accept="image/*">
+                    <label class="form-label small text-muted">Logo Organisasi</label>
+                    <input type="file" name="organization_logo" class="form-control" accept="image/*">
+                    <div class="invalid-feedback fw-semibold">Silakan pilih logo file gambar.</div>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Tahun Akademik
-                    </label>
-
-                    <input
-                        type="text"
-                        name="academic_year"
-                        class="form-control"
-                        placeholder="2025/2026">
+                    <label class="form-label small text-muted">Tahun Akademik</label>
+                    <input type="text" name="academic_year" class="form-control" placeholder="2025/2026">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
-
                 <div class="col-md-4">
-                    <label class="form-label small text-muted">
-                        Target SMA/SMK
-                    </label>
-
-                    <input
-                        type="number"
-                        name="target_sma"
-                        class="form-control"
-                        value="0">
+                    <label class="form-label small text-muted">Target SMA/SMK</label>
+                    <input type="number" name="target_sma" class="form-control" value="0">
+                    <div class="invalid-feedback fw-semibold">Wajib diisi angka.</div>
                 </div>
-
                 <div class="col-md-4">
-                    <label class="form-label small text-muted">
-                        Target Mahasiswa
-                    </label>
-
-                    <input
-                        type="number"
-                        name="target_mahasiswa"
-                        class="form-control"
-                        value="0">
+                    <label class="form-label small text-muted">Target Mahasiswa</label>
+                    <input type="number" name="target_mahasiswa" class="form-control" value="0">
+                    <div class="invalid-feedback fw-semibold">Wajib diisi angka.</div>
                 </div>
-
                 <div class="col-md-4">
-                    <label class="form-label small text-muted">
-                        Target Umum
-                    </label>
-
-                    <input
-                        type="number"
-                        name="target_umum"
-                        class="form-control"
-                        value="0">
+                    <label class="form-label small text-muted">Target Umum</label>
+                    <input type="number" name="target_umum" class="form-control" value="0">
+                    <div class="invalid-feedback fw-semibold">Wajib diisi angka.</div>
                 </div>
-
                 <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Latar Belakang
-                    </label>
-
-                    <textarea
-                        name="background_text"
-                        class="form-control"
-                        rows="4"></textarea>
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Tujuan Kegiatan
-                    </label>
-
-                    <textarea
-                        name="objectives"
-                        class="form-control"
-                        rows="4"></textarea>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Tanggal Event
-                    </label>
-
-                    <input
-                        type="date"
-                        name="event_date"
-                        value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}"
-                        class="form-control">
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">
-                            Waktu Mulai
-                        </label>
-
-                        <input
-                            type="time"
-                            name="start_time"
-                            class="form-control">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">
-                            Waktu Selesai
-                        </label>
-
-                        <input
-                            type="time"
-                            name="end_time"
-                            class="form-control">
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Jumlah Tanda Tangan
-                    </label>
-
-                    <select
-                        name="signature_count"
-                        class="form-select">
-
-                        <option value="2">2 TTD</option>
-                        <option value="4">4 TTD</option>
-                    </select>
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Tempat
-                    </label>
-
-                    <input
-                        type="text"
-                        name="venue"
-                        class="form-control"
-                        placeholder="Lokasi kegiatan">
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Deskripsi Kegiatan
-                    </label>
-
-                    <textarea
-                        name="description_text"
-                        class="form-control"
-                        rows="4"></textarea>
+                    <label class="form-label small text-muted">Latar Belakang</label>
+                    <textarea name="background_text" class="form-control" rows="4"></textarea>
+                    <div class="invalid-feedback fw-semibold">Mohon deskripsikan latar belakang.</div>
                 </div>
             `,
 
             lpj: `
                 <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Nama Event
-                    </label>
-
-                    <input
-                        type="text"
-                        name="event_name"
-                        value="{{ $event->nama_event }}"
-                        class="form-control">
+                    <label class="form-label small text-muted">Nama Event</label>
+                    <input type="text" name="event_name" value="{{ $event->nama_event }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Jumlah Peserta
-                    </label>
-
-                    <input
-                        type="number"
-                        name="participant_count"
-                        value="0"
-                        class="form-control">
+                    <label class="form-label small text-muted">Jumlah Peserta</label>
+                    <input type="number" name="participant_count" value="0" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Wajib diisi angka.</div>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label small text-muted">
-                        Tanggal Realisasi
-                    </label>
-
-                    <input
-                        type="date"
-                        name="realization_date"
-                        value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}"
-                        class="form-control">
+                    <label class="form-label small text-muted">Tanggal Realisasi</label>
+                    <input type="date" name="realization_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Pilih tanggal realisasi.</div>
                 </div>
-
                 <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Tempat Realisasi
-                    </label>
-
-                    <input
-                        type="text"
-                        name="realized_venue"
-                        class="form-control"
-                        placeholder="Lokasi pelaksanaan">
+                    <label class="form-label small text-muted">Tempat Realisasi</label>
+                    <input type="text" name="realized_venue" class="form-control" placeholder="Lokasi pelaksanaan">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
-
                 <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Pelaksanaan Acara
-                    </label>
-
-                    <textarea
-                        name="implementation"
-                        class="form-control"
-                        rows="5"></textarea>
+                    <label class="form-label small text-muted">Pelaksanaan Acara</label>
+                    <textarea name="implementation" class="form-control" rows="5"></textarea>
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
-
                 <div class="col-12">
-                    <label class="form-label small text-muted">
-                        Evaluasi
-                    </label>
-
-                    <textarea
-                        name="evaluation"
-                        class="form-control"
-                        rows="4"></textarea>
+                    <label class="form-label small text-muted">Evaluasi</label>
+                    <textarea name="evaluation" class="form-control" rows="4"></textarea>
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
                 </div>
             `,
 
             invitation_letter: `
-                <div class="row g-3">
-                    <!-- ORGANIZER INFORMATION & LOGO -->
-                    <div class="col-12">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">1. Organizer Profile & Letterhead</h5>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted font-weight-bold">Organization / Community Name</label>
-                        <input type="text" name="organization_name" value="{{ $event->organization?->nama_org ?? 'Google Developer Group Surabaya' }}" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted font-weight-bold">Official Website URL (Optional)</label>
-                        <input type="text" name="organization_url" placeholder="e.g. https://gdg.community.dev/gdg-surabaya/" class="form-control">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small text-muted font-weight-bold">Upload Organizer Logo</label>
-                        <input type="file" name="organization_logo" class="form-control" accept="image/*">
-                        <div class="form-text text-muted small">Select a transparent PNG/JPG logo file to print on the top-left of the letterhead.</div>
-                    </div>
+                <div class="col-12">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">1. Organizer Profile & Letterhead</h6>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted fw-bold">Organization / Community Name</label>
+                    <input type="text" name="organization_name" value="{{ $event->organization?->nama_org ?? 'Google Developer Group Surabaya' }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted fw-bold">Official Website URL (Optional)</label>
+                    <input type="text" name="organization_url" placeholder="e.g. https://gdg.community.dev/gdg-surabaya/" class="form-control">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small text-muted fw-bold">Upload Organizer Logo</label>
+                    <input type="file" name="organization_logo" class="form-control" accept="image/*">
+                </div>
 
-                    <!-- LETTER METADATA -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">2. Document Metadata</h5>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Letter Number</label>
-                        <input type="text" name="letter_number" value="060/GDG/INV/X/2026" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Attachment</label>
-                        <input type="text" name="attachment" value="-" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Date Sent</label>
-                        <input type="date" name="date_sent" value="{{ date('Y-m-d') }}" class="form-control">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small text-muted font-weight-bold">Subject / Purpose of Letter</label>
-                        <input type="text" name="subject" value="Invitation as Speaker" class="form-control">
-                    </div>
+                <div class="col-12 mt-3">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">2. Document Metadata</h6>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Letter Number</label>
+                    <input type="text" name="letter_number" value="060/GDG/INV/X/2026" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Attachment</label>
+                    <input type="text" name="attachment" value="-" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Date Sent</label>
+                    <input type="date" name="date_sent" value="{{ date('Y-m-d') }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Pilih tanggal kirim.</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small text-muted fw-bold">Subject / Purpose of Letter</label>
+                    <input type="text" name="subject" value="Invitation as Speaker" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
 
-                    <!-- RECIPIENT INFORMATION -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">3. Recipient Information</h5>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Recipient Name</label>
-                        <input type="text" name="recipient_name" value="Mr. Ibnu Sina Wardy" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Recipient Title / Affiliation</label>
-                        <input type="text" name="recipient_role" value="CTO @Carte WMS & Google Developer Expert @Cloud & AI" class="form-control">
-                    </div>
+                <div class="col-12 mt-3">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">3. Recipient Information</h6>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Recipient Name</label>
+                    <input type="text" name="recipient_name" value="Mr. Ibnu Sina Wardy" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Recipient Title / Affiliation</label>
+                    <input type="text" name="recipient_role" value="CTO @Carte WMS & Google Developer Expert @Cloud & AI" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
 
-                    <!-- EVENT DETAILS -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">4. Event Execution Details</h5>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Event Name</label>
-                        <input type="text" name="event_name" value="{{ $event->nama_event }}" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Event Date</label>
-                        <input type="date" name="event_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Event Time Range</label>
-                        <input type="text" name="event_time" value="13:00 - 18:00 WIB" class="form-control">
-                    </div>
-                    <div class="col-md-9">
-                        <label class="form-label small text-muted">Venue (Room & Detailed Address)</label>
-                        <input type="text" name="event_location" value="Institut Sains dan Teknologi Terpadu Surabaya (ISTTS) Jl. Ngagel Jaya Tengah No. 73-77, Surabaya" class="form-control">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Expected Participants</label>
-                        <input type="number" name="participant_total" value="100" class="form-control">
-                    </div>
+                <div class="col-12 mt-3">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">4. Event Execution Details</h6>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small text-muted">Event Name</label>
+                    <input type="text" name="event_name" value="{{ $event->nama_event }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Event Date</label>
+                    <input type="date" name="event_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Pilih tanggal event.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Event Time Range</label>
+                    <input type="text" name="event_time" value="13:00 - 18:00 WIB" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-9">
+                    <label class="form-label small text-muted">Venue (Room & Detailed Address)</label>
+                    <input type="text" name="event_location" value="Institut Sains dan Teknologi Terpadu Surabaya (ISTTS) Jl. Ngagel Jaya Tengah No. 73-77, Surabaya" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Expected Participants</label>
+                    <input type="number" name="participant_total" value="100" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Wajib diisi.</div>
+                </div>
 
-                    <!-- NARRATION & SIGNATORY -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">5. Letter Narration & Signatory</h5>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small text-muted font-weight-bold">Additional Event Description / Collaboration Details</label>
-                        <textarea name="additional_description" class="form-control" rows="4">Flutter Fusion Conference is a collaborative initiative by Google Developer Groups (GDG) Surabaya, AI/ML Surabaya, and Flutter Surabaya. It explores "Fusion"—the synergy between Flutter (Frontend), AI (Intelligence), and Cloud (Backend)—empowering our community to build the next generation of innovative solutions.</textarea>
-                        <div class="form-text text-muted small">This paragraph will be dynamically embedded in the main invitation body.</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Sender Name (Signatory)</label>
-                        <input type="text" name="sender_name" value="Esther Irawati Setiawan" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Sender Position / Title</label>
-                        <input type="text" name="sender_role" placeholder="Leave empty for auto-generated 'Lead [Event Name]'" class="form-control">
-                    </div>
+                <div class="col-12 mt-3">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">5. Letter Narration & Signatory</h6>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small text-muted fw-bold">Additional Event Description / Collaboration Details</label>
+                    <textarea name="additional_description" class="form-control" rows="4">Flutter Fusion Conference is a collaborative initiative by Google Developer Groups (GDG) Surabaya, AI/ML Surabaya, and Flutter Surabaya. It explores "Fusion"—the synergy between Flutter (Frontend), AI (Intelligence), and Cloud (Backend)—empowering our community to build the next generation of innovative solutions.</textarea>
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Sender Name (Signatory)</label>
+                    <input type="text" name="sender_name" value="Esther Irawati Setiawan" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Sender Position / Title</label>
+                    <input type="text" name="sender_role" placeholder="Leave empty for auto-generated 'Lead [Event Name]'" class="form-control">
                 </div>
             `,
 
             mou_partner: `
-                <div class="row g-3">
-                    <!-- INFO DOKUMEN -->
-                    <div class="col-12">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">1. Informasi Umum Perjanjian</h5>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted font-weight-bold">Tempat Penandatanganan MoU (Kota)</label>
-                        <input type="text" name="signing_place"  class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted font-weight-bold">Tanggal Penandatanganan MoU</label>
-                        <input type="date" name="signing_date" value="{{ date('Y-m-d') }}" class="form-control">
-                    </div>
+                <div class="col-12">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">1. Informasi Umum Perjanjian</h6>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted fw-bold">Tempat Penandatanganan MoU (Kota)</label>
+                    <input type="text" name="signing_place" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted fw-bold">Tanggal Penandatanganan MoU</label>
+                    <input type="date" name="signing_date" value="{{ date('Y-m-d') }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
 
-                    <!-- PIHAK PERTAMA -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">2. Profil Pihak Pertama (Internal)</h5>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Nama Lembaga Pihak Pertama</label>
-                        <input type="text" name="first_party_name" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Nama Representatif Pihak Pertama</label>
-                        <input type="text" name="first_party_representative" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Jabatan Representatif</label>
-                        <input type="text" name="first_party_role"class="form-control">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Alamat Kantor</label>
-                        <input type="text" name="first_party_address"  class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Email Resmi</label>
-                        <input type="email" name="first_party_email" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">No. Telepon</label>
-                        <input type="text" name="first_party_phone"  class="form-control">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Bertindak Selaku (Peran Legal)</label>
-                        <input type="text" name="first_party_action_as" class="form-control">
-                    </div>
-
-                    <!-- PIHAK KEDUA -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">3. Profil Pihak Kedua (Mitra/Partner)</h5>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Nama Lembaga Pihak Kedua</label>
-                        <input type="text" name="second_party_name" placeholder="cth. Google Developer Student Clubs Surabaya" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Nama Representatif Pihak Kedua</label>
-                        <input type="text" name="second_party_representative" placeholder="cth. Alvin" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Jabatan Representatif</label>
-                        <input type="text" name="second_party_role" placeholder="cth. Lead GDG On Campus" class="form-control">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Alamat Kantor/Instansi</label>
-                        <input type="text" name="second_party_address" placeholder="Masukkan alamat lengkap mitra" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Email Mitra</label>
-                        <input type="email" name="second_party_email" placeholder="Masukkan email mitra" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">No. Telepon Mitra</label>
-                        <input type="text" name="second_party_phone" placeholder="Masukkan nomor telepon" class="form-control">
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Bertindak Selaku (Peran Legal)</label>
-                        <input type="text" name="second_party_action_as" placeholder="cth. Perwakilan Utama GDSC Institut STTS" class="form-control">
-                    </div>
-
-                    <!-- DETAIL KERJA SAMA -->
-                    <div class="col-12 mt-4">
-                        <h5 class="border-bottom pb-2 text-primary font-weight-bold">4. Detail Kontrak & Kerja Sama</h5>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Judul / Bentuk Kerja Sama</label>
-                        <input type="text" name="cooperation_title" placeholder="cth. Penyelenggaraan Seminar Gabungan" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Waktu Pelaksanaan</label>
-                        <input type="text" name="cooperation_time" placeholder="cth. Jumat, 5 Desember 2025" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted">Tempat Pelaksanaan</label>
-                        <input type="text" name="cooperation_venue" placeholder="cth. Auditorium ISTTS" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted font-weight-bold">Tanggal Mulai Berlaku MoU</label>
-                        <input type="date" name="start_date" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small text-muted font-weight-bold">Tanggal Berakhir MoU</label>
-                        <input type="date" name="end_date" class="form-control">
-                    </div>
-                    
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Tujuan Kerja Sama</label>
-                        <textarea name="cooperation_purpose" class="form-control" rows="3" placeholder="cth. mensinergikan potensi kedua lembaga dalam peningkatan mutu pendidikan..."></textarea>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Lingkup Kerja Sama</label>
-                        <textarea name="cooperation_scope" class="form-control" rows="3" placeholder="cth. penyediaan pemateri, kerja sama publikasi, dan penyediaan fasilitas bersama..."></textarea>
-                    </div>
-
-                    <!-- TANGGUNG JAWAB -->
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Kewajiban & Tanggung Jawab Pihak Pertama</label>
-                        <textarea name="obligations_first_party" class="form-control" rows="3" placeholder="cth. menyediakan ruang auditorium, menyiapkan logistik acara..."></textarea>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label small text-muted">Kewajiban & Tanggung Jawab Pihak Kedua</label>
-                        <textarea name="obligations_second_party" class="form-control" rows="3" placeholder="cth. mengirimkan perwakilan pembicara, menyediakan materi publikasi..."></textarea>
-                    </div>
-                </div>     
+                <div class="col-12 mt-3">
+                    <h6 class="border-bottom pb-2 text-primary fw-bold">2. Profil Pihak Pertama (Internal)</h6>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small text-muted">Nama Lembaga Pihak Pertama</label>
+                    <input type="text" name="first_party_name" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Nama Representatif Pihak Pertama</label>
+                    <input type="text" name="first_party_representative" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Jabatan Representatif</label>
+                    <input type="text" name="first_party_role" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small text-muted">Alamat Kantor</label>
+                    <input type="text" name="first_party_address" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Email Resmi</label>
+                    <input type="email" name="first_party_email" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Field ini wajib diisi.</div>
+                </div>
             `
         };
 
-        function renderDocumentFields() {
-
-            const type = document.getElementById('documentType').value;
-
-            document.getElementById('dynamicDocumentFields').innerHTML =
-                dynamicDocumentFields[type] || '';
-        }
-
-        document
-            .getElementById('documentType')
-            .addEventListener('change', renderDocumentFields);
-
-        renderDocumentFields();
-
-    </script>
-
-    <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-                <div class="modal-body p-4">
-                    <h5 class="fw-bold mb-3">Edit Document</h5>
-
-                    <form id="editDocumentForm" method="POST">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <label class="form-label small text-muted">Type</label>
-                                <select name="document_type" id="edit_document_type" class="form-select">
-                                    @foreach($typeLabels as $key => $label)
-                                        <option value="{{ $key }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small text-muted">Status</label>
-                                <select name="status" id="edit_document_status" class="form-select">
-                                    @foreach($statusLabels as $key => $label)
-                                        <option value="{{ $key }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small text-muted">Title</label>
-                                <input type="text" name="title" id="edit_document_title" class="form-control">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small text-muted">File URL</label>
-                                <input type="text" name="file_url" id="edit_document_file" class="form-control" placeholder="https://...">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small text-muted">Notes</label>
-                                <textarea name="notes" id="edit_document_notes" class="form-control" rows="3"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2 mt-4">
-                            <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-primary flex-fill">Update</button>
-                        </div>
-                    </form>
+        const dynamicDocumentFieldsStep3 = {
+            proposal: `
+                <div class="col-12">
+                    <label class="form-label small text-muted">Tujuan Kegiatan</label>
+                    <textarea name="objectives" class="form-control" rows="4"></textarea>
+                    <div class="invalid-feedback fw-semibold">Mohon deskripsikan tujuan kegiatan.</div>
                 </div>
-            </div>
-        </div>
-    </div>
-@endif
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Tanggal Event</label>
+                    <input type="date" name="event_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Pilih tanggal pelaksanaan event.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Waktu Mulai</label>
+                    <input type="time" name="start_time" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Waktu wajib ada.</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Waktu Selesai</label>
+                    <input type="time" name="end_time" class="form-control">
+                    <div class="invalid-feedback fw-semibold">Waktu wajib ada.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Jumlah Tanda Tangan</label>
+                    <select name="signature_count" class="form-select">
+                        <option value="2">2 TTD</option>
+                        <option value="4">4 TTD</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-muted">Tempat</label>
+                    <input type="text" name="venue" class="form-control" placeholder="Lokasi kegiatan">
+                    <div class="invalid-feedback fw-semibold">Field lokasi wajib diisi.</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small text-muted">Deskripsi Kegiatan</label>
+                    <textarea name="description_text" class="form-control" rows="4"></textarea>
+                    <div class="invalid-feedback fw-semibold">Mohon lengkapi gambaran/deskripsi kegiatan.</div>
+                </div>
+            `
+        };
 
-@if($canManageDocument)
-    <script>
-        document.querySelectorAll('.document-edit-btn').forEach((btn) => {
-            btn.addEventListener('click', function () {
-                const form = document.getElementById('editDocumentForm');
-                form.action = `/events/{{ $event->id_event }}/documents/${this.dataset.id}`;
+        document.addEventListener("DOMContentLoaded", function () {
+            let currentStep = 1;
 
-                document.getElementById('edit_document_type').value = this.dataset.type;
-                document.getElementById('edit_document_status').value = this.dataset.status;
-                document.getElementById('edit_document_title').value = this.dataset.title;
-                document.getElementById('edit_document_file').value = this.dataset.file || '';
-                document.getElementById('edit_document_notes').value = this.dataset.notes || '';
+            const step1 = document.getElementById("step1");
+            const step2 = document.getElementById("step2");
+            const step3 = document.getElementById("step3");
+            
+            const btnNext = document.getElementById("btnNext");
+            const btnBack = document.getElementById("btnBack");
+            const btnSubmit = document.getElementById("btnSubmit");
+            
+            const stepIndicator = document.getElementById("stepIndicator");
+            const formProgressBar = document.getElementById("formProgressBar");
+            const documentTypeSelect = document.getElementById("documentType");
+            const documentTitleInput = document.getElementById("documentTitleInput");
+            const titleErrorFeedback = document.getElementById("titleErrorFeedback");
+            
+            const fieldsContainerStep2 = document.getElementById("dynamicDocumentFields");
+            const fieldsContainerStep3 = document.getElementById("dynamicDocumentFieldsStep3");
+            const formElement = document.getElementById("multiStepForm");
 
-                const modal = new bootstrap.Modal(document.getElementById('editDocumentModal'));
-                modal.show();
+            function renderDynamicFields() {
+                const selectedType = documentTypeSelect.value;
+                fieldsContainerStep2.innerHTML = dynamicDocumentFieldsStep2[selectedType] || 
+                    `<div class="col-12 text-muted small p-3">Tidak ada field tambahan wajib untuk tipe dokumen ini.</div>`;
+                
+                fieldsContainerStep3.innerHTML = dynamicDocumentFieldsStep3[selectedType] || '';
+                
+                attachRealtimeValidationClearance();
+            }
+
+            documentTypeSelect.addEventListener("change", function() {
+                renderDynamicFields();
+                currentStep = 1;
+                updateFormStep();
             });
+            renderDynamicFields();
+
+            function getTotalSteps() {
+                return documentTypeSelect.value === 'proposal' ? 3 : 2;
+            }
+
+            function validateContainerFields(containerElement) {
+                let isValid = true;
+                const inputs = containerElement.querySelectorAll('input, select, textarea');
+                
+                inputs.forEach(input => {
+
+                    if (input.type === 'file' || input.name === 'organization_url' || input.name === 'sender_role') {
+                        return;
+                    }
+                    
+                    if (input.value === null || input.value.trim() === "") {
+                        input.classList.add("is-invalid");
+                        
+                        const feedback = input.nextElementSibling;
+                        if(feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.style.display = 'block';
+                        }
+                        isValid = false;
+                    } else {
+                        input.classList.remove("is-invalid");
+                        const feedback = input.nextElementSibling;
+                        if(feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.style.display = 'none';
+                        }
+                    }
+                });
+
+                if (!isValid) {
+                    const firstInvalid = containerElement.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.focus(); 
+                    }
+                }
+                return isValid;
+            }
+
+            // Realtime hapus error saat diketik
+            function attachRealtimeValidationClearance() {
+                const elements = document.querySelectorAll('#multiStepForm input, #multiStepForm textarea, #multiStepForm select');
+                elements.forEach(el => {
+                    const clearError = function() {
+                        if (this.value.trim() !== "") {
+                            this.classList.remove("is-invalid");
+                            const feedback = this.nextElementSibling;
+                            if(feedback && feedback.classList.contains('invalid-feedback')) {
+                                feedback.style.display = 'none';
+                            }
+                        }
+                    };
+                    el.addEventListener('input', clearError);
+                    el.addEventListener('change', clearError);
+                });
+            }
+
+            function updateFormStep() {
+                const totalSteps = getTotalSteps();
+                const typeLabel = documentTypeSelect.options[documentTypeSelect.selectedIndex].text;
+
+                step1.classList.add("d-none");
+                step2.classList.add("d-none");
+                step3.classList.add("d-none");
+
+                if (currentStep === 1) {
+                    step1.classList.remove("d-none");
+                    stepIndicator.innerText = `Langkah 1 dari ${totalSteps}: Informasi Dasar`;
+                    formProgressBar.style.width = `${(1 / totalSteps) * 100}%`;
+                    formProgressBar.classList.replace("bg-success", "bg-primary");
+
+                    btnBack.innerText = "Cancel";
+                    btnBack.setAttribute("data-bs-dismiss", "modal");
+                    btnBack.classList.replace("btn-outline-secondary", "btn-light");
+
+                    btnNext.classList.remove("d-none");
+                    btnSubmit.classList.add("d-none");
+                } 
+                else if (currentStep === 2) {
+                    step2.classList.remove("d-none");
+                    
+                    if (totalSteps === 3) {
+                        stepIndicator.innerText = `Langkah 2 dari 3: Profil & Latar Belakang`;
+                        btnNext.classList.remove("d-none");
+                        btnSubmit.classList.add("d-none");
+                        formProgressBar.classList.replace("bg-success", "bg-primary");
+                    } else {
+                        stepIndicator.innerText = `Langkah 2 dari 2: Detail Konten ${typeLabel}`;
+                        btnNext.classList.add("d-none");
+                        btnSubmit.classList.remove("d-none");
+                        formProgressBar.classList.replace("bg-primary", "bg-success");
+                    }
+
+                    formProgressBar.style.width = `${(2 / totalSteps) * 100}%`;
+                    btnBack.innerText = "Kembali";
+                    btnBack.removeAttribute("data-bs-dismiss");
+                    btnBack.classList.replace("btn-light", "btn-outline-secondary");
+                } 
+                else if (currentStep === 3) {
+                    step3.classList.remove("d-none");
+                    stepIndicator.innerText = `Langkah 3 dari 3: Pelaksanaan & Deskripsi`;
+                    formProgressBar.style.width = "100%";
+                    formProgressBar.classList.replace("bg-primary", "bg-success");
+
+                    btnNext.classList.add("d-none");
+                    btnSubmit.classList.remove("d-none");
+                }
+            }
+
+            btnNext.addEventListener("click", function () {
+                if (currentStep === 1) {
+                    if (!documentTitleInput.value.trim()) {
+                        documentTitleInput.classList.add("is-invalid");
+                        titleErrorFeedback.style.display = "block";
+                        return;
+                    }
+                    documentTitleInput.classList.remove("is-invalid");
+                    titleErrorFeedback.style.display = "none";
+                }
+                else if (currentStep === 2) {
+                    if (!validateContainerFields(fieldsContainerStep2)) {
+                        return; 
+                    }
+                }
+
+                if (currentStep < getTotalSteps()) {
+                    currentStep++;
+                    updateFormStep();
+                }
+            });
+
+            // PENCEGAHAN 1: Blokir tombol Enter agar tidak bypass validasi
+            formElement.addEventListener("keydown", function(event) {
+                if (event.key === "Enter" && event.target.tagName !== "TEXTAREA") {
+                    event.preventDefault();
+                    
+                    if (currentStep < getTotalSteps()) {
+                        btnNext.click();
+                    } else {
+                        btnSubmit.click();
+                    }
+                }
+            });
+
+            // PENCEGAHAN 2: Validasi ketat saat form mau di-submit ke backend
+            formElement.addEventListener("submit", function(e) {
+                const totalSteps = getTotalSteps();
+                
+                if (currentStep < totalSteps) {
+                    e.preventDefault();
+                    btnNext.click();
+                    return;
+                }
+
+                if (totalSteps === 3 && currentStep === 3) {
+                    if (!validateContainerFields(fieldsContainerStep3)) {
+                        e.preventDefault();
+                    }
+                } else if (totalSteps === 2 && currentStep === 2) {
+                    if (!validateContainerFields(fieldsContainerStep2)) {
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            btnBack.addEventListener("click", function (e) {
+                if (currentStep > 1) {
+                    e.preventDefault();
+                    currentStep--;
+                    updateFormStep();
+                }
+            });
+
+            const documentModalEl = document.getElementById('documentModal');
+            if(documentModalEl) {
+                documentModalEl.addEventListener('hidden.bs.modal', function () {
+                    currentStep = 1;
+                    updateFormStep();
+                    formElement.reset();
+                    documentTitleInput.classList.remove("is-invalid");
+                    titleErrorFeedback.style.display = "none";
+                    renderDynamicFields();
+                });
+            }
         });
     </script>
 @endif
