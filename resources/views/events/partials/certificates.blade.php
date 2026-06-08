@@ -61,11 +61,11 @@
                             <div class="row g-3 recipient-row">
                                 <div class="col-md-6">
                                     <input type="text" name="nama_penerima[]" class="form-control"
-                                        placeholder="Nama Penerima" required>
+                                        placeholder="Nama Penerima">
                                 </div>
                                 <div class="col-md-6">
                                     <input type="email" name="email_penerima[]" class="form-control"
-                                        placeholder="Email Penerima" required>
+                                        placeholder="Email Penerima">
                                 </div>
                             </div>
                         </div>
@@ -99,7 +99,7 @@
                         <div class="mb-3">
                             <label class="form-label small text-muted">File CSV atau Excel</label>
                             <input type="file" name="recipients_file" class="form-control" accept=".csv,.xlsx,.xls"
-                                required>
+                               >
                             <small class="text-muted d-block mt-2">
                                 Format: <code>Nama Lengkap, Email Penerima</code><br>
                                 Baris pertama adalah header (otomatis dilewati).
@@ -145,7 +145,7 @@
                 <div class="flex-grow-1">
                     <label class="form-label small text-muted">File Template (PNG/JPG, max 5MB)</label>
                     <input type="file" name="template_file" class="form-control" accept="image/png,image/jpeg,image/jpg"
-                        required>
+                       >
                     <small class="text-muted d-block mt-2">Template akan digunakan sebagai background certificate. Pastikan
                         ukuran dan resolusi sudah sesuai.</small>
                 </div>
@@ -383,11 +383,11 @@
             const html = `
                             <div class="row g-3 recipient-row mt-3">
                                 <div class="col-md-6">
-                                    <input type="text" name="nama_penerima[]" class="form-control" placeholder="Nama Penerima" required>
+                                    <input type="text" name="nama_penerima[]" class="form-control" placeholder="Nama Penerima">
                                 </div>
                                 <div class="col-md-6">
                                     <div class="input-group">
-                                        <input type="email" name="email_penerima[]" class="form-control" placeholder="Email Penerima" required>
+                                        <input type="email" name="email_penerima[]" class="form-control" placeholder="Email Penerima">
                                         <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.parentElement.parentElement.remove()">
                                             <i class="bi bi-trash"></i>
                                         </button>

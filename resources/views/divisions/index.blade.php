@@ -35,7 +35,7 @@
                         <label class="form-label small fw-bold text-muted ms-1">Nama Divisi Baru</label>
                         <input type="text" name="nama_divisi" 
                                class="form-control bg-light border-0 py-3 shadow-none @error('nama_divisi') is-invalid @enderror" 
-                               placeholder="Contoh: Web Development" required>
+                               placeholder="Contoh: Web Development">
                         @error('nama_divisi')
                             <div class="invalid-feedback ms-1">{{ $message }}</div>
                         @enderror
@@ -120,7 +120,7 @@
                                                     <div class="modal-body px-4">
                                                         <div class="mb-3">
                                                             <label class="form-label small fw-bold text-muted">Nama Divisi</label>
-                                                            <input type="text" name="nama_divisi" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" value="{{ $divisi->nama_divisi }}" required>
+                                                            <input type="text" name="nama_divisi" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" value="{{ $divisi->nama_divisi }}">
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer border-0 pb-4 px-4">

@@ -93,39 +93,37 @@
             <div class="row g-3">
 
                 <div class="col-12">
-                    <button
-                        class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start"
-                        data-bs-toggle="modal"
-                        data-bs-target="#eventModal">
+                    <a href="/events/create"
+                        class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start text-decoration-none text-dark">
 
-                        <i class="bi bi-calendar-plus fs-4 me-2"></i>
+                        <i class="bi bi-calendar-plus fs-4 me-2 text-primary"></i>
                         Create Event
-                    </button>
+                    </a>
                 </div>
 
                 <div class="col-12">
-                    <button
-                        class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start">
+                    <a href="/tasks"
+                        class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start text-decoration-none text-dark">
 
-                        <i class="bi bi-check2-circle fs-4 me-2"></i>
+                        <i class="bi bi-check2-circle fs-4 me-2 text-success"></i>
                         Add Task
-                    </button>
+                    </a>
                 </div>
 
                 <div class="col-12">
-                    <button
-                        class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start">
+                    <a href="/partners"
+                        class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start text-decoration-none text-dark">
 
-                        <i class="bi bi-people fs-4 me-2"></i>
+                        <i class="bi bi-people fs-4 me-2 text-warning"></i>
                         Add Partner
-                    </button>
+                    </a>
                 </div>
 
                 <div class="col-12">
                     <a href="/organizations"
-                       class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start">
+                       class="btn btn-light w-100 rounded-4 border-dashed py-4 text-start text-decoration-none text-dark">
 
-                        <i class="bi bi-building fs-4 me-2"></i>
+                        <i class="bi bi-building fs-4 me-2" style="color: #9333ea;"></i>
                         Organization
                     </a>
                 </div>
@@ -169,45 +167,6 @@
     </div>
 </div>
 
-{{-- MODAL CREATE EVENT (Google Palette Version) --}}
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
-            <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="fw-bold text-dark mb-0">Create New Event</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Organization</label>
-                    <select id="id_org" class="form-control border-0 bg-light py-3 px-3 rounded-4" required>
-                        <option value="">Pilih organization</option>
-                        @foreach($organizations as $org)
-                            <option value="{{ $org->id_org }}">{{ $org->nama_org }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted">Category</label>
-                    <select id="id_event_category" class="form-control border-0 bg-light py-3 px-3 rounded-4" required>
-                        <option value="">Pilih kategori</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id_event_category }}">{{ $category->nama_kategori }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-0">
-                    <label class="form-label small fw-bold text-muted">Start Date</label>
-                    <input type="date" id="tgl_mulai" class="form-control border-0 bg-light py-3 px-3 rounded-4" required>
-                </div>
-            </div>
-            <div class="modal-footer border-0 p-4 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" id="saveEvent">Save Event</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <style>
     .bg-purple-subtle { background-color: #f3e8ff; }
@@ -243,36 +202,7 @@
     }
 </style>
 
-{{-- SCRIPT --}}
-<script>
-document.getElementById('saveEvent')?.addEventListener('click', function(){
-    const btn = this;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
 
-    fetch('/events', {
-        method: 'POST',
-        headers: {
-            'Content-Type':'application/json',
-            'X-CSRF-TOKEN':'{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            id_org: document.getElementById('id_org').value,
-            id_event_category: document.getElementById('id_event_category').value,
-            nama_event: document.getElementById('nama_event').value,
-            tgl_mulai: document.getElementById('tgl_mulai').value
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        location.reload();
-    })
-    .catch(() => {
-        btn.disabled = false;
-        btn.innerHTML = 'Save Event';
-    });
-});
-</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 

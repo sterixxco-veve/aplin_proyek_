@@ -61,7 +61,6 @@
 
     <div class="container py-5">
 
-        ```
         <div class="row justify-content-center align-items-center min-vh-100">
 
             <div class="col-lg-10">
@@ -97,10 +96,13 @@
                             </p>
 
                             @if(session('status'))
-                                <div class="alert alert-success rounded-3">
-                                    {{ session('status') }}
+                                <div class="alert alert-success rounded-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <span>{{ session('status') }}</span>
                                 </div>
                             @endif
+
+
 
                             <form method="POST" action="{{ route('password.email') }}">
 
@@ -112,8 +114,14 @@
                                         Email Address
                                     </label>
 
-                                    <input type="email" name="email" class="form-control" placeholder="you@example.com"
-                                        required>
+                                    <input type="email" name="email"
+                                        class="form-control @error('email') is-invalid @enderror"
+                                        placeholder="you@example.com"
+                                        value="{{ old('email') }}">
+
+                                    @error('email')
+                                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                    @enderror
 
                                 </div>
 

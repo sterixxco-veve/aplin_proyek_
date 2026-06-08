@@ -50,7 +50,6 @@
 
     <div class="container py-5">
 
-        ```
         <div class="row justify-content-center align-items-center min-vh-100">
 
             <div class="col-lg-10">
@@ -77,6 +76,8 @@
                                 Reset Password
                             </h3>
 
+
+
                             <form method="POST" action="{{ route('password.store') }}">
 
                                 @csrf
@@ -90,7 +91,11 @@
                                     </label>
 
                                     <input type="email" name="email" value="{{ old('email', $request->email) }}"
-                                        class="form-control" required>
+                                        class="form-control @error('email') is-invalid @enderror">
+
+                                    @error('email')
+                                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                    @enderror
 
                                 </div>
 
@@ -102,12 +107,17 @@
 
                                     <div class="input-group">
 
-                                        <input type="password" name="password" id="password" class="form-control" required>
+                                        <input type="password" name="password" id="password"
+                                            class="form-control @error('password') is-invalid @enderror">
 
                                         <button type="button" class="btn btn-outline-secondary"
                                             onclick="togglePassword('password')">
                                             👁
                                         </button>
+
+                                        @error('password')
+                                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                        @enderror
 
                                     </div>
 
@@ -122,12 +132,16 @@
                                     <div class="input-group">
 
                                         <input type="password" name="password_confirmation" id="password_confirmation"
-                                            class="form-control" required>
+                                            class="form-control @error('password_confirmation') is-invalid @enderror">
 
                                         <button type="button" class="btn btn-outline-secondary"
                                             onclick="togglePassword('password_confirmation')">
                                             👁
                                         </button>
+
+                                        @error('password_confirmation')
+                                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                        @enderror
 
                                     </div>
 

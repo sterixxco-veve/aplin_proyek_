@@ -72,6 +72,22 @@
             <span class="badge bg-success-subtle text-success rounded-pill">Realisasi</span>
         </div>
 
+
+
+        @if(session('success'))
+            <div class="alert alert-success border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
         <form id="expenseForm"
               method="POST"
               action="/events/{{ $event->id_event }}/expenses"
@@ -81,38 +97,64 @@
             <div class="row g-3">
                 <div class="col-12">
                     <input type="text" name="nama_pengeluaran" id="nama_pengeluaran"
-                           class="form-control" placeholder="Contoh: Bayar venue" required>
+                           class="form-control @error('nama_pengeluaran') is-invalid @enderror"
+                           placeholder="Contoh: Bayar venue"
+                           value="{{ old('nama_pengeluaran') }}">
+                    @error('nama_pengeluaran')
+                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">
                     <select name="id_expense_category" id="kategori"
-                            class="form-control" required>
+                            class="form-control @error('id_expense_category') is-invalid @enderror">
                         <option value="">Pilih kategori expense</option>
                         @foreach($expenseCategories as $cat)
-                            <option value="{{ $cat->id_expense_category }}">
+                            <option value="{{ $cat->id_expense_category }}" {{ old('id_expense_category') == $cat->id_expense_category ? 'selected' : '' }}>
                                 {{ $cat->nama_kategori }}
                             </option>
                         @endforeach
                     </select>
+                    @error('id_expense_category')
+                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-3">
                     <input type="number" name="nominal" id="nominal"
-                           class="form-control" placeholder="Harga" required>
+                           class="form-control @error('nominal') is-invalid @enderror"
+                           placeholder="Harga"
+                           value="{{ old('nominal') }}">
+                    @error('nominal')
+                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-2">
                     <input type="number" name="qty" id="qty"
-                           class="form-control" placeholder="Qty" required>
+                           class="form-control @error('qty') is-invalid @enderror"
+                           placeholder="Qty"
+                           value="{{ old('qty') }}">
+                    @error('qty')
+                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-3">
                     <input type="number" name="nomor_rekening" id="rekening"
-                           class="form-control" placeholder="Nomor rekening" required>
+                           class="form-control @error('nomor_rekening') is-invalid @enderror"
+                           placeholder="Nomor rekening"
+                           value="{{ old('nomor_rekening') }}">
+                    @error('nomor_rekening')
+                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-12">
-                    <input type="file" name="bukti_nota" class="form-control">
+                    <input type="file" name="bukti_nota" class="form-control @error('bukti_nota') is-invalid @enderror">
+                    @error('bukti_nota')
+                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-12 d-flex gap-2">

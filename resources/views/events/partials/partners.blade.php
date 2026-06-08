@@ -155,43 +155,55 @@
                 <div class="modal-body p-4">
                     <h5 class="fw-bold mb-3">Tambah Partner</h5>
 
+
                     <form method="POST" action="/events/{{ $event->id_event }}/partners">
                         @csrf
 
                         <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Nama Partner</label>
-                                <input type="text" name="nama_partner" class="form-control" required>
+                                <input type="text" name="nama_partner"
+                                    class="form-control @error('nama_partner') is-invalid @enderror"
+                                    value="{{ old('nama_partner') }}">
+                                @error('nama_partner')
+                                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Jenis Partner</label>
-                                <select name="jenis_partner" class="form-select" required>
+                                <select name="jenis_partner" class="form-select @error('jenis_partner') is-invalid @enderror">
                                     <option value="">Pilih jenis</option>
-                                    <option value="sponsor">Sponsor</option>
-                                    <option value="medpar">Media Partner</option>
-                                    <option value="comrel">Community Relation</option>
+                                    <option value="sponsor" {{ old('jenis_partner') == 'sponsor' ? 'selected' : '' }}>Sponsor</option>
+                                    <option value="medpar" {{ old('jenis_partner') == 'medpar' ? 'selected' : '' }}>Media Partner</option>
+                                    <option value="comrel" {{ old('jenis_partner') == 'comrel' ? 'selected' : '' }}>Community Relation</option>
                                 </select>
+                                @error('jenis_partner')
+                                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Status</label>
-                                <select name="status" class="form-select" required>
+                                <select name="status" class="form-select @error('status') is-invalid @enderror">
                                     @foreach($statusLabels as $key => $label)
-                                        <option value="{{ $key }}">{{ $label }}</option>
+                                        <option value="{{ $key }}" {{ old('status') == $key ? 'selected' : '' }}>{{ $label }}</option>
                                     @endforeach
                                 </select>
+                                @error('status')
+                                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">PIC</label>
                                 <select name="assigned_pic" class="form-select">
                                     <option value="">Pilih PIC</option>
                                     @foreach($members as $member)
-                                        <option value="{{ $member->id_user }}">{{ $member->name }} ({{ $member->email }})</option>
+                                        <option value="{{ $member->id_user }}" {{ old('assigned_pic') == $member->id_user ? 'selected' : '' }}>{{ $member->name }} ({{ $member->email }})</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Notes</label>
-                                <textarea name="notes" class="form-control" rows="3" placeholder="Catatan singkat partner"></textarea>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Catatan singkat partner">{{ old('notes') }}</textarea>
                             </div>
                         </div>
 
@@ -218,11 +230,11 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <label class="form-label small text-muted">Nama Partner</label>
-                                <input type="text" name="nama_partner" id="edit_partner_nama" class="form-control" required>
+                                <input type="text" name="nama_partner" id="edit_partner_nama" class="form-control">
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Jenis Partner</label>
-                                <select name="jenis_partner" id="edit_partner_jenis" class="form-select" required>
+                                <select name="jenis_partner" id="edit_partner_jenis" class="form-select">
                                     <option value="sponsor">Sponsor</option>
                                     <option value="medpar">Media Partner</option>
                                     <option value="comrel">Community Relation</option>
@@ -230,7 +242,7 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Status</label>
-                                <select name="status" id="edit_partner_status" class="form-select" required>
+                                <select name="status" id="edit_partner_status" class="form-select">
                                     @foreach($statusLabels as $key => $label)
                                         <option value="{{ $key }}">{{ $label }}</option>
                                     @endforeach

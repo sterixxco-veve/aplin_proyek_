@@ -128,12 +128,16 @@
 
                                     <div class="mb-2 photo-input">
 
-                                        <input type="file" name="photos[]" class="form-control photo-upload"
+                                        <input type="file" name="photos[]" class="form-control photo-upload @error('photos') is-invalid @enderror"
                                             accept="image/*">
 
                                     </div>
 
                                 </div>
+
+                                @error('photos')
+                                    <div class="text-danger small fw-semibold mt-1">{{ $message }}</div>
+                                @enderror
 
                                 <div class="photo-counter mt-2">
                                     Maximum 5 photos
@@ -147,9 +151,13 @@
                                     Google Drive Folder
                                 </label>
 
-                                <input type="url" name="google_drive_link" class="form-control"
-                                    value="{{ $event->documentationLinks->first()?->google_drive_link }}"
+                                <input type="url" name="google_drive_link" class="form-control @error('google_drive_link') is-invalid @enderror"
+                                    value="{{ old('google_drive_link', $event->documentationLinks->first()?->google_drive_link) }}"
                                     placeholder="https://drive.google.com/...">
+
+                                @error('google_drive_link')
+                                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                                @enderror
 
                             </div>
 

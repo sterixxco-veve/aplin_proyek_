@@ -56,7 +56,7 @@
                                     class="bi bi-person text-muted"></i></span>
                             <input type="text" name="name"
                                 class="form-control bg-light border-0 py-3 @error('name') is-invalid @enderror"
-                                placeholder="Nama Lengkap Anda" value="{{ old('name') }}" required>
+                                placeholder="Nama Lengkap Anda" value="{{ old('name') }}">
                         </div>
                         @error('name')
                             <div class="text-danger small mt-1 ms-1">{{ $message }}</div>
@@ -70,7 +70,7 @@
                                     class="bi bi-envelope text-muted"></i></span>
                             <input type="email" name="email"
                                 class="form-control bg-light border-0 py-3 @error('email') is-invalid @enderror"
-                                placeholder="email@example.com" value="{{ old('email') }}" required>
+                                placeholder="email@example.com" value="{{ old('email') }}">
                         </div>
                         @error('email')
                             <div class="text-danger small mt-1 ms-1">{{ $message }}</div>
@@ -82,7 +82,7 @@
                             <label class="form-label small fw-bold text-muted ms-1">Password</label>
                             <input type="password" name="password"
                                 class="form-control bg-light border-0 py-3 @error('password') is-invalid @enderror"
-                                placeholder="••••••••" required>
+                                placeholder="••••••••">
                             @error('password')
                                 <div class="text-danger small mt-1 ms-1">{{ $message }}</div>
                             @enderror
@@ -90,7 +90,7 @@
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-muted ms-1">Konfirmasi</label>
                             <input type="password" name="password_confirmation"
-                                class="form-control bg-light border-0 py-3" placeholder="••••••••" required>
+                                class="form-control bg-light border-0 py-3" placeholder="••••••••">
                         </div>
                     </div>
 

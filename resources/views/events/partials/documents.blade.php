@@ -204,14 +204,15 @@
                                 <select
                                     name="document_type"
                                     id="documentType"
-                                    class="form-select"
-                                    required>
+                                    class="form-select @error('document_type') is-invalid @enderror"
+                                   >
 
-                                    <option value="proposal">Proposal</option>
-                                    <option value="lpj">Laporan Pertanggungjawaban</option>
-                                    <option value="invitation_letter">Invitation Letter</option>
-                                    <option value="mou_partner">MOU</option>
+                                    <option value="proposal" {{ old('document_type') == 'proposal' ? 'selected' : '' }}>Proposal</option>
+                                    <option value="lpj" {{ old('document_type') == 'lpj' ? 'selected' : '' }}>Laporan Pertanggungjawaban</option>
+                                    <option value="invitation_letter" {{ old('document_type') == 'invitation_letter' ? 'selected' : '' }}>Invitation Letter</option>
+                                    <option value="mou_partner" {{ old('document_type') == 'mou_partner' ? 'selected' : '' }}>MOU</option>
                                 </select>
+                                @error('document_type')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
 
                             <!-- STATUS -->
@@ -223,7 +224,7 @@
                                 <select
                                     name="status"
                                     class="form-select"
-                                    required>
+                                   >
 
                                     @foreach($statusLabels as $key => $label)
                                         <option value="{{ $key }}">
@@ -242,9 +243,11 @@
                                 <input
                                     type="text"
                                     name="title"
-                                    class="form-control"
+                                    class="form-control @error('title') is-invalid @enderror"
                                     placeholder="Contoh: Proposal Seminar AI"
-                                    required>
+                                    value="{{ old('title') }}"
+                                   >
+                                @error('title')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
 
                             <!-- DYNAMIC FORM -->
@@ -299,8 +302,8 @@
         </div>
     </div>
 
-    <script>
 
+    <script>
         const dynamicDocumentFields = {
 
            proposal: `
@@ -566,7 +569,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted font-weight-bold">Organization / Community Name</label>
-                        <input type="text" name="organization_name" value="{{ $event->organization?->nama_org ?? 'Google Developer Group Surabaya' }}" class="form-control" required>
+                        <input type="text" name="organization_name" value="{{ $event->organization?->nama_org ?? 'Google Developer Group Surabaya' }}" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted font-weight-bold">Official Website URL (Optional)</label>
@@ -584,7 +587,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Letter Number</label>
-                        <input type="text" name="letter_number" value="060/GDG/INV/X/2026" class="form-control" required>
+                        <input type="text" name="letter_number" value="060/GDG/INV/X/2026" class="form-control">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Attachment</label>
@@ -592,11 +595,11 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Date Sent</label>
-                        <input type="date" name="date_sent" value="{{ date('Y-m-d') }}" class="form-control" required>
+                        <input type="date" name="date_sent" value="{{ date('Y-m-d') }}" class="form-control">
                     </div>
                     <div class="col-12">
                         <label class="form-label small text-muted font-weight-bold">Subject / Purpose of Letter</label>
-                        <input type="text" name="subject" value="Invitation as Speaker" class="form-control" required>
+                        <input type="text" name="subject" value="Invitation as Speaker" class="form-control">
                     </div>
 
                     <!-- RECIPIENT INFORMATION -->
@@ -605,11 +608,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Recipient Name</label>
-                        <input type="text" name="recipient_name" value="Mr. Ibnu Sina Wardy" class="form-control" required>
+                        <input type="text" name="recipient_name" value="Mr. Ibnu Sina Wardy" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Recipient Title / Affiliation</label>
-                        <input type="text" name="recipient_role" value="CTO @Carte WMS & Google Developer Expert @Cloud & AI" class="form-control" required>
+                        <input type="text" name="recipient_role" value="CTO @Carte WMS & Google Developer Expert @Cloud & AI" class="form-control">
                     </div>
 
                     <!-- EVENT DETAILS -->
@@ -618,23 +621,23 @@
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Event Name</label>
-                        <input type="text" name="event_name" value="{{ $event->nama_event }}" class="form-control" required>
+                        <input type="text" name="event_name" value="{{ $event->nama_event }}" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Event Date</label>
-                        <input type="date" name="event_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control" required>
+                        <input type="date" name="event_date" value="{{ $event->tgl_mulai ? \Carbon\Carbon::parse($event->tgl_mulai)->format('Y-m-d') : '' }}" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Event Time Range</label>
-                        <input type="text" name="event_time" value="13:00 - 18:00 WIB" class="form-control" required>
+                        <input type="text" name="event_time" value="13:00 - 18:00 WIB" class="form-control">
                     </div>
                     <div class="col-md-9">
                         <label class="form-label small text-muted">Venue (Room & Detailed Address)</label>
-                        <input type="text" name="event_location" value="Institut Sains dan Teknologi Terpadu Surabaya (ISTTS) Jl. Ngagel Jaya Tengah No. 73-77, Surabaya" class="form-control" required>
+                        <input type="text" name="event_location" value="Institut Sains dan Teknologi Terpadu Surabaya (ISTTS) Jl. Ngagel Jaya Tengah No. 73-77, Surabaya" class="form-control">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small text-muted">Expected Participants</label>
-                        <input type="number" name="participant_total" value="100" class="form-control" required>
+                        <input type="number" name="participant_total" value="100" class="form-control">
                     </div>
 
                     <!-- NARRATION & SIGNATORY -->
@@ -643,12 +646,12 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label small text-muted font-weight-bold">Additional Event Description / Collaboration Details</label>
-                        <textarea name="additional_description" class="form-control" rows="4" required>Flutter Fusion Conference is a collaborative initiative by Google Developer Groups (GDG) Surabaya, AI/ML Surabaya, and Flutter Surabaya. It explores "Fusion"—the synergy between Flutter (Frontend), AI (Intelligence), and Cloud (Backend)—empowering our community to build the next generation of innovative solutions.</textarea>
+                        <textarea name="additional_description" class="form-control" rows="4">Flutter Fusion Conference is a collaborative initiative by Google Developer Groups (GDG) Surabaya, AI/ML Surabaya, and Flutter Surabaya. It explores "Fusion"—the synergy between Flutter (Frontend), AI (Intelligence), and Cloud (Backend)—empowering our community to build the next generation of innovative solutions.</textarea>
                         <div class="form-text text-muted small">This paragraph will be dynamically embedded in the main invitation body.</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Sender Name (Signatory)</label>
-                        <input type="text" name="sender_name" value="Esther Irawati Setiawan" class="form-control" required>
+                        <input type="text" name="sender_name" value="Esther Irawati Setiawan" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Sender Position / Title</label>
@@ -665,11 +668,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted font-weight-bold">Tempat Penandatanganan MoU (Kota)</label>
-                        <input type="text" name="signing_place"  class="form-control" required>
+                        <input type="text" name="signing_place"  class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted font-weight-bold">Tanggal Penandatanganan MoU</label>
-                        <input type="date" name="signing_date" value="{{ date('Y-m-d') }}" class="form-control" required>
+                        <input type="date" name="signing_date" value="{{ date('Y-m-d') }}" class="form-control">
                     </div>
 
                     <!-- PIHAK PERTAMA -->
@@ -678,31 +681,31 @@
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Nama Lembaga Pihak Pertama</label>
-                        <input type="text" name="first_party_name" class="form-control" required>
+                        <input type="text" name="first_party_name" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Nama Representatif Pihak Pertama</label>
-                        <input type="text" name="first_party_representative" class="form-control" required>
+                        <input type="text" name="first_party_representative" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Jabatan Representatif</label>
-                        <input type="text" name="first_party_role"class="form-control" required>
+                        <input type="text" name="first_party_role"class="form-control">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Alamat Kantor</label>
-                        <input type="text" name="first_party_address"  class="form-control" required>
+                        <input type="text" name="first_party_address"  class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Email Resmi</label>
-                        <input type="email" name="first_party_email" class="form-control" required>
+                        <input type="email" name="first_party_email" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">No. Telepon</label>
-                        <input type="text" name="first_party_phone"  class="form-control" required>
+                        <input type="text" name="first_party_phone"  class="form-control">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Bertindak Selaku (Peran Legal)</label>
-                        <input type="text" name="first_party_action_as" class="form-control" required>
+                        <input type="text" name="first_party_action_as" class="form-control">
                     </div>
 
                     <!-- PIHAK KEDUA -->
@@ -711,31 +714,31 @@
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Nama Lembaga Pihak Kedua</label>
-                        <input type="text" name="second_party_name" placeholder="cth. Google Developer Student Clubs Surabaya" class="form-control" required>
+                        <input type="text" name="second_party_name" placeholder="cth. Google Developer Student Clubs Surabaya" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Nama Representatif Pihak Kedua</label>
-                        <input type="text" name="second_party_representative" placeholder="cth. Alvin" class="form-control" required>
+                        <input type="text" name="second_party_representative" placeholder="cth. Alvin" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Jabatan Representatif</label>
-                        <input type="text" name="second_party_role" placeholder="cth. Lead GDG On Campus" class="form-control" required>
+                        <input type="text" name="second_party_role" placeholder="cth. Lead GDG On Campus" class="form-control">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Alamat Kantor/Instansi</label>
-                        <input type="text" name="second_party_address" placeholder="Masukkan alamat lengkap mitra" class="form-control" required>
+                        <input type="text" name="second_party_address" placeholder="Masukkan alamat lengkap mitra" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Email Mitra</label>
-                        <input type="email" name="second_party_email" placeholder="Masukkan email mitra" class="form-control" required>
+                        <input type="email" name="second_party_email" placeholder="Masukkan email mitra" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">No. Telepon Mitra</label>
-                        <input type="text" name="second_party_phone" placeholder="Masukkan nomor telepon" class="form-control" required>
+                        <input type="text" name="second_party_phone" placeholder="Masukkan nomor telepon" class="form-control">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Bertindak Selaku (Peran Legal)</label>
-                        <input type="text" name="second_party_action_as" placeholder="cth. Perwakilan Utama GDSC Institut STTS" class="form-control" required>
+                        <input type="text" name="second_party_action_as" placeholder="cth. Perwakilan Utama GDSC Institut STTS" class="form-control">
                     </div>
 
                     <!-- DETAIL KERJA SAMA -->
@@ -744,42 +747,42 @@
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Judul / Bentuk Kerja Sama</label>
-                        <input type="text" name="cooperation_title" placeholder="cth. Penyelenggaraan Seminar Gabungan" class="form-control" required>
+                        <input type="text" name="cooperation_title" placeholder="cth. Penyelenggaraan Seminar Gabungan" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Waktu Pelaksanaan</label>
-                        <input type="text" name="cooperation_time" placeholder="cth. Jumat, 5 Desember 2025" class="form-control" required>
+                        <input type="text" name="cooperation_time" placeholder="cth. Jumat, 5 Desember 2025" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted">Tempat Pelaksanaan</label>
-                        <input type="text" name="cooperation_venue" placeholder="cth. Auditorium ISTTS" class="form-control" required>
+                        <input type="text" name="cooperation_venue" placeholder="cth. Auditorium ISTTS" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted font-weight-bold">Tanggal Mulai Berlaku MoU</label>
-                        <input type="date" name="start_date" class="form-control" required>
+                        <input type="date" name="start_date" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small text-muted font-weight-bold">Tanggal Berakhir MoU</label>
-                        <input type="date" name="end_date" class="form-control" required>
+                        <input type="date" name="end_date" class="form-control">
                     </div>
                     
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Tujuan Kerja Sama</label>
-                        <textarea name="cooperation_purpose" class="form-control" rows="3" placeholder="cth. mensinergikan potensi kedua lembaga dalam peningkatan mutu pendidikan..." required></textarea>
+                        <textarea name="cooperation_purpose" class="form-control" rows="3" placeholder="cth. mensinergikan potensi kedua lembaga dalam peningkatan mutu pendidikan..."></textarea>
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Lingkup Kerja Sama</label>
-                        <textarea name="cooperation_scope" class="form-control" rows="3" placeholder="cth. penyediaan pemateri, kerja sama publikasi, dan penyediaan fasilitas bersama..." required></textarea>
+                        <textarea name="cooperation_scope" class="form-control" rows="3" placeholder="cth. penyediaan pemateri, kerja sama publikasi, dan penyediaan fasilitas bersama..."></textarea>
                     </div>
 
                     <!-- TANGGUNG JAWAB -->
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Kewajiban & Tanggung Jawab Pihak Pertama</label>
-                        <textarea name="obligations_first_party" class="form-control" rows="3" placeholder="cth. menyediakan ruang auditorium, menyiapkan logistik acara..." required></textarea>
+                        <textarea name="obligations_first_party" class="form-control" rows="3" placeholder="cth. menyediakan ruang auditorium, menyiapkan logistik acara..."></textarea>
                     </div>
                     <div class="col-md-12">
                         <label class="form-label small text-muted">Kewajiban & Tanggung Jawab Pihak Kedua</label>
-                        <textarea name="obligations_second_party" class="form-control" rows="3" placeholder="cth. mengirimkan perwakilan pembicara, menyediakan materi publikasi..." required></textarea>
+                        <textarea name="obligations_second_party" class="form-control" rows="3" placeholder="cth. mengirimkan perwakilan pembicara, menyediakan materi publikasi..."></textarea>
                     </div>
                 </div>     
             `
@@ -814,7 +817,7 @@
                         <div class="row g-3">
                             <div class="col-6">
                                 <label class="form-label small text-muted">Type</label>
-                                <select name="document_type" id="edit_document_type" class="form-select" required>
+                                <select name="document_type" id="edit_document_type" class="form-select">
                                     @foreach($typeLabels as $key => $label)
                                         <option value="{{ $key }}">{{ $label }}</option>
                                     @endforeach
@@ -822,7 +825,7 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Status</label>
-                                <select name="status" id="edit_document_status" class="form-select" required>
+                                <select name="status" id="edit_document_status" class="form-select">
                                     @foreach($statusLabels as $key => $label)
                                         <option value="{{ $key }}">{{ $label }}</option>
                                     @endforeach
@@ -830,7 +833,7 @@
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Title</label>
-                                <input type="text" name="title" id="edit_document_title" class="form-control" required>
+                                <input type="text" name="title" id="edit_document_title" class="form-control">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">File URL</label>

@@ -99,34 +99,37 @@
                                     @csrf
                                     <div class="col-md-4">
                                         <label class="form-label small text-muted">Member</label>
-                                        <select name="id_user" class="form-select" required>
+                                        <select name="id_user" class="form-select @error('id_user') is-invalid @enderror">
                                             <option value="">Pilih member</option>
                                             @forelse($availableMembers ?? [] as $member)
-                                                <option value="{{ $member->id_user }}">{{ $member->name }} ({{ $member->email }})
+                                                <option value="{{ $member->id_user }}" {{ old('id_user') == $member->id_user ? 'selected' : '' }}>{{ $member->name }} ({{ $member->email }})
                                                 </option>
                                             @empty
                                                 <option value="">Tidak ada member tersedia</option>
                                             @endforelse
                                         </select>
+                                        @error('id_user')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                                     </div>
 
                                     <div class="col-md-3">
                                         <label class="form-label small text-muted">Divisi</label>
-                                        <select name="id_divisi" class="form-select" required>
+                                        <select name="id_divisi" class="form-select @error('id_divisi') is-invalid @enderror">
                                             <option value="">Pilih divisi</option>
                                             @foreach($divisions ?? [] as $division)
-                                                <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
+                                                <option value="{{ $division->id_divisi }}" {{ old('id_divisi') == $division->id_divisi ? 'selected' : '' }}>{{ $division->nama_divisi }}</option>
                                             @endforeach
                                         </select>
+                                        @error('id_divisi')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                                     </div>
 
                                     <div class="col-md-3">
                                         <label class="form-label small text-muted">Jabatan</label>
-                                        <select name="jabatan" class="form-select" required>
+                                        <select name="jabatan" class="form-select @error('jabatan') is-invalid @enderror">
                                             <option value="">Pilih jabatan</option>
-                                            <option value="koordinator">Koordinator</option>
-                                            <option value="anggota">Anggota</option>
+                                            <option value="koordinator" {{ old('jabatan') == 'koordinator' ? 'selected' : '' }}>Koordinator</option>
+                                            <option value="anggota" {{ old('jabatan') == 'anggota' ? 'selected' : '' }}>Anggota</option>
                                         </select>
+                                        @error('jabatan')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                                     </div>
 
                                     <div class="col-md-2 d-flex align-items-end">
@@ -226,6 +229,23 @@
                     target.click();
                 }
             }
+
+            // Otomatis buka tab + modal dari session (dikirim controller saat validasi gagal)
+            @if(session('open_tab'))
+                const sessionTab = document.querySelector('.tab-btn[data-tab="{{ session("open_tab") }}"]');
+                if (sessionTab) {
+                    sessionTab.click();
+                }
+            @endif
+
+            @if(session('open_modal'))
+                const sessionModalEl = document.getElementById('{{ session("open_modal") }}');
+                if (sessionModalEl) {
+                    setTimeout(function() {
+                        new bootstrap.Modal(sessionModalEl).show();
+                    }, 100);
+                }
+            @endif
 
             // KANBAN FUNCTIONALITY
             const modalEl = document.getElementById('taskModal');

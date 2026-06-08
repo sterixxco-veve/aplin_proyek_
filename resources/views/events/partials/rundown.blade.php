@@ -4,20 +4,22 @@
 @endphp
 
 @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill text-success"></i>
+        <span>{{ session('success') }}</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
 @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-circle me-2"></i>
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+        <span>{{ session('error') }}</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
+
+
 
 <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
     <div>
@@ -221,34 +223,40 @@
                         <div class="row g-3">
                             <div class="col-4">
                                 <label class="form-label small text-muted">Hari</label>
-                                <input type="number" id="rundown_day_input" name="day_number" class="form-control" min="1" required>
+                                <input type="number" id="rundown_day_input" name="day_number" class="form-control @error('day_number') is-invalid @enderror" min="1" value="{{ old('day_number') }}">
+                                @error('day_number')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-8">
                                 <label class="form-label small text-muted">Group Sesi</label>
-                                <input type="text" name="session_group" class="form-control" placeholder="Contoh: Pembukaan">
+                                <input type="text" name="session_group" class="form-control @error('session_group') is-invalid @enderror" placeholder="Contoh: Pembukaan" value="{{ old('session_group') }}">
+                                @error('session_group')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Mulai</label>
-                                <input type="time" name="waktu_mulai" class="form-control" required>
+                                <input type="time" name="waktu_mulai" class="form-control @error('waktu_mulai') is-invalid @enderror" value="{{ old('waktu_mulai') }}">
+                                @error('waktu_mulai')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Selesai</label>
-                                <input type="time" name="waktu_selesai" class="form-control" required>
+                                <input type="time" name="waktu_selesai" class="form-control @error('waktu_selesai') is-invalid @enderror" value="{{ old('waktu_selesai') }}">
+                                @error('waktu_selesai')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Kegiatan</label>
-                                <input type="text" name="kegiatan" class="form-control" placeholder="Contoh: Registrasi peserta" required>
+                                <input type="text" name="kegiatan" class="form-control @error('kegiatan') is-invalid @enderror" placeholder="Contoh: Registrasi peserta" value="{{ old('kegiatan') }}">
+                                @error('kegiatan')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Penanggung Jawab</label>
-                                <select name="assigned_to" class="form-select">
+                                <select name="assigned_to" class="form-select @error('assigned_to') is-invalid @enderror">
                                     <option value="">Pilih committee</option>
                                     @foreach($committeeOptions as $committee)
-                                        <option value="{{ $committee->id_comm }}">
+                                        <option value="{{ $committee->id_comm }}" {{ old('assigned_to') == $committee->id_comm ? 'selected' : '' }}>
                                             {{ $committee->user->name ?? '-' }} - {{ $committee->division->nama_divisi ?? '-' }} ({{ ucfirst($committee->jabatan) }})
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('assigned_to')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                         </div>
 
@@ -275,7 +283,7 @@
                         <div class="row g-3">
                             <div class="col-4">
                                 <label class="form-label small text-muted">Hari</label>
-                                <input type="number" name="day_number" id="edit_rundown_day" class="form-control" min="1" required>
+                                <input type="number" name="day_number" id="edit_rundown_day" class="form-control" min="1">
                             </div>
                             <div class="col-8">
                                 <label class="form-label small text-muted">Group Sesi</label>
@@ -283,15 +291,15 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Mulai</label>
-                                <input type="time" name="waktu_mulai" id="edit_rundown_start" class="form-control" required>
+                                <input type="time" name="waktu_mulai" id="edit_rundown_start" class="form-control">
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Selesai</label>
-                                <input type="time" name="waktu_selesai" id="edit_rundown_end" class="form-control" required>
+                                <input type="time" name="waktu_selesai" id="edit_rundown_end" class="form-control">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Kegiatan</label>
-                                <input type="text" name="kegiatan" id="edit_rundown_kegiatan" class="form-control" required>
+                                <input type="text" name="kegiatan" id="edit_rundown_kegiatan" class="form-control">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Penanggung Jawab</label>
@@ -329,7 +337,7 @@
                         <div class="mb-3">
                             <label class="form-label small text-muted">Pilih File Excel</label>
                             <div class="d-flex gap-2">
-                                <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                                <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv">
                                 <a href="/rundown/template" class="btn btn-outline-secondary" download title="Download template">
                                     <i class="bi bi-download"></i>
                                 </a>
@@ -402,5 +410,12 @@
                 window.dispatchEvent(new Event('resize'));
             });
         });
+
+        @if($errors->has('day_number') || $errors->has('session_group') || $errors->has('waktu_mulai') || $errors->has('waktu_selesai') || $errors->has('kegiatan') || $errors->has('assigned_to'))
+            document.addEventListener("DOMContentLoaded", function() {
+                var rundownModal = new bootstrap.Modal(document.getElementById('rundownModal'));
+                rundownModal.show();
+            });
+        @endif
     </script>
 @endif

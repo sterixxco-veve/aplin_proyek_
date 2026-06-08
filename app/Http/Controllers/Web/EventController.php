@@ -335,11 +335,19 @@ class EventController extends Controller
 
     public function assignMember(Request $request, $id)
     {
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'id_user' => 'required|exists:users,id_user',
             'id_divisi' => 'required|exists:divisions,id_divisi',
             'jabatan' => 'required|string|max:100',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('events.show', $id)
+                ->withErrors($validator)
+                ->withInput()
+                ->with('open_tab', 'committee');
+        }
 
         $event = Event::visibleTo(auth()->user())->findOrFail($id);
         abort_unless($event->canManageBy(auth()->user()), 403, 'Tidak punya akses');
@@ -525,13 +533,22 @@ class EventController extends Controller
         $event = Event::visibleTo(auth()->user())->findOrFail($eventId);
         abort_unless($event->canManagePartnerBy(auth()->user()), 403, 'Tidak punya akses');
 
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'nama_partner' => 'required|string|max:255',
             'jenis_partner' => ['required', Rule::in(['sponsor', 'medpar', 'comrel'])],
             'assigned_pic' => ['nullable', Rule::exists('users', 'id_user')],
             'status' => ['required', Rule::in(['approach', 'prospect', 'contacted', 'follow_up', 'negotiation', 'deal', 'rejected', 'cancelled'])],
             'notes' => 'nullable|string',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('events.show', $eventId)
+                ->withErrors($validator)
+                ->withInput()
+                ->with('open_tab', 'partners')
+                ->with('open_modal', 'partnerModal');
+        }
 
         Partner::create([
             'id_event' => $event->id_event,
@@ -660,6 +677,22 @@ class EventController extends Controller
             $event->canManageDocumentBy(auth()->user()),
             403
         );
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'document_type' => ['required', \Illuminate\Validation\Rule::in(['proposal', 'lpj', 'invitation_letter', 'mou_partner', 'certificate', 'other'])],
+            'title' => 'required|string|max:255',
+            'status' => ['required', \Illuminate\Validation\Rule::in(['draft', 'generated', 'final', 'archived', 'failed'])],
+            'notes' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('events.show', $eventId)
+                ->withErrors($validator)
+                ->withInput()
+                ->with('open_tab', 'documents')
+                ->with('open_modal', 'documentModal');
+        }
 
         // =========================
         // SAVE PAYLOAD

@@ -81,16 +81,22 @@
                             <label class="form-label small fw-bold text-muted ms-1">Nama Organization</label>
                             <input type="text"
                                    name="nama_org"
-                                   class="form-control form-control-lg bg-light border-0 py-3 rounded-4 shadow-none"
+                                   class="form-control form-control-lg bg-light border-0 py-3 rounded-4 shadow-none @error('nama_org') is-invalid @enderror"
                                    placeholder="Contoh: Himpunan Mahasiswa Informatika"
-                                   required>
+                                   value="{{ old('nama_org') }}">
+                            @error('nama_org')
+                                <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label small fw-bold text-muted ms-1">Logo</label>
                             <input type="file"
                                    name="logo"
-                                   class="form-control bg-light border-0 py-3 rounded-4 shadow-none">
+                                   class="form-control bg-light border-0 py-3 rounded-4 shadow-none @error('logo') is-invalid @enderror">
+                            @error('logo')
+                                <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                            @enderror
                             <small class="text-muted d-block mt-2">Opsional, tapi membantu identitas organisasi lebih jelas.</small>
                         </div>
 

@@ -30,11 +30,22 @@ class DocumentationController extends Controller
     {
         $event = Event::findOrFail($eventId);
 
-        $request->validate([
-            'photos' => 'nullable|array|max:5',
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'photos' => 'required_without:google_drive_link|array|max:5',
             'photos.*' => 'image|max:5120',
-            'google_drive_link' => 'nullable|url'
+            'google_drive_link' => 'required_without:photos|nullable|url'
+        ], [
+            'photos.required_without' => 'Mohon unggah foto dokumentasi atau masukkan link Google Drive.',
+            'google_drive_link.required_without' => 'Mohon masukkan link Google Drive jika tidak mengunggah foto.'
         ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('events.show', $eventId)
+                ->withErrors($validator)
+                ->withInput()
+                ->with('open_tab', 'documentation');
+        }
 
         if ($request->hasFile('photos')) {
 
