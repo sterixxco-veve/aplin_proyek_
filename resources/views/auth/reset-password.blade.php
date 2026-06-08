@@ -76,19 +76,7 @@
                                 Reset Password
                             </h3>
 
-                            @if($errors->any())
-                                <div class="alert alert-danger border-0 rounded-3 d-flex align-items-start gap-2 mb-4">
-                                    <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
-                                    <div>
-                                        <div class="fw-bold small">Ada kesalahan:</div>
-                                        <ul class="mb-0 ps-3 mt-1">
-                                            @foreach($errors->all() as $error)
-                                                <li class="small">{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
-                            @endif
+
 
                             <form method="POST" action="{{ route('password.store') }}">
 

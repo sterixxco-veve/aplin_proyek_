@@ -230,7 +230,8 @@
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-muted ms-1">Nama Task</label>
-                                    <input type="text" name="nama_tugas" id="task_nama_tugas" class="form-control form-control-custom shadow-none" placeholder="Contoh: Booking venue gedung" required>
+                                    <input type="text" name="nama_tugas" id="task_nama_tugas" class="form-control form-control-custom shadow-none @error('nama_tugas') is-invalid @enderror" placeholder="Contoh: Booking venue gedung" value="{{ old('nama_tugas') }}">
+                                    @error('nama_tugas')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                                 </div>
 
                                 <div class="col-12">
@@ -240,21 +241,23 @@
 
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-muted ms-1">Divisi Penanggung Jawab</label>
-                                    <select name="id_divisi" id="task_id_divisi" class="form-select form-select-custom shadow-none" required>
+                                    <select name="id_divisi" id="task_id_divisi" class="form-select form-select-custom shadow-none @error('id_divisi') is-invalid @enderror">
                                         <option value="">Pilih divisi</option>
                                         @foreach($divisions ?? [] as $division)
-                                            <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
+                                            <option value="{{ $division->id_divisi }}" {{ old('id_divisi') == $division->id_divisi ? 'selected' : '' }}>{{ $division->nama_divisi }}</option>
                                         @endforeach
                                     </select>
+                                    @error('id_divisi')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-muted ms-1">Tingkat Prioritas</label>
-                                    <select name="priority" id="task_priority" class="form-select form-select-custom shadow-none" required>
-                                        <option value="low">Low</option>
-                                        <option value="medium" selected>Medium</option>
-                                        <option value="high">High</option>
+                                    <select name="priority" id="task_priority" class="form-select form-select-custom shadow-none @error('priority') is-invalid @enderror">
+                                        <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
+                                        <option value="medium" {{ old('priority', 'medium') == 'medium' ? 'selected' : '' }}>Medium</option>
+                                        <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
                                     </select>
+                                    @error('priority')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                                 </div>
 
                                 <div class="col-md-4">
@@ -313,6 +316,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!modalEl) return; // Hentikan script jika event belum dipilih
 
     const taskModal = new bootstrap.Modal(modalEl);
+
+    @if($errors->any())
+        taskModal.show();
+    @endif
+
     const form = document.getElementById('taskForm');
     const title = document.getElementById('taskModalTitle');
     const submitBtn = document.getElementById('taskSubmitBtn');

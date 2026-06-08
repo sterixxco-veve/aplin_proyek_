@@ -19,20 +19,7 @@
     </div>
 @endif
 
-@if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 d-flex align-items-start gap-2" role="alert">
-        <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
-        <div>
-            <div class="fw-bold small">Ada kesalahan pada input rundown:</div>
-            <ul class="mb-0 ps-3 mt-1">
-                @foreach($errors->all() as $error)
-                    <li class="small">{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
+
 
 <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
     <div>
@@ -236,34 +223,40 @@
                         <div class="row g-3">
                             <div class="col-4">
                                 <label class="form-label small text-muted">Hari</label>
-                                <input type="number" id="rundown_day_input" name="day_number" class="form-control" min="1">
+                                <input type="number" id="rundown_day_input" name="day_number" class="form-control @error('day_number') is-invalid @enderror" min="1" value="{{ old('day_number') }}">
+                                @error('day_number')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-8">
                                 <label class="form-label small text-muted">Group Sesi</label>
-                                <input type="text" name="session_group" class="form-control" placeholder="Contoh: Pembukaan">
+                                <input type="text" name="session_group" class="form-control @error('session_group') is-invalid @enderror" placeholder="Contoh: Pembukaan" value="{{ old('session_group') }}">
+                                @error('session_group')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Mulai</label>
-                                <input type="time" name="waktu_mulai" class="form-control">
+                                <input type="time" name="waktu_mulai" class="form-control @error('waktu_mulai') is-invalid @enderror" value="{{ old('waktu_mulai') }}">
+                                @error('waktu_mulai')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Selesai</label>
-                                <input type="time" name="waktu_selesai" class="form-control">
+                                <input type="time" name="waktu_selesai" class="form-control @error('waktu_selesai') is-invalid @enderror" value="{{ old('waktu_selesai') }}">
+                                @error('waktu_selesai')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Kegiatan</label>
-                                <input type="text" name="kegiatan" class="form-control" placeholder="Contoh: Registrasi peserta">
+                                <input type="text" name="kegiatan" class="form-control @error('kegiatan') is-invalid @enderror" placeholder="Contoh: Registrasi peserta" value="{{ old('kegiatan') }}">
+                                @error('kegiatan')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Penanggung Jawab</label>
-                                <select name="assigned_to" class="form-select">
+                                <select name="assigned_to" class="form-select @error('assigned_to') is-invalid @enderror">
                                     <option value="">Pilih committee</option>
                                     @foreach($committeeOptions as $committee)
-                                        <option value="{{ $committee->id_comm }}">
+                                        <option value="{{ $committee->id_comm }}" {{ old('assigned_to') == $committee->id_comm ? 'selected' : '' }}>
                                             {{ $committee->user->name ?? '-' }} - {{ $committee->division->nama_divisi ?? '-' }} ({{ ucfirst($committee->jabatan) }})
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('assigned_to')<div class="invalid-feedback fw-semibold">{{ $message }}</div>@enderror
                             </div>
                         </div>
 
@@ -417,5 +410,12 @@
                 window.dispatchEvent(new Event('resize'));
             });
         });
+
+        @if($errors->has('day_number') || $errors->has('session_group') || $errors->has('waktu_mulai') || $errors->has('waktu_selesai') || $errors->has('kegiatan') || $errors->has('assigned_to'))
+            document.addEventListener("DOMContentLoaded", function() {
+                var rundownModal = new bootstrap.Modal(document.getElementById('rundownModal'));
+                rundownModal.show();
+            });
+        @endif
     </script>
 @endif

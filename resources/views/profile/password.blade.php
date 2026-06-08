@@ -31,19 +31,7 @@
                             </div>
                         @endif
 
-                        @if($errors->any())
-                            <div class="alert alert-danger border-0 rounded-3 d-flex align-items-start gap-2 mb-3">
-                                <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
-                                <div>
-                                    <div class="fw-bold small">Ada kesalahan:</div>
-                                    <ul class="mb-0 ps-3 mt-1">
-                                        @foreach($errors->all() as $error)
-                                            <li class="small">{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            </div>
-                        @endif
+
 
                         <form method="POST" action="/profile/password">
 
@@ -103,6 +91,10 @@
                                 </label>
 
                                 <input type="password" name="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror">
+
+                                @error('password_confirmation')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
 
                             </div>
 

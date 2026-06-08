@@ -119,7 +119,7 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label small fw-bold text-muted">Nama Task</label>
-                            <input type="text" name="nama_tugas" id="task_nama_tugas" class="form-control bg-light border-0 py-2.5 rounded-3" placeholder="Contoh: Booking venue" required>
+                            <input type="text" name="nama_tugas" id="task_nama_tugas" class="form-control bg-light border-0 py-2.5 rounded-3" placeholder="Contoh: Booking venue">
                         </div>
 
                         <div class="col-12">
@@ -129,7 +129,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-muted">Divisi</label>
-                            <select name="id_divisi" id="task_id_divisi" class="form-select bg-light border-0 py-2.5 rounded-3" required>
+                            <select name="id_divisi" id="task_id_divisi" class="form-select bg-light border-0 py-2.5 rounded-3">
                                 <option value="">Pilih divisi</option>
                                 @foreach($divisions as $division)
                                     <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
@@ -139,7 +139,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-muted">Priority</label>
-                            <select name="priority" id="task_priority" class="form-select bg-light border-0 py-2.5 rounded-3" required>
+                            <select name="priority" id="task_priority" class="form-select bg-light border-0 py-2.5 rounded-3">
                                 <option value="low">Low</option>
                                 <option value="medium" selected>Medium</option>
                                 <option value="high">High</option>

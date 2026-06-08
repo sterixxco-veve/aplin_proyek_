@@ -15,19 +15,7 @@
             <div class="card-body p-4">
                 <h6 class="fw-bold mb-3">Tambah Committee</h6>
 
-                @if($errors->any())
-                    <div class="alert alert-danger border-0 rounded-3 d-flex align-items-start gap-2 mb-3">
-                        <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
-                        <div>
-                            <div class="fw-bold small">Ada kesalahan saat menambah committee:</div>
-                            <ul class="mb-0 ps-3 mt-1">
-                                @foreach($errors->all() as $error)
-                                    <li class="small">{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                @endif
+
 
                 @if(session('success'))
                     <div class="alert alert-success border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
