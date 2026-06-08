@@ -206,10 +206,12 @@ Route::prefix('divisions')->name('divisions.')->group(function () {
 
 Route::get('/verify-certificate/{token}', [CertificateController::class, 'verify'])->name('certificate.verify');
 
+Route::get('/documentation', [DocumentationController::class, 'index'])->name('documentation.list');
 
 Route::get('/events/{event}/documentation', [DocumentationController::class, 'index'])->name('documentation.index');
 
 Route::post('/events/{event}/documentation', [DocumentationController::class, 'store'])->name('documentation.store');
+
 
 
 

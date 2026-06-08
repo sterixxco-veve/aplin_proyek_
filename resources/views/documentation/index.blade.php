@@ -73,14 +73,12 @@
             @empty
 
                 <div class="col-12">
-
-                    <div class="alert alert-secondary">
-
-                        No events available.
-
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 text-muted">
+                        Belum ada event yang tersedia.
                     </div>
-
                 </div>
+            </div>
 
             @endforelse
 

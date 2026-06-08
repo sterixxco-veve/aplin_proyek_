@@ -93,13 +93,11 @@
 
                 <div class="col-12">
 
-                    <div class="alert alert-secondary">
-
-                        No events found.
-
-                    </div>
-
+                <div class="alert alert-light border">
+                    Belum ada event tersedia.
                 </div>
+
+            </div>
 
             @endforelse
 
