@@ -4,18 +4,33 @@
 @endphp
 
 @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill text-success"></i>
+        <span>{{ session('success') }}</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
 @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-circle me-2"></i>
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+        <span>{{ session('error') }}</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 d-flex align-items-start gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
+        <div>
+            <div class="fw-bold small">Ada kesalahan pada input rundown:</div>
+            <ul class="mb-0 ps-3 mt-1">
+                @foreach($errors->all() as $error)
+                    <li class="small">{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
@@ -221,7 +236,7 @@
                         <div class="row g-3">
                             <div class="col-4">
                                 <label class="form-label small text-muted">Hari</label>
-                                <input type="number" id="rundown_day_input" name="day_number" class="form-control" min="1" required>
+                                <input type="number" id="rundown_day_input" name="day_number" class="form-control" min="1">
                             </div>
                             <div class="col-8">
                                 <label class="form-label small text-muted">Group Sesi</label>
@@ -229,15 +244,15 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Mulai</label>
-                                <input type="time" name="waktu_mulai" class="form-control" required>
+                                <input type="time" name="waktu_mulai" class="form-control">
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Selesai</label>
-                                <input type="time" name="waktu_selesai" class="form-control" required>
+                                <input type="time" name="waktu_selesai" class="form-control">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Kegiatan</label>
-                                <input type="text" name="kegiatan" class="form-control" placeholder="Contoh: Registrasi peserta" required>
+                                <input type="text" name="kegiatan" class="form-control" placeholder="Contoh: Registrasi peserta">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Penanggung Jawab</label>
@@ -275,7 +290,7 @@
                         <div class="row g-3">
                             <div class="col-4">
                                 <label class="form-label small text-muted">Hari</label>
-                                <input type="number" name="day_number" id="edit_rundown_day" class="form-control" min="1" required>
+                                <input type="number" name="day_number" id="edit_rundown_day" class="form-control" min="1">
                             </div>
                             <div class="col-8">
                                 <label class="form-label small text-muted">Group Sesi</label>
@@ -283,15 +298,15 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Mulai</label>
-                                <input type="time" name="waktu_mulai" id="edit_rundown_start" class="form-control" required>
+                                <input type="time" name="waktu_mulai" id="edit_rundown_start" class="form-control">
                             </div>
                             <div class="col-6">
                                 <label class="form-label small text-muted">Waktu Selesai</label>
-                                <input type="time" name="waktu_selesai" id="edit_rundown_end" class="form-control" required>
+                                <input type="time" name="waktu_selesai" id="edit_rundown_end" class="form-control">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Kegiatan</label>
-                                <input type="text" name="kegiatan" id="edit_rundown_kegiatan" class="form-control" required>
+                                <input type="text" name="kegiatan" id="edit_rundown_kegiatan" class="form-control">
                             </div>
                             <div class="col-12">
                                 <label class="form-label small text-muted">Penanggung Jawab</label>
@@ -329,7 +344,7 @@
                         <div class="mb-3">
                             <label class="form-label small text-muted">Pilih File Excel</label>
                             <div class="d-flex gap-2">
-                                <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                                <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv">
                                 <a href="/rundown/template" class="btn btn-outline-secondary" download title="Download template">
                                     <i class="bi bi-download"></i>
                                 </a>

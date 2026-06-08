@@ -14,37 +14,75 @@
         <div class="card border-0 shadow-sm mb-4 bg-light">
             <div class="card-body p-4">
                 <h6 class="fw-bold mb-3">Tambah Committee</h6>
+
+                @if($errors->any())
+                    <div class="alert alert-danger border-0 rounded-3 d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
+                        <div>
+                            <div class="fw-bold small">Ada kesalahan saat menambah committee:</div>
+                            <ul class="mb-0 ps-3 mt-1">
+                                @foreach($errors->all() as $error)
+                                    <li class="small">{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+
+                @if(session('success'))
+                    <div class="alert alert-success border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                @endif
+
                 <form method="POST" action="/events/{{ $event->id_event }}/assign" class="row g-3">
                     @csrf
                     <div class="col-md-4">
                         <label class="form-label small text-muted">Member</label>
-                        <select name="id_user" class="form-select" required>
+                        <select name="id_user" class="form-select @error('id_user') is-invalid @enderror">
                             <option value="">Pilih member</option>
                             @forelse($availableMembers ?? [] as $member)
-                                <option value="{{ $member->id_user }}">{{ $member->name }} ({{ $member->email }})</option>
+                                <option value="{{ $member->id_user }}" {{ old('id_user') == $member->id_user ? 'selected' : '' }}>{{ $member->name }} ({{ $member->email }})</option>
                             @empty
                                 <option value="">Tidak ada member tersedia</option>
                             @endforelse
                         </select>
+                        @error('id_user')
+                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-3">
                         <label class="form-label small text-muted">Divisi</label>
-                        <select name="id_divisi" class="form-select" required>
+                        <select name="id_divisi" class="form-select @error('id_divisi') is-invalid @enderror">
                             <option value="">Pilih divisi</option>
                             @foreach($divisions ?? [] as $division)
-                                <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
+                                <option value="{{ $division->id_divisi }}" {{ old('id_divisi') == $division->id_divisi ? 'selected' : '' }}>{{ $division->nama_divisi }}</option>
                             @endforeach
                         </select>
+                        @error('id_divisi')
+                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-3">
                         <label class="form-label small text-muted">Jabatan</label>
-                        <select name="jabatan" class="form-select" required>
+                        <select name="jabatan" class="form-select @error('jabatan') is-invalid @enderror">
                             <option value="">Pilih jabatan</option>
-                            <option value="koordinator">Koordinator</option>
-                            <option value="anggota">Anggota</option>
+                            <option value="koordinator" {{ old('jabatan') == 'koordinator' ? 'selected' : '' }}>Koordinator</option>
+                            <option value="anggota" {{ old('jabatan') == 'anggota' ? 'selected' : '' }}>Anggota</option>
                         </select>
+                        @error('jabatan')
+                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-2 d-flex align-items-end">

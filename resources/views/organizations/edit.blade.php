@@ -20,14 +20,31 @@
                     @csrf
                     @method('PUT')
 
+                    @if(session('success'))
+                        <div class="alert alert-success border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                    @endif
+
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Nama Organisasi</label>
-                        <input type="text" id="nama_org" name="nama_org" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" value="{{ $org->nama_org }}" required autocomplete="off">
+                        <input type="text" id="nama_org" name="nama_org"
+                            class="form-control bg-light border-0 py-3 rounded-4 shadow-none @error('nama_org') is-invalid @enderror"
+                            value="{{ old('nama_org', $org->nama_org) }}" autocomplete="off">
+                        @error('nama_org')
+                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Logo Organisasi (Opsional)</label>
-                        <input type="file" id="logo_org" name="logo" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" accept="image/*">
+                        <input type="file" id="logo_org" name="logo"
+                            class="form-control bg-light border-0 py-3 rounded-4 shadow-none @error('logo') is-invalid @enderror"
+                            accept="image/*">
+                        @error('logo')
+                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                        @enderror
                         <small class="text-muted mt-1 d-block">Biarkan kosong jika tidak ingin mengubah logo.</small>
                     </div>
 

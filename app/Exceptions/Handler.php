@@ -23,12 +23,17 @@ class Handler extends ExceptionHandler
      * Register the exception handling callbacks for the application.
      */
     public function register()
-{
-    $this->renderable(function (ValidationException $e, $request) {
-        return response()->json([
-            'message' => 'Validation Error',
-            'errors' => $e->errors(),
-        ], 422);
-    });
-}
+    {
+        $this->renderable(function (ValidationException $e, $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Validation Error',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
+            // Return null agar Laravel menggunakan default behavior (redirect back dengan errors) untuk Web Form
+            return null;
+        });
+    }
 }

@@ -216,7 +216,7 @@ class CertificateService
     {
         try {
 
-            @mkdir(dirname($fuoutputPathllOutputPath), 0755, true);
+            @mkdir(dirname($outputPath), 0755, true);
 
             $builder = new \Endroid\QrCode\Builder\Builder(
                 writer: new \Endroid\QrCode\Writer\PngWriter(),

@@ -85,9 +85,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/organizations/create', [OrganizationController::class, 'create']);
     Route::get('/organizations', [OrganizationController::class, 'index']);
     Route::post('/organizations', [OrganizationController::class, 'store']);
-    Route::get('/organizations/{id}', [OrganizationController::class, 'show']);
-    Route::post('/organizations/{id}/invite', [OrganizationController::class, 'invite'])->middleware('org.role:admin_org');
     Route::get('/organizations/{id}', [OrganizationController::class, 'show'])->name('organizations.show');
+    Route::post('/organizations/{id}/invite', [OrganizationController::class, 'invite'])->middleware('org.role:admin_org');
     Route::get('/organizations/{id}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
     Route::put('/organizations/{id}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{id}/invite-bulk', [OrganizationController::class, 'inviteBulk']);
@@ -211,10 +210,7 @@ Route::get('/events/{event}/documentation', [DocumentationController::class, 'in
 
 Route::post('/events/{event}/documentation', [DocumentationController::class, 'store'])->name('documentation.store');
 
-Route::get(
-    '/documentation ',
-    [DocumentationController::class, 'index']
-)->name('documentation.index');
+
 
 Route::get(
     '/documentation/{event}',

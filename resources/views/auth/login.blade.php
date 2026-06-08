@@ -58,7 +58,7 @@
                                     class="bi bi-envelope text-muted"></i></span>
                             <input type="email" name="email"
                                 class="form-control bg-light border-0 py-3 @error('email') is-invalid @enderror"
-                                placeholder="nama@gdgoc.com" value="{{ old('email') }}" required autofocus>
+                                placeholder="nama@gdgoc.com" value="{{ old('email') }}" autofocus>
                         </div>
                         @error('email')
                             <div class="text-danger small mt-1 ms-1">{{ $message }}</div>
@@ -79,7 +79,7 @@
                                     class="bi bi-lock text-muted"></i></span>
                             <input type="password" name="password"
                                 class="form-control bg-light border-0 py-3 @error('password') is-invalid @enderror"
-                                placeholder="••••••••" required>
+                                placeholder="••••••••">
                         </div>
                         @error('password')
                             <div class="text-danger small mt-1 ms-1">{{ $message }}</div>

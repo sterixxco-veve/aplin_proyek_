@@ -37,28 +37,71 @@
             <h6 class="fw-bold mb-0">Tambah Item Proposal</h6>
             <span class="badge bg-primary-subtle text-primary rounded-pill">Rencana</span>
         </div>
+
+        @if($errors->any())
+            <div class="alert alert-danger border-0 rounded-3 d-flex align-items-start gap-2 mb-3">
+                <i class="bi bi-exclamation-triangle-fill text-danger mt-1"></i>
+                <div>
+                    <div class="fw-bold small">Input budget tidak valid:</div>
+                    <ul class="mb-0 ps-3 mt-1">
+                        @foreach($errors->all() as $error)
+                            <li class="small">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="alert alert-success border-0 rounded-3 d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
         <form method="POST" action="/events/{{ $event->id_event }}/budgets" class="row g-3">
             @csrf
             <div class="col-md-3">
                 <label class="form-label small text-muted">Kategori</label>
-                <select name="id_category" class="form-select" required>
+                <select name="id_category" class="form-select @error('id_category') is-invalid @enderror">
                     <option value="">Pilih kategori</option>
                     @foreach($budgetCategories as $category)
-                        <option value="{{ $category->id_category }}">{{ $category->nama_kategori }}</option>
+                        <option value="{{ $category->id_category }}" {{ old('id_category') == $category->id_category ? 'selected' : '' }}>{{ $category->nama_kategori }}</option>
                     @endforeach
                 </select>
+                @error('id_category')
+                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                @enderror
             </div>
             <div class="col-md-5">
                 <label class="form-label small text-muted">Keterangan</label>
-                <input type="text" name="keterangan" class="form-control" placeholder="Contoh: Sewa sound system" required>
+                <input type="text" name="keterangan"
+                    class="form-control @error('keterangan') is-invalid @enderror"
+                    placeholder="Contoh: Sewa sound system"
+                    value="{{ old('keterangan') }}">
+                @error('keterangan')
+                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                @enderror
             </div>
             <div class="col-md-2">
                 <label class="form-label small text-muted">Qty</label>
-                <input type="number" name="qty" class="form-control" min="1" required>
+                <input type="number" name="qty"
+                    class="form-control @error('qty') is-invalid @enderror"
+                    min="1"
+                    value="{{ old('qty') }}">
+                @error('qty')
+                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                @enderror
             </div>
             <div class="col-md-2">
                 <label class="form-label small text-muted">Nominal</label>
-                <input type="number" name="nominal_rencana" class="form-control" min="0" required>
+                <input type="number" name="nominal_rencana"
+                    class="form-control @error('nominal_rencana') is-invalid @enderror"
+                    min="0"
+                    value="{{ old('nominal_rencana') }}">
+                @error('nominal_rencana')
+                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                @enderror
             </div>
             <div class="col-12">
                 <button class="btn btn-primary rounded-pill px-4">Simpan Proposal</button>
@@ -144,7 +187,7 @@
                     @method('PUT')
                     <div class="mb-3">
                         <label class="form-label small text-muted">Kategori</label>
-                        <select name="id_category" id="edit_budget_category" class="form-select" required>
+                        <select name="id_category" id="edit_budget_category" class="form-select">
                             @foreach($budgetCategories as $category)
                                 <option value="{{ $category->id_category }}">{{ $category->nama_kategori }}</option>
                             @endforeach
@@ -152,16 +195,16 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small text-muted">Keterangan</label>
-                        <input type="text" name="keterangan" id="edit_budget_keterangan" class="form-control" required>
+                        <input type="text" name="keterangan" id="edit_budget_keterangan" class="form-control">
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small text-muted">Qty</label>
-                            <input type="number" name="qty" id="edit_budget_qty" class="form-control" min="1" required>
+                            <input type="number" name="qty" id="edit_budget_qty" class="form-control" min="1">
                         </div>
                         <div class="col-6">
                             <label class="form-label small text-muted">Nominal</label>
-                            <input type="number" name="nominal_rencana" id="edit_budget_nominal" class="form-control" min="0" required>
+                            <input type="number" name="nominal_rencana" id="edit_budget_nominal" class="form-control" min="0">
                         </div>
                     </div>
                     <div class="d-flex gap-2">
