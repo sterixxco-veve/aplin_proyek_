@@ -123,11 +123,13 @@
                                             Edit
                                         </button>
 
-                                        <form method="POST" action="/events/{{ $event->id_event }}/documents/{{ $document->id_document }}" onsubmit="return confirm('Hapus document ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger">Hapus</button>
-                                        </form>
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-outline-danger document-delete-btn"
+                                            data-id="{{ $document->id_document }}"
+                                            data-title="{{ e($document->title) }}">
+                                            Hapus
+                                        </button>
                                     </div>
                                 </td>
                             @endif
@@ -716,4 +718,120 @@
             }
         });
     </script>
+
+    <!-- Edit Document Modal -->
+    <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h4 class="fw-bold mb-1">Edit Document</h4>
+                            <p class="text-muted small mb-0">Perbarui informasi dasar document.</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <form id="editDocumentForm" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label small text-muted">Type</label>
+                                <select name="document_type" id="edit_document_type" class="form-select">
+                                    @foreach($typeLabels as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-muted">Status</label>
+                                <select name="status" id="edit_document_status" class="form-select">
+                                    @foreach($statusLabels as $key => $label)
+                                        <option value="{{ $key }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Title</label>
+                                <input type="text" name="title" id="edit_document_title" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">File URL</label>
+                                <input type="text" name="file_url" id="edit_document_file" class="form-control" placeholder="https://...">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted">Notes</label>
+                                <textarea name="notes" id="edit_document_notes" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary flex-fill">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.document-edit-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const form = document.getElementById('editDocumentForm');
+                    form.action = `/events/{{ $event->id_event }}/documents/${this.dataset.id}`;
+
+                    document.getElementById('edit_document_type').value = this.dataset.type;
+                    document.getElementById('edit_document_status').value = this.dataset.status;
+                    document.getElementById('edit_document_title').value = this.dataset.title;
+                    document.getElementById('edit_document_file').value = this.dataset.file || '';
+                    document.getElementById('edit_document_notes').value = this.dataset.notes || '';
+
+                    const modal = new bootstrap.Modal(document.getElementById('editDocumentModal'));
+                    modal.show();
+                });
+            });
+
+            document.querySelectorAll('.document-delete-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const form = document.getElementById('deleteDocumentForm');
+                    form.action = `/events/{{ $event->id_event }}/documents/${this.dataset.id}`;
+                    document.getElementById('delete_document_title_display').textContent = this.dataset.title;
+
+                    const modal = new bootstrap.Modal(document.getElementById('deleteDocumentModal'));
+                    modal.show();
+                });
+            });
+        });
+    </script>
+
+    <!-- Delete Document Modal -->
+    <div class="modal fade" id="deleteDocumentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3 text-danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-exclamation-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                        </svg>
+                    </div>
+                    <h5 class="fw-bold mb-2">Konfirmasi Hapus</h5>
+                    <p class="text-muted small mb-4">Apakah Anda yakin ingin menghapus document <strong id="delete_document_title_display" class="text-dark"></strong>? Tindakan ini permanen dan tidak dapat dibatalkan.</p>
+                    
+                    <form id="deleteDocumentForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger flex-fill">Ya, Hapus</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endif
