@@ -1,14 +1,5 @@
 <?php
 
-echo "STEP 1";
-require __DIR__.'/../vendor/autoload.php';
-
-echo " STEP 2";
-$app = require_once __DIR__.'/../bootstrap/app.php';
-
-echo " STEP 3";
-exit;
-
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
