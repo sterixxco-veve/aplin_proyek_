@@ -1,6 +1,5 @@
 <?php
 
-echo "BOOTSTRAP V12";
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
