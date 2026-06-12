@@ -54,11 +54,18 @@ require __DIR__.'/../vendor/autoload.php';
 */
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
-$kernel = $app->make(Kernel::class);
+echo " STEP 4";
 
-$response = $kernel->handle(
-    $request = Request::capture()
-)->send();
+$request = Illuminate\Http\Request::capture();
+
+echo " STEP 5";
+
+$response = $kernel->handle($request);
+
+echo " STEP 6";
+
+exit;
 
 $kernel->terminate($request, $response);
