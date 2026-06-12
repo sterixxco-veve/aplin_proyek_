@@ -19,10 +19,30 @@ echo "STEP 3<br>";
 
 $request = Request::capture();
 
-echo "STEP 4<br>";
+try {
 
-$response = $kernel->handle($request);
+    echo "STEP 4<br>";
 
-echo "STEP 5<br>";
+    $response = $kernel->handle($request);
 
-$response->send();
+    echo "STEP 5<br>";
+
+    $response->send();
+
+} catch (\Throwable $e) {
+
+    echo "<pre>";
+    echo "ERROR CLASS:\n";
+    echo get_class($e);
+
+    echo "\n\nMESSAGE:\n";
+    echo $e->getMessage();
+
+    echo "\n\nFILE:\n";
+    echo $e->getFile().':'.$e->getLine();
+
+    echo "\n\nTRACE:\n";
+    echo $e->getTraceAsString();
+
+    exit;
+}
