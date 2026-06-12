@@ -1,5 +1,14 @@
 <?php
+echo "STEP 1";
+require __DIR__.'/../vendor/autoload.php';
 
+echo "STEP 2";
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+echo "STEP 3";
+$kernel = $app->make(Kernel::class);
+
+echo "STEP 4";
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
@@ -46,13 +55,28 @@ require __DIR__.'/../vendor/autoload.php';
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-$kernel = $app->make(Kernel::class);
 try {
+
+    $kernel = $app->make(Kernel::class);
+
     $response = $kernel->handle(
         $request = Request::capture()
     );
 
     $response->send();
+
+    $kernel->terminate($request, $response);
+
 } catch (\Throwable $e) {
-    echo $e;
+
+    echo '<pre>';
+    echo get_class($e);
+    echo "\n\n";
+    echo $e->getMessage();
+    echo "\n\n";
+    echo $e->getFile();
+    echo ':'.$e->getLine();
+    echo "\n\n";
+    echo $e->getTraceAsString();
+    exit;
 }
