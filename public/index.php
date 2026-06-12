@@ -1,24 +1,25 @@
 <?php
 
+echo "BOOTSTRAP V12";
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
-
 require __DIR__.'/../vendor/autoload.php';
 
-echo "STEP 1<br>";
-
 $app = require_once __DIR__.'/../bootstrap/app.php';
+
 echo "<pre>";
-echo "VIEW=";
-var_dump($app->bound('view'));
 
-echo " CONFIG=";
-var_dump($app->bound('config'));
+echo "APP CLASS:\n";
+echo get_class($app);
 
-echo " ROUTER=";
-var_dump($app->bound('router'));
+echo "\n\nBOOTED:\n";
+var_dump($app->isBooted());
+
+echo "\n\nBASE PATH:\n";
+echo base_path();
+
 exit;
 
 echo "STEP 2<br>";
