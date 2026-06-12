@@ -1,9 +1,18 @@
 <?php
 
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Http\Request;
+echo "STEP 1";
+require __DIR__.'/../vendor/autoload.php';
 
-define('LARAVEL_START', microtime(true));
+echo " STEP 2";
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+echo " STEP 3";
+
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+
+echo " STEP 4";
+
+exit;
 
 /*
 |--------------------------------------------------------------------------
