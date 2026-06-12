@@ -10,6 +10,16 @@ require __DIR__.'/../vendor/autoload.php';
 echo "STEP 1<br>";
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
+echo "<pre>";
+echo "VIEW=";
+var_dump($app->bound('view'));
+
+echo " CONFIG=";
+var_dump($app->bound('config'));
+
+echo " ROUTER=";
+var_dump($app->bound('router'));
+exit;
 
 echo "STEP 2<br>";
 
