@@ -32,6 +32,14 @@ use App\Http\Controllers\Web\BudgetCategoryController;
 |
 */
 
+Route::get('/view-test', function () {
+    return [
+        'view' => app()->bound('view'),
+        'config' => app()->bound('config'),
+        'router' => app()->bound('router'),
+    ];
+});
+
 Route::get('/', function () {
     return redirect('/login');
 });
