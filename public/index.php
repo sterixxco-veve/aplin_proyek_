@@ -48,8 +48,18 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 
 $kernel = $app->make(Kernel::class);
 
-$response = $kernel->handle(
-    $request = Request::capture()
-)->send();
+try {
+    $response = $kernel->handle(
+        $request = Request::capture()
+    );
 
-$kernel->terminate($request, $response);
+    echo "HANDLE OK";
+    exit;
+} catch (\Throwable $e) {
+    echo "<pre>";
+    echo get_class($e) . "\n\n";
+    echo $e->getMessage() . "\n\n";
+    echo $e->getFile() . ":" . $e->getLine();
+    echo "</pre>";
+    exit;
+}
