@@ -47,19 +47,12 @@ require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
 $kernel = $app->make(Kernel::class);
-
 try {
     $response = $kernel->handle(
         $request = Request::capture()
     );
 
-    echo "HANDLE OK";
-    exit;
+    $response->send();
 } catch (\Throwable $e) {
-    echo "<pre>";
-    echo get_class($e) . "\n\n";
-    echo $e->getMessage() . "\n\n";
-    echo $e->getFile() . ":" . $e->getLine();
-    echo "</pre>";
-    exit;
+    echo $e;
 }

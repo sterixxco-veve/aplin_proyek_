@@ -9,3 +9,11 @@ Route::get('/test-db', function () {
         return $e->getMessage();
     }
 });
+
+Route::get('/diag', function () {
+    return [
+        'view_exists' => app()->bound('view'),
+        'config_exists' => app()->bound('config'),
+        'router_exists' => app()->bound('router'),
+    ];
+});
