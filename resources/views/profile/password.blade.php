@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <div class="container py-4">
 
         <div class="row justify-content-center">
@@ -24,7 +23,7 @@
 
                         </div>
 
-                        @if(session('success'))
+                        @if (session('success'))
                             <div class="alert alert-success border-0 rounded-3 d-flex align-items-center gap-2">
                                 <i class="bi bi-check-circle-fill text-success"></i>
                                 <span>{{ session('success') }}</span>
@@ -46,16 +45,15 @@
 
                                 </label>
 
-                                <input type="password" name="current_password" class="form-control @error('current_password') is-invalid @enderror">
+                                <input type="password" name="current_password"
+                                    class="form-control @error('current_password') is-invalid @enderror">
 
                                 @error('current_password')
-
                                     <small class="text-danger">
 
                                         {{ $message }}
 
                                     </small>
-
                                 @enderror
 
                             </div>
@@ -68,16 +66,15 @@
 
                                 </label>
 
-                                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror">
+                                <input type="password" name="password"
+                                    class="form-control @error('password') is-invalid @enderror">
 
                                 @error('password')
-
                                     <small class="text-danger">
 
                                         {{ $message }}
 
                                     </small>
-
                                 @enderror
 
                             </div>
@@ -90,7 +87,8 @@
 
                                 </label>
 
-                                <input type="password" name="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror">
+                                <input type="password" name="password_confirmation"
+                                    class="form-control @error('password_confirmation') is-invalid @enderror">
 
                                 @error('password_confirmation')
                                     <small class="text-danger">{{ $message }}</small>
@@ -125,5 +123,4 @@
         </div>
 
     </div>
-
 @endsection

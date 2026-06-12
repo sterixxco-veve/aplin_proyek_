@@ -79,166 +79,138 @@
         }
     </style>
 
-    <div class="container-fluid py-4">
 
-        <div class="doc-header">
+    <div class="row g-4">
 
-            <h2 class="fw-bold mb-1">
-                Documentation
-            </h2>
+        <!-- LEFT PANEL -->
+        <div class="col-lg-4">
 
-            <p class="text-muted mb-0">
-                {{ $event->nama_event }}
-            </p>
+            <div class="card doc-card">
 
-        </div>
+                <div class="card-body">
 
-        @if(session('success'))
+                    <h5 class="section-title">
+                        Upload Documentation
+                    </h5>
 
-            <div class="alert alert-success rounded-3">
-                {{ session('success') }}
-            </div>
+                    <form action="{{ route('documentation.store', $event->id_event) }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
 
-        @endif
+                        <div class="upload-box mb-4">
 
-        <div class="row g-4">
+                            <label class="fw-semibold mb-2">
+                                Documentation Photos
+                            </label>
 
-            <!-- LEFT PANEL -->
-            <div class="col-lg-4">
+                            <div id="photo-container" class="mt-2">
 
-                <div class="card doc-card">
+                                <div class="mb-2 photo-input">
 
-                    <div class="card-body">
+                                    <input type="file" name="photos[]"
+                                        class="form-control photo-upload @error('photos') is-invalid @enderror"
+                                        accept="image/*">
 
-                        <h5 class="section-title">
-                            Upload Documentation
-                        </h5>
-
-                        <form action="{{ route('documentation.store', $event->id_event) }}" method="POST"
-                            enctype="multipart/form-data">
-                            @csrf
-
-                            <div class="upload-box mb-4">
-
-                                <label class="fw-semibold mb-2">
-                                    Documentation Photos
-                                </label>
-
-                                <div id="photo-container" class="mt-2">
-
-                                    <div class="mb-2 photo-input">
-
-                                        <input type="file" name="photos[]" class="form-control photo-upload @error('photos') is-invalid @enderror"
-                                            accept="image/*">
-
-                                    </div>
-
-                                </div>
-
-                                @error('photos')
-                                    <div class="text-danger small fw-semibold mt-1">{{ $message }}</div>
-                                @enderror
-
-                                <div class="photo-counter mt-2">
-                                    Maximum 5 photos
                                 </div>
 
                             </div>
 
-                            <div class="mb-4">
+                            @error('photos')
+                                <div class="text-danger small fw-semibold mt-1">{{ $message }}</div>
+                            @enderror
 
-                                <label class="form-label fw-semibold">
-                                    Google Drive Folder
-                                </label>
-
-                                <input type="url" name="google_drive_link" class="form-control @error('google_drive_link') is-invalid @enderror"
-                                    value="{{ old('google_drive_link', $event->documentationLinks->first()?->google_drive_link) }}"
-                                    placeholder="https://drive.google.com/...">
-
-                                @error('google_drive_link')
-                                    <div class="invalid-feedback fw-semibold">{{ $message }}</div>
-                                @enderror
-
+                            <div class="photo-counter mt-2">
+                                Maximum 5 photos
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100 save-btn">
-                                Save Documentation
-                            </button>
+                        </div>
 
-                        </form>
+                        <div class="mb-4">
 
-                        @php
-                            $driveLink =
-                                $event->documentationLinks->first()?->google_drive_link;
-                        @endphp
+                            <label class="form-label fw-semibold">
+                                Google Drive Folder
+                            </label>
 
-                        @if($driveLink)
+                            <input type="url" name="google_drive_link"
+                                class="form-control @error('google_drive_link') is-invalid @enderror"
+                                value="{{ old('google_drive_link', $event->documentationLinks->first()?->google_drive_link) }}"
+                                placeholder="https://drive.google.com/...">
 
-                            <a href="{{ $driveLink }}" target="_blank" class="btn btn-success w-100 drive-btn mt-3">
-                                Open Google Drive Folder
-                            </a>
+                            @error('google_drive_link')
+                                <div class="invalid-feedback fw-semibold">{{ $message }}</div>
+                            @enderror
 
-                        @endif
+                        </div>
 
-                    </div>
+                        <button type="submit" class="btn btn-primary w-100 save-btn">
+                            Save Documentation
+                        </button>
+
+                    </form>
+
+                    @php
+                        $driveLink = $event->documentationLinks->first()?->google_drive_link;
+                    @endphp
+
+                    @if ($driveLink)
+                        <a href="{{ $driveLink }}" target="_blank" class="btn btn-success w-100 drive-btn mt-3">
+                            Open Google Drive Folder
+                        </a>
+                    @endif
 
                 </div>
 
             </div>
 
-            <!-- RIGHT PANEL -->
-            <div class="col-lg-8">
+        </div>
 
-                <div class="card doc-card">
+        <!-- RIGHT PANEL -->
+        <div class="col-lg-8">
 
-                    <div class="card-body">
+            <div class="card doc-card">
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="card-body">
 
-                            <h5 class="section-title mb-0">
-                                Gallery
-                            </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
 
-                            <span class="badge bg-primary">
-                                {{ $event->documentationLinks->whereNotNull('file_path')->count() }}
-                                Photos
-                            </span>
+                        <h5 class="section-title mb-0">
+                            Gallery
+                        </h5>
 
-                        </div>
+                        <span class="badge bg-primary">
+                            {{ $event->documentationLinks->whereNotNull('file_path')->count() }}
+                            Photos
+                        </span>
 
-                        <div class="row g-3">
+                    </div>
 
-                            @forelse($event->documentationLinks as $photo)
+                    <div class="row g-3">
 
-                                @if($photo->file_path)
+                        @forelse($event->documentationLinks as $photo)
+                            @if ($photo->file_path)
+                                <div class="col-md-4">
 
-                                    <div class="col-md-4">
+                                    <div class="gallery-item">
 
-                                        <div class="gallery-item">
-
-                                            <img src="{{ asset('storage/' . $photo->file_path) }}" class="gallery-image">
-
-                                        </div>
-
-                                    </div>
-
-                                @endif
-
-                            @empty
-
-                                <div class="col-12">
-
-                                    <div class="alert alert-secondary empty-gallery">
-
-                                        No documentation uploaded yet.
+                                        <img src="{{ asset('storage/' . $photo->file_path) }}" class="gallery-image">
 
                                     </div>
 
                                 </div>
+                            @endif
 
-                            @endforelse
+                        @empty
 
-                        </div>
+                            <div class="col-12">
+
+                                <div class="alert alert-secondary empty-gallery">
+
+                                    No documentation uploaded yet.
+
+                                </div>
+
+                            </div>
+                        @endforelse
 
                     </div>
 
@@ -250,20 +222,21 @@
 
     </div>
 
-    <script>
 
-        document.addEventListener('DOMContentLoaded', function () {
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
             const container =
                 document.getElementById('photo-container');
 
             let totalInputs = 1;
 
-            container.addEventListener('change', function (e) {
+            container.addEventListener('change', function(e) {
 
                 if (
-                    e.target.classList.contains('photo-upload')
-                    && e.target.files.length > 0
+                    e.target.classList.contains('photo-upload') &&
+                    e.target.files.length > 0
                 ) {
 
                     const inputs =
@@ -273,8 +246,8 @@
                         inputs[inputs.length - 1];
 
                     if (
-                        e.target.closest('.photo-input') === lastInput
-                        && totalInputs < 5
+                        e.target.closest('.photo-input') === lastInput &&
+                        totalInputs < 5
                     ) {
 
                         totalInputs++;
@@ -303,7 +276,6 @@
             });
 
         });
-
     </script>
 </body>
 

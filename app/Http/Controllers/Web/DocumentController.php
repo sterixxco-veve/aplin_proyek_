@@ -35,6 +35,7 @@ class DocumentController extends Controller
 
     public function listEvent()
     {
+        
         $events = Event::visibleTo(auth()->user())
             ->latest()
             ->get();
@@ -75,6 +76,15 @@ class DocumentController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'status' => ['nullable', 'in:draft,generated,final,archived,failed'],
             'notes' => ['nullable', 'string'],
+            
+            // Validasi Deskripsi Kegiatan: WAJIB diisi jika tipenya PROPOSAL
+            'deskripsi_kegiatan' => ['required_if:document_type,proposal', 'nullable', 'string'],
+
+            // Validasi LPJ tetap aman
+            'implementation' => ['required_if:document_type,lpj', 'nullable', 'string'],
+            'evaluation'     => ['required_if:document_type,lpj', 'nullable', 'string'],
+            'kritik'         => ['required_if:document_type,lpj', 'nullable', 'string'],
+            'saran'          => ['required_if:document_type,lpj', 'nullable', 'string'],
         ]);
 
         $payload = $request->except([
@@ -89,13 +99,14 @@ class DocumentController extends Controller
             $payload['organization_logo'] = $request->file('organization_logo')->store('document-logos', 'public');
         }
 
+        // Sekarang $payload otomatis mengemas latar_belakang, tujuan, dan deskripsi_kegiatan ke dalam snapshot_data JSON dengan aman!
         $document = GeneratedDocument::create([
             'id_event' => $event->id_event,
             'document_type' => $request->document_type,
             'title' => $request->title,
-            'status' => 'draft',
+            'status' => $request->status ?? 'draft',
             'notes' => $request->notes,
-            'snapshot_data' => $payload,
+            'snapshot_data' => $payload, 
             'generated_by' => auth()->id(),
         ]);
 
@@ -103,7 +114,7 @@ class DocumentController extends Controller
 
         $document->update([
             'file_url' => $fileUrl,
-            'status' => 'generated',
+            'status' => $request->status === 'draft' ? 'draft' : 'generated',
             'generated_at' => now(),
         ]);
 

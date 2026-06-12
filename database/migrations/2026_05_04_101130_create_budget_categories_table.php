@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('budget_categories', function (Blueprint $table) {
             $table->id('id_category');
             $table->string('nama_kategori');
+            $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
     }

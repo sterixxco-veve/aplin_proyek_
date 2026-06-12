@@ -27,6 +27,7 @@ use App\Imports\CertificateImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 use ZipArchive;
 
 class EventController extends Controller
@@ -156,11 +157,47 @@ class EventController extends Controller
         return view('events.create', compact('organizations', 'categories'));
     }
 
-    public function index()
-    {
-        $events = \App\Models\Event::visibleTo(auth()->user())->latest()->get();
-        return view('events.index', compact('events'));
-    }
+    public function index(Request $request)
+{
+    $statusFilter = $request->query('status', 'all');
+    $now = Carbon::now();
+
+    // 1. Ambil query awal yang sudah terkunci dengan scope hak akses data
+    $query = Event::visibleTo(auth()->user())->with('committees');
+
+    // 2. Tambahkan logika filter dinamis berdasarkan waktu saat ini
+    if ($statusFilter && $statusFilter !== 'all') {
+    $query->where(function ($q) use ($statusFilter, $now) {
+        if ($statusFilter === 'Planning') {
+            // Waktu sekarang belum mencapai tanggal mulai
+            $q->where('tgl_mulai', '>', $now);
+        } elseif ($statusFilter === 'Ongoing') {
+            // Ada tgl_selesai dan sekarang berada di antaranya OR tgl_selesai kosong tapi mulai hari ini
+            $q->where(function ($sub) use ($now) {
+                $sub->where('tgl_mulai', '<=', $now)
+                    ->where('tgl_selesai', '>=', $now);
+            })->orWhere(function ($sub) use ($now) {
+                $sub->whereNull('tgl_selesai')
+                    ->whereDate('tgl_mulai', '=', $now->toDateString());
+            });
+        } elseif ($statusFilter === 'Done') {
+            // Sudah melewati tgl_selesai OR tgl_selesai kosong tapi sudah lewat hari dari tgl_mulai
+            $q->where(function ($sub) use ($now) {
+                $sub->whereNotNull('tgl_selesai')
+                    ->where('tgl_selesai', '<', $now);
+            })->orWhere(function ($sub) use ($now) {
+                $sub->whereNull('tgl_selesai')
+                    ->where('tgl_mulai', '<', $now->startOfDay());
+            });
+        }
+    });
+}
+
+    // 3. Ambil data dengan urutan terbaru
+    $events = $query->latest()->get();
+
+    return view('events.index', compact('events'));
+}
 
     public function edit($id)
     {
@@ -173,27 +210,39 @@ class EventController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $event = Event::visibleTo(auth()->user())->findOrFail($id);
-        abort_unless($event->canManageBy(auth()->user()), 403, 'Tidak punya akses');
+{
+    // 1. VALIDASI DATA (Wajib daftarkan field baru agar tidak lolos/diabaikan)
+    $validatedData = $request->validate([
+        'nama_event'         => 'required|string|max:255',
+        'id_org'             => 'required',
+        'id_event_category'  => 'required',
+        'tgl_mulai'          => 'required|date',
+        'tgl_selesai'        => 'nullable|date|after_or_equal:tgl_mulai',
+        
+        // Tambahkan ini (nullable artinya boleh kosong/tidak wajib diisi saat edit awal)
+        'latar_belakang'     => 'nullable|string',
+        'tujuan'             => 'nullable|string',
+    ]);
 
-        $request->validate([
-            'nama_event' => 'required',
-            'id_org' => 'required',
-            'id_event_category' => 'required|exists:event_categories,id_event_category',
-            'tgl_mulai' => 'nullable|date'
-        ]);
+    // 2. AMBIL DATA EVENT BERDASARKAN ID
+    $event = Event::findOrFail($id);
 
-        $event->update([
-            'nama_event' => $request->nama_event,
-            'id_org' => $request->id_org,
-            'id_event_category' => $request->id_event_category,
-            'tgl_mulai' => $request->tgl_mulai
-        ]);
+    // 3. UPDATE DATA KE DATABASE
+    $event->update([
+        'nama_event'        => $request->nama_event,
+        'id_org'            => $request->id_org,
+        'id_event_category' => $request->id_event_category,
+        'tgl_mulai'         => $request->tgl_mulai,
+        'tgl_selesai'       => $request->tgl_selesai,
+        
+        // Simpan field baru ke tabel events
+        'latar_belakang'    => $request->latar_belakang,
+        'tujuan'            => $request->tujuan,
+    ]);
 
-        return redirect('/events/' . $event->id_event)
-            ->with('success', 'Event updated');
-    }
+    // 4. REDIRECT KEMBALI DENGAN SESSION SUCCESS
+    return redirect()->back()->with('success', 'Detail informasi master event berhasil diperbarui!');
+}
 
     public function storeBudget(Request $request, $id)
     {

@@ -17,8 +17,8 @@ use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\EventCommitteeController;
 use App\Http\Controllers\Api\ExpenseReportController;
 use App\Http\Controllers\Api\PartnerController as ApiPartnerController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Web\BudgetCategoryController;
+
 
 
 /*
@@ -47,25 +47,25 @@ Route::put(
 )->name('profile.password.update');
 
 
-Route::get(
-    '/forgot-password',
-    [ForgotPasswordController::class, 'create']
-)->name('password.request');
+// Route::get(
+//     '/forgot-password',
+//     [ForgotPasswordController::class, 'create']
+// )->name('password.request');
 
-Route::post(
-    '/forgot-password',
-    [ForgotPasswordController::class, 'store']
-)->name('password.email');
+// Route::post(
+//     '/forgot-password',
+//     [ForgotPasswordController::class, 'store']
+// )->name('password.email');
 
-Route::get(
-    '/reset-password/{token}',
-    [ResetPasswordController::class, 'create']
-)->name('password.reset');
+// Route::get(
+//     '/reset-password/{token}',
+//     [ResetPasswordController::class, 'create']
+// )->name('password.reset');
 
-Route::post(
-    '/reset-password',
-    [ResetPasswordController::class, 'store']
-)->name('password.update');
+// Route::post(
+//     '/reset-password',
+//     [ResetPasswordController::class, 'store']
+// )->name('password.update');
 
 // AUTH ROUTES FROM API
 Route::post('/login', [ApiAuthController::class, 'login']);
@@ -90,6 +90,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/organizations/{id}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
     Route::put('/organizations/{id}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{id}/invite-bulk', [OrganizationController::class, 'inviteBulk']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    
+    // ==========================================
+    // ROUTE MASTER KATEGORI ANGGARAN & KEUANGAN
+    // ==========================================
+    Route::get('/categories', [BudgetCategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [BudgetCategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{id}', [BudgetCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{id}', [BudgetCategoryController::class, 'destroy'])->name('categories.destroy');
+
 });
 
 Route::middleware('auth')->group(function () {

@@ -1,179 +1,254 @@
 @extends('layouts.guest')
 
 @section('content')
-
     <style>
+        /* Menggunakan font modern system yang clean */
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
         }
 
         .auth-card {
-            border: none;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .15);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            padding: 48px 40px;
+            /* Padding luas agar lega */
+            width: 100%;
+            max-width: 460px;
+            /* Lebar maksimal box */
         }
 
-        .auth-left {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            color: white;
-            padding: 50px;
+        .icon-wrapper {
+            width: 52px;
+            height: 52px;
+            background-color: #eef2ff;
+            /* Soft indigo tint */
+            color: #4f46e5;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 28px;
         }
 
-        .auth-right {
-            background: white;
-            padding: 50px;
+        .auth-title {
+            color: #0f172a;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .auth-subtitle {
+            color: #64748b;
+            font-size: 0.925rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .form-label {
+            color: #334155;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Solusi Utama: Memaksa Input Group mengambil 100% lebar parent */
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            width: 100% !important;
+        }
+
+        /* Input mengambil sisa ruang penuh sebelum tombol mata */
+        .input-group .form-control {
+            flex: 1 1 auto;
+            width: 1%;
+            min-width: 0;
+            border-top-left-radius: 12px !important;
+            border-bottom-left-radius: 12px !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
         }
 
         .form-control {
-            border-radius: 12px;
-            padding: 12px;
+            background-color: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            padding: 14px 16px;
+            font-size: 0.95rem;
+            color: #0f172a;
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        /* Form control biasa (seperti email) yang tidak pakai group */
+        .form-control:not(.input-group .form-control) {
+            border-radius: 12px !important;
+        }
+
+        .form-control:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            outline: none;
+            background-color: #ffffff;
+            z-index: 3;
+        }
+
+        /* Sinkronisasi warna border saat input di-focus */
+        .input-group:focus-within .form-control {
+            border-color: #4f46e5;
+        }
+
+        .input-group:focus-within .btn-toggle {
+            border-color: #4f46e5;
+        }
+
+        /* Styling Tombol Mata agar menempel sempurna */
+        .btn-toggle {
+            background-color: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-left: none;
+            border-top-right-radius: 12px !important;
+            border-bottom-right-radius: 12px !important;
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+            padding: 0 16px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+
+        .btn-toggle:hover {
+            color: #4f46e5;
+            background-color: #f8fafc;
         }
 
         .btn-primary {
+            background-color: #4f46e5;
+            border: none;
             border-radius: 12px;
-            padding: 12px;
+            padding: 14px;
+            font-size: 0.95rem;
             font-weight: 600;
+            color: #ffffff;
+            width: 100%;
+            margin-top: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        .input-group .btn {
-            border-radius: 0 12px 12px 0;
-        }
-
-        @media(max-width:768px) {
-            .auth-left {
-                display: none;
-            }
+        .btn-primary:hover {
+            background-color: #4338ca;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
     </style>
 
-    <div class="container py-5">
+    <div class="auth-wrapper">
+        <div class="auth-card">
 
-        <div class="row justify-content-center align-items-center min-vh-100">
-
-            <div class="col-lg-10">
-
-                <div class="card auth-card">
-
-                    <div class="row g-0">
-
-                        <div class="col-lg-5 auth-left">
-
-                            <h2 class="fw-bold">
-                                Create New Password
-                            </h2>
-
-                            <p class="mt-3 opacity-75">
-                                Your new password should be secure and easy for you to remember.
-                            </p>
-
-                        </div>
-
-                        <div class="col-lg-7 auth-right">
-
-                            <h3 class="fw-bold mb-4">
-                                Reset Password
-                            </h3>
-
-
-
-                            <form method="POST" action="{{ route('password.store') }}">
-
-                                @csrf
-
-                                <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
-                                <div class="mb-3">
-
-                                    <label class="form-label fw-semibold">
-                                        Email
-                                    </label>
-
-                                    <input type="email" name="email" value="{{ old('email', $request->email) }}"
-                                        class="form-control @error('email') is-invalid @enderror">
-
-                                    @error('email')
-                                        <div class="invalid-feedback fw-semibold">{{ $message }}</div>
-                                    @enderror
-
-                                </div>
-
-                                <div class="mb-3">
-
-                                    <label class="form-label fw-semibold">
-                                        New Password
-                                    </label>
-
-                                    <div class="input-group">
-
-                                        <input type="password" name="password" id="password"
-                                            class="form-control @error('password') is-invalid @enderror">
-
-                                        <button type="button" class="btn btn-outline-secondary"
-                                            onclick="togglePassword('password')">
-                                            👁
-                                        </button>
-
-                                        @error('password')
-                                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
-                                        @enderror
-
-                                    </div>
-
-                                </div>
-
-                                <div class="mb-4">
-
-                                    <label class="form-label fw-semibold">
-                                        Confirm Password
-                                    </label>
-
-                                    <div class="input-group">
-
-                                        <input type="password" name="password_confirmation" id="password_confirmation"
-                                            class="form-control @error('password_confirmation') is-invalid @enderror">
-
-                                        <button type="button" class="btn btn-outline-secondary"
-                                            onclick="togglePassword('password_confirmation')">
-                                            👁
-                                        </button>
-
-                                        @error('password_confirmation')
-                                            <div class="invalid-feedback fw-semibold">{{ $message }}</div>
-                                        @enderror
-
-                                    </div>
-
-                                </div>
-
-                                <button class="btn btn-primary w-100">
-                                    Reset Password
-                                </button>
-
-                            </form>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+            <div class="icon-wrapper">
+                🔒
             </div>
 
-        </div>
+            <h3 class="auth-title">
+                Create New Password
+            </h3>
 
+            <p class="auth-subtitle">
+                Your new password should be secure and easy for you to remember.
+            </p>
+
+            <form method="POST" action="{{ route('password.store') }}" style="width: 100%;">
+                @csrf
+
+                <input type="hidden" name="token" value="{{ $request->route('token') }}">
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" value="{{ old('email', $request->email) }}"
+                        class="form-control @error('email') is-invalid @enderror" placeholder="name@example.com" required>
+
+                    @error('email')
+                        <div class="invalid-feedback fw-medium mt-2" style="font-size: 0.8rem; display: block;">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <div class="input-group">
+                        <input type="password" name="password" id="password"
+                            class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required>
+                        <button type="button" class="btn btn-toggle" onclick="togglePassword('password')">
+                            👁
+                        </button>
+                    </div>
+                    @error('password')
+                        <div class="invalid-feedback fw-medium mt-2" style="font-size: 0.8rem; display: block;">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                        <input type="password" name="password_confirmation" id="password_confirmation"
+                            class="form-control @error('password_confirmation') is-invalid @enderror" placeholder="••••••••"
+                            required>
+                        <button type="button" class="btn btn-toggle" onclick="togglePassword('password_confirmation')">
+                            👁
+                        </button>
+                    </div>
+                    @error('password_confirmation')
+                        <div class="invalid-feedback fw-medium mt-2" style="font-size: 0.8rem; display: block;">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Reset Password
+                </button>
+            </form>
+
+        </div>
     </div>
 
     <script>
         function togglePassword(id) {
             const input = document.getElementById(id);
-
-            input.type =
-                input.type === 'password'
-                    ? 'text'
-                    : 'password';
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
         }
     </script>
-
 @endsection

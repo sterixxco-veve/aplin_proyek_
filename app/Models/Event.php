@@ -19,8 +19,13 @@ class Event extends Model
         'id_event_category',
         'nama_event',
         'tgl_mulai',
-        'status'
+        'tgl_selesai',       // Ditambahkan untuk hitung status real-time di Dashboard & Event Management
+        'status',
+        'latar_belakang',    // Ditambahkan sebagai master narasi Proposal & LPJ
+        'tujuan'             // Ditambahkan sebagai master narasi Proposal & LPJ
     ];
+
+    
 
     protected $appends = ['progress', 'financial_summary'];
 
