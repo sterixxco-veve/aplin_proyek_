@@ -4,7 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
-$app = Application::configure(
+return Application::configure(
     basePath: dirname(__DIR__)
 )
 ->withRouting(
@@ -14,11 +14,9 @@ $app = Application::configure(
     health: '/up',
 )
 ->withMiddleware(function (Middleware $middleware) {
+    //
 })
 ->withExceptions(function (Exceptions $exceptions) {
+    //
 })
 ->create();
-
-echo "BOOTSTRAP OK\n";
-
-return $app;
