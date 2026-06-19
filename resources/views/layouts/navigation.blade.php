@@ -10,10 +10,24 @@
                             <p class="mb-0 fw-bold text-dark small" style="line-height: 1.2;">{{ auth()->user()->name }}</p>
                             <p class="mb-0 text-muted" style="font-size: 11px;">{{ auth()->user()->email }}</p>
                         </div>
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+
+                        <!-- <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                             style="width: 40px; height: 40px; background-color: #4f46e5 !important;">
                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </div>
+                        </div> -->
+
+                        @if(auth()->user()->avatar)
+                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" 
+                                class="rounded-circle shadow-sm" 
+                                style="width: 40px; height: 40px; object-fit: cover;" 
+                                alt="User Avatar">
+                        @else
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                style="width: 40px; height: 40px; background-color: #4f46e5 !important; font-weight: 600;">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2"
                         style="border-radius: 16px; min-width: 200px;">
@@ -45,11 +59,8 @@
         position: fixed !important;
         top: 0 !important;
         left: 260px !important;
-        /* Pas di batas kanan sidebar */
         width: calc(100% - 260px) !important;
-        /* Mengisi sisa lebar layar */
         height: 70px !important;
-        /* Kunci tinggi presisi navbar */
         z-index: 1020 !important;
         background-color: rgba(255, 255, 255, 0.98) !important;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);

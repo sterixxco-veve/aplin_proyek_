@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage; 
+use Illuminate\Validation\Rule;        
 
 class ProfileController extends Controller
 {
@@ -22,25 +23,43 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+    public function update(Request $request): RedirectResponse
+{
+    $user = auth()->user(); 
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => [
+            'required', 
+            'string', 
+            'lowercase', 
+            'email', 
+            'max:255', 
+            
+            \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user)
+        ],
+        'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'], 
+    ]);
+
+    $user->name = $validated['name'];
+    $user->email = $validated['email'];
+
+    if ($request->hasFile('avatar')) {
+       
+        if ($user->avatar) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
         }
 
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $path = $request->file('avatar')->store('avatars', 'public');
+        
+        $user->avatar = $path;
     }
 
-    /**
-     * Delete the user's account.
-     */
+    $user->save();
+
+    return redirect()->route('profile.edit')->with('status', 'profile-updated');
+}
+
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -100,4 +119,4 @@ class ProfileController extends Controller
             'Password updated successfully.'
         );
     }
-}
+}   
