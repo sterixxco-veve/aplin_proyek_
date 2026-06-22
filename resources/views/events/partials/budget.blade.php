@@ -3,9 +3,6 @@
     $budgetCount = $event->budgets->count();
 @endphp
 
-{{-- ========================= --}}
-{{-- TITLE BUDGET --}}
-{{-- ========================= --}}
 <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
     <div>
         <h5 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">Budget Proposal</h5>
@@ -14,11 +11,8 @@
     </div>
 </div>
 
-{{-- ================================================== --}}
-{{-- METRIC SUMMARY BOXES (SUDAH DIKOTAKIN & BERWARNA) --}}
-{{-- ================================================== --}}
 <div class="row g-2 mb-4">
-    {{-- Kotak Total Proposal --}}
+    
     <div class="col-md-6">
         <div class="p-25 rounded-3 border shadow-sm-light"
             style="background-color: #f8fafc; border-color: #e2e8f0 !important;">
@@ -31,7 +25,6 @@
         </div>
     </div>
 
-    {{-- Kotak Jumlah Item --}}
     <div class="col-md-6">
         <div class="p-25 rounded-3 border shadow-sm-light"
             style="background-color: #f0fdf4; border-color: #d1fae5 !important;">
@@ -45,9 +38,7 @@
     </div>
 </div>
 
-{{-- ========================================== --}}
-{{-- FORM INPUT BUDGET ITEM --}}
-{{-- ========================================== --}}
+
 <div class="card border mb-4 shadow-sm-light"
     style="background-color: #f8fafc; border-radius: 14px; border-color: #e2e8f0 !important;">
     <div class="card-body p-35">
@@ -128,9 +119,6 @@
     </div>
 </div>
 
-{{-- ========================= --}}
-{{-- TABLE BUDGET ITEMS --}}
-{{-- ========================= --}}
 <div class="card border-0 style-table-card">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -169,8 +157,11 @@
                             <td class="text-end pe-3 py-25 text-nowrap">
                                 <div class="d-flex justify-content-end gap-2">
                                     <button type="button"
-                                        class="btn btn-sm btn-link text-warning p-0 text-decoration-none fw-semibold"
-                                        style="font-size: 0.8rem;" data-id="{{ $budget->id_budget }}"
+                                        class="btn btn-sm btn-link text-warning p-0 text-decoration-none fw-semibold budget-edit-btn"
+                                        style="font-size: 0.8rem;" 
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editBudgetModal"
+                                        data-id="{{ $budget->id_budget }}"
                                         data-category="{{ $budget->id_category }}"
                                         data-keterangan="{{ e($budget->keterangan) }}"
                                         data-qty="{{ $budget->qty }}"
@@ -178,15 +169,15 @@
                                         Edit
                                     </button>
 
-                                    <form method="POST"
-                                        action="/events/{{ $event->id_event }}/budgets/{{ $budget->id_budget }}"
-                                        onsubmit="return confirm('Hapus budget ini?')" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-semibold"
-                                            style="font-size: 0.8rem;">Hapus</button>
-                                    </form>
+                                    <button type="button"
+                                        class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-semibold budget-delete-btn"
+                                        style="font-size: 0.8rem;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteBudgetModal"
+                                        data-id="{{ $budget->id_budget }}"
+                                        data-keterangan="{{ e($budget->keterangan) }}">
+                                        Hapus
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -202,9 +193,7 @@
     </div>
 </div>
 
-{{-- ========================= --}}
-{{-- MODAL EDIT BUDGET --}}
-{{-- ========================= --}}
+
 <div class="modal fade" id="editBudgetModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
@@ -265,8 +254,34 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="deleteBudgetModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-body p-4 text-center">
+                <div class="text-danger mb-3">
+                    <i class="bi bi-exclamation-circle" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2" style="font-size: 1.05rem;">Hapus Item Budget?</h6>
+                <p class="text-muted small mb-4" id="delete_budget_text" style="font-size: 0.8rem; line-height: 1.4;"></p>
+
+                <form id="deleteBudgetForm" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light btn-sm flex-fill fw-medium"
+                            data-bs-dismiss="modal" style="border-radius: 8px; background-color: #f1f5f9;">Batal</button>
+                        <button type="submit" class="btn btn-danger btn-sm flex-fill fw-semibold"
+                            style="border-radius: 8px; border: none;">Ya, Hapus</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-    /* Spacing kustom mikro */
+   
     .p-25 {
         padding: 16px !important;
     }
@@ -298,7 +313,6 @@
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
     }
 
-    /* Form Fields Input Kecil Proporsional */
     .form-control-sm,
     .form-select-sm {
         border-radius: 8px !important;
@@ -324,6 +338,7 @@
 </style>
 
 <script>
+    
     document.querySelectorAll('.budget-edit-btn').forEach((btn) => {
         btn.addEventListener('click', function() {
             const budgetId = this.dataset.id;
@@ -334,9 +349,18 @@
             document.getElementById('edit_budget_keterangan').value = this.dataset.keterangan;
             document.getElementById('edit_budget_qty').value = this.dataset.qty;
             document.getElementById('edit_budget_nominal').value = this.dataset.nominal;
+        });
+    });
 
-            const modal = new bootstrap.Modal(document.getElementById('editBudgetModal'));
-            modal.show();
+    
+    document.querySelectorAll('.budget-delete-btn').forEach((btn) => {
+        btn.addEventListener('click', function() {
+            const budgetId = this.dataset.id;
+            const keterangan = this.dataset.keterangan;
+            const form = document.getElementById('deleteBudgetForm');
+            
+            form.action = `/events/{{ $event->id_event }}/budgets/${budgetId}`;
+            document.getElementById('delete_budget_text').innerHTML = `Apakah Anda yakin ingin menghapus item <strong class="text-dark">"${keterangan}"</strong> dari proposal ini?`;
         });
     });
 </script>
