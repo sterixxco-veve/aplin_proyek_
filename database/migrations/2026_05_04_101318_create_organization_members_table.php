@@ -9,24 +9,37 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('organization_members', function (Blueprint $table) {
-            $table->id();
+        $table->id();
 
-            $table->foreignId('organization_id')
-                ->constrained('organizations', 'id_org')
-                ->cascadeOnDelete();
+        $table->foreignId('organization_id')
+            ->constrained('organizations', 'id_org')
+            ->cascadeOnDelete();
 
-            $table->uuid('user_id');
+        $table->uuid('user_id');
 
-            $table->enum('role', ['admin_org','member']);
+        $table->unsignedBigInteger('id_divisi')->nullable();
 
-            $table->timestamps();
+        $table->enum('position', [
+            'ketua',
+            'wakil_ketua',
+            'sekretaris',
+            'bendahara',
+            'coordinator',
+            'member',
+        ]);
 
-            // FK manual karena UUID
-            $table->foreign('user_id')
-                ->references('id_user')
-                ->on('users')
-                ->cascadeOnDelete();
-        });
+        $table->timestamps();
+
+        $table->foreign('user_id')
+            ->references('id_user')
+            ->on('users')
+            ->cascadeOnDelete();
+
+        $table->foreign('id_divisi')
+            ->references('id_divisi')
+            ->on('divisions')
+            ->nullOnDelete();
+    });
     }
 
     public function down(): void

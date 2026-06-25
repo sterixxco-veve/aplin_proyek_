@@ -22,29 +22,13 @@ class User extends Authenticatable
         'id_user',
         'name',
         'email',
-        'password',
-        'role'
+        'password'
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            if (!$user->id_user) {
-                $user->id_user = (string) Str::uuid();
-            }
-            // Set default role jika kosong
-            if (!$user->role) {
-                $user->role = 'member';
-            }
-        });
-    }
 
     /**
      * ✅ AUTO HASH PASSWORD (Modern Style)
@@ -57,23 +41,10 @@ class User extends Authenticatable
             set: fn($value) => Hash::needsRehash($value) ? Hash::make($value) : $value,
         );
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | RBAC HELPERS
-    |--------------------------------------------------------------------------
-    */
-
-    public function isSuperAdmin()
+    public function division()
     {
-        return $this->role === 'super_admin';
+        return $this->belongsTo(Division::class,'id_divisi','id_divisi');
     }
-
-    public function hasRole($roles)
-    {
-        return in_array($this->role, (array) $roles);
-    }
-
     /*
     |--------------------------------------------------------------------------
     | RELATIONS
@@ -98,7 +69,12 @@ class User extends Authenticatable
             'organization_id',
             'id_user',
             'id_org'
-        )->withPivot('role')->withTimestamps();
+        )
+        ->withPivot([
+            'id_divisi',
+            'position'
+        ])
+        ->withTimestamps();
     }
 
     public function eventCommittees()

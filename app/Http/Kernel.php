@@ -37,9 +37,9 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class, // ✅ INI YANG BENAR
+        'position' => \App\Http\Middleware\RoleMiddleware::class, // ✅ INI YANG BENAR
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'org.role' => \App\Http\Middleware\CheckOrgRole::class,
+        'org.position' => \App\Http\Middleware\CheckOrgRole::class,
     ];
     
 }

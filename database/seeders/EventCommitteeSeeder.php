@@ -18,7 +18,7 @@ class EventCommitteeSeeder extends Seeder
                 'id_event' => $event->id_event,
                 'id_user' => $user->id_user,
                 'id_divisi' => $div->id_divisi,
-                'jabatan' => 'Ketua'
+                'position' => 'Ketua'
             ]
         ]);
     }

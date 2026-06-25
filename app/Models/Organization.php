@@ -28,7 +28,7 @@ class Organization extends Model
             'user_id',           // FK di pivot ke user
             'id_org',            // PK di organizations
             'id_user'            // PK di users
-        )->withPivot('role')->withTimestamps();
+        )->withPivot('id_divisi', 'position')->withTimestamps();
     }
 
     public function hasRole($userId, $role)

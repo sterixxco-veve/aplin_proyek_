@@ -12,7 +12,7 @@ class EventCommittee extends Model
         'id_event',
         'id_user',
         'id_divisi',
-        'jabatan'
+        'position'
     ];
 
     public function event()

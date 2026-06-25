@@ -5,22 +5,36 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\Division;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class OrganizationController extends Controller
 {
+    /**
+     * Tampilkan detail organisasi dengan daftar divisi dinamis
+     */
     public function show($id)
     {
+        // Load data organisasi beserta member-nya
         $org = auth()->user()
             ->organizations()
-            ->with('members')
+            ->with(['members' => function ($query) {
+                // Pastikan kita mengambil pivot id_divisi agar bisa ditampilkan di UI
+                $query->withPivot('id_divisi');
+            }])
             ->where('id_org', $id)
             ->firstOrFail();
 
-        return view('organizations.show', compact('org'));
+        // Ambil semua master divisi untuk dijadikan pilihan dropdown
+        $divisions = Division::all();
+
+        return view('organizations.show', compact('org', 'divisions'));
     }
 
+    /**
+     * Undang Anggota Baru (Single Invite)
+     */
     public function invite(Request $request, $orgId)
     {
         $request->validate([
@@ -29,35 +43,57 @@ class OrganizationController extends Controller
 
         $org = Organization::findOrFail($orgId);
 
-        // ❗ cek role dulu
-        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
-            abort(403, 'Kamu tidak punya akses');
+        // Keamanan: Cek apakah user pengundang adalah bagian dari BPH (id_divisi = 1) di organisasi ini
+        $isAdmin = $org->members()
+            ->where('users.id_user', auth()->user()->id_user)
+            ->wherePivot('id_divisi', 1) // 1 adalah ID Divisi BPH (Admin)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Kamu tidak punya akses untuk mengundang anggota.');
         }
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->with('error', 'User tidak ditemukan');
+            return back()->with('error', 'User tidak ditemukan.');
         }
 
+        // Cari divisi default (misal divisi 'Acara' atau default lainnya)
+        $defaultDivision = Division::where('is_default', 1)->first() ?? Division::first();
+        $divisiId = $defaultDivision ? $defaultDivision->id_divisi : null;
+
         $org->members()->syncWithoutDetaching([
-            $user->id_user => ['role' => 'member']
+            $user->id_user => ['id_divisi' => $divisiId]
         ]);
 
-        return back()->with('success', 'User berhasil di-invite');
+        // Sinkronisasi global di tabel users
+        $user->id_divisi = $divisiId;
+        $user->save();
+
+        return back()->with('success', 'User berhasil di-invite ke organisasi.');
     }
 
+    /**
+     * Undang Banyak Anggota (Bulk Invite dengan Dropdown Divisi)
+     */
     public function inviteBulk(Request $request, $orgId)
     {
         $request->validate([
             'emails' => 'required|string',
-            'role' => 'required|in:admin_org,member',
+            'id_divisi' => 'required|exists:divisions,id_divisi',
         ]);
 
         $org = Organization::findOrFail($orgId);
 
-        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
-            abort(403, 'Kamu tidak punya akses');
+        // Keamanan: Cek apakah user pengundang adalah bagian dari BPH (id_divisi = 1)
+        $isAdmin = $org->members()
+            ->where('users.id_user', auth()->user()->id_user)
+            ->wherePivot('id_divisi', 1)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Kamu tidak punya akses untuk melakukan bulk invite.');
         }
 
         $emails = collect(preg_split('/[\r\n,;]+/', $request->emails))
@@ -89,9 +125,14 @@ class OrganizationController extends Controller
                 continue;
             }
 
+            // Simpan ke pivot table dengan id_divisi pilihan
             $org->members()->attach($user->id_user, [
-                'role' => $request->role,
+                'id_divisi' => $request->id_divisi,
             ]);
+
+            // Sinkronisasi global ke tabel users
+            $user->id_divisi = $request->id_divisi;
+            $user->save();
 
             $added[] = $email;
         }
@@ -111,6 +152,62 @@ class OrganizationController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Update Divisi/Role Anggota via Dropdown Instan
+     */
+    public function updateMemberRole(Request $request, $id_org, $id_user)
+    {
+        $request->validate([
+            'id_divisi' => 'required|exists:divisions,id_divisi',
+        ]);
+
+        $org = Organization::findOrFail($id_org);
+
+        // Keamanan: Pastikan yang mengubah adalah BPH (id_divisi = 1)
+        $isAdmin = $org->members()
+            ->where('users.id_user', auth()->user()->id_user)
+            ->wherePivot('id_divisi', 1)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Anda tidak memiliki hak untuk memperbarui peran anggota.');
+        }
+
+        // 1. Update kolom id_divisi di tabel pivot organization_members
+        $org->members()->updateExistingPivot($id_user, [
+            'id_divisi' => $request->id_divisi
+        ]);
+
+        // 2. SINKRONISASI GLOBAL: Update id_divisi di tabel users
+        $user = User::findOrFail($id_user);
+        $user->id_divisi = $request->id_divisi;
+        $user->save();
+
+        return redirect()->back()->with('success', 'Divisi dan Role anggota berhasil disinkronkan!');
+    }
+
+    /**
+     * Hapus Anggota dari Organisasi
+     */
+    public function removeMember($id_org, $id_user)
+    {
+        $org = Organization::findOrFail($id_org);
+
+        // Keamanan: Cek hak akses BPH
+        $isAdmin = $org->members()
+            ->where('users.id_user', auth()->user()->id_user)
+            ->wherePivot('id_divisi', 1)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $org->members()->detach($id_user);
+
+        return redirect()->back()->with('success', 'Anggota berhasil dihapus dari organisasi.');
     }
 
     public function index()
@@ -142,8 +239,9 @@ class OrganizationController extends Controller
             'logo_path' => $logoPath,
         ]);
 
+        // Pembuat organisasi otomatis diletakkan di BPH (id_divisi = 1) sebagai Admin
         $org->members()->attach(auth()->user()->id_user, [
-            'role' => 'admin_org'
+            'id_divisi' => 1
         ]);
 
         return redirect('/organizations')->with('success', 'Organization created');
@@ -156,9 +254,14 @@ class OrganizationController extends Controller
             ->where('id_org', $id)
             ->firstOrFail();
 
-        // Keamanan: Cek apakah user adalah admin organisasi
-        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
-            abort(403, 'Hanya admin organisasi yang dapat mengubah data.');
+        // Keamanan: Cek apakah user pengedit adalah BPH (id_divisi = 1)
+        $isAdmin = $org->members()
+            ->where('users.id_user', auth()->user()->id_user)
+            ->wherePivot('id_divisi', 1)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Hanya divisi BPH yang dapat mengubah data.');
         }
 
         return view('organizations.edit', compact('org'));
@@ -168,8 +271,13 @@ class OrganizationController extends Controller
     {
         $org = Organization::findOrFail($id);
 
-        // Keamanan: Pastikan yang update adalah admin organisasi tersebut
-        if (!$org->hasRole(auth()->user()->id_user, 'admin_org')) {
+        // Keamanan: Cek hak akses pengedit
+        $isAdmin = $org->members()
+            ->where('users.id_user', auth()->user()->id_user)
+            ->wherePivot('id_divisi', 1)
+            ->exists();
+
+        if (!$isAdmin) {
             abort(403);
         }
 
@@ -178,15 +286,12 @@ class OrganizationController extends Controller
             'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
-        
         $org->nama_org = $request->nama_org;
 
         if ($request->hasFile('logo')) {
-           
             if ($org->logo_path) {
                 Storage::disk('public')->delete($org->logo_path);
             }
-            
             $org->logo_path = $request->file('logo')->store('logos', 'public');
         }
 
@@ -195,5 +300,4 @@ class OrganizationController extends Controller
         return redirect()->route('organizations.show', $id)
             ->with('success', 'Informasi organisasi berhasil diperbarui!');
     }
-
 }

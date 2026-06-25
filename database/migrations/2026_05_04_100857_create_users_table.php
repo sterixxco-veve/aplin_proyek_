@@ -14,8 +14,17 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('avatar_path')->nullable();
-            $table->enum('role', ['super_admin','global_coordinator','leader','member']);
+            
+            // 🌟 SINKRONISASI ROLE: Mengganti ENUM dengan FK ke tabel divisions
+            $table->unsignedBigInteger('id_divisi')->nullable();
+            
             $table->timestamps();
+
+            // Relasi Foreign Key ke tabel divisions
+            $table->foreign('id_divisi')
+                ->references('id_divisi')
+                ->on('divisions')
+                ->nullOnDelete(); // Jika divisi dihapus, role user diset NULL (tidak ikut terhapus)
         });
     }
 

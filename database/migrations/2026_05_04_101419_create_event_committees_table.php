@@ -16,7 +16,14 @@ return new class extends Migration
             $table->uuid('id_user');
             $table->foreignId('id_divisi');
 
-            $table->string('jabatan');
+            $table->enum('position', [
+                'ketua',
+                'wakil_ketua',
+                'sekretaris',
+                'bendahara',
+                'coordinator',
+                'member',
+            ]);
 
             $table->timestamps();
 

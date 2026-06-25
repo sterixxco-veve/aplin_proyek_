@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -14,19 +13,23 @@ class UserSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                'id_user' => Str::uuid(),
+                'id_user' => (string) Str::uuid(),
                 'name' => 'Super Admin',
                 'email' => 'admin@mail.com',
                 'password' => Hash::make('password'),
-                'role' => 'super_admin'
+                'id_divisi' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'id_user' => Str::uuid(),
+                'id_user' => (string) Str::uuid(),
                 'name' => 'Coordinator',
                 'email' => 'coord@mail.com',
                 'password' => Hash::make('password'),
-                'role' => 'global_coordinator'
-            ]
+                'id_divisi' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }
