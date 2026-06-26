@@ -94,7 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/organizations', [OrganizationController::class, 'index']);
     Route::post('/organizations', [OrganizationController::class, 'store']);
     Route::get('/organizations/{id}', [OrganizationController::class, 'show'])->name('organizations.show');
-    Route::post('/organizations/{id}/invite', [OrganizationController::class, 'invite'])->middleware('org.role:admin_org');
+    Route::post('/organizations/{id}/invite', [OrganizationController::class, 'invite']);
     Route::get('/organizations/{id}/edit', [OrganizationController::class, 'edit'])->name('organizations.edit');
     Route::put('/organizations/{id}', [OrganizationController::class, 'update'])->name('organizations.update');
     Route::post('/organizations/{id}/invite-bulk', [OrganizationController::class, 'inviteBulk']);

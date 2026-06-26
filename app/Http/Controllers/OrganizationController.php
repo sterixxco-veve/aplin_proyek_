@@ -16,17 +16,22 @@ class OrganizationController extends Controller
      */
     public function show($id)
     {
-        // Load data organisasi beserta member-nya
-        $org = auth()->user()
-            ->organizations()
-            ->with(['members' => function ($query) {
-                // Pastikan kita mengambil pivot id_divisi agar bisa ditampilkan di UI
-                $query->withPivot('id_divisi');
-            }])
-            ->where('id_org', $id)
-            ->firstOrFail();
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
 
-        // Ambil semua master divisi untuk dijadikan pilihan dropdown
+        if ($isSuperAdmin) {
+            $org = Organization::with(['members' => function ($query) {
+                $query->where('users.email', '!=', 'admin@mail.com')->withPivot('id_divisi');
+            }])->where('id_org', $id)->firstOrFail();
+        } else {
+            $org = auth()->user()
+                ->organizations()
+                ->with(['members' => function ($query) {
+                    $query->where('users.email', '!=', 'admin@mail.com')->withPivot('id_divisi');
+                }])
+                ->where('id_org', $id)
+                ->firstOrFail();
+        }
+
         $divisions = Division::all();
 
         return view('organizations.show', compact('org', 'divisions'));
@@ -38,13 +43,16 @@ class OrganizationController extends Controller
     public function invite(Request $request, $orgId)
     {
         $request->validate([
-            'email' => 'required|email'
+            'email' => 'required|email',
+            'position' => 'required|in:ketua,wakil_ketua,sekretaris,bendahara,coordinator,member',
+            'id_divisi' => 'nullable|exists:divisions,id_divisi'
         ]);
 
         $org = Organization::findOrFail($orgId);
 
         // Keamanan: Cek apakah user pengundang adalah bagian dari BPH (id_divisi = 1) di organisasi ini
-        $isAdmin = $org->members()
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+        $isAdmin = $isSuperAdmin || $org->members()
             ->where('users.id_user', auth()->user()->id_user)
             ->wherePivot('id_divisi', 1) // 1 adalah ID Divisi BPH (Admin)
             ->exists();
@@ -59,12 +67,15 @@ class OrganizationController extends Controller
             return back()->with('error', 'User tidak ditemukan.');
         }
 
-        // Cari divisi default (misal divisi 'Acara' atau default lainnya)
-        $defaultDivision = Division::where('is_default', 1)->first() ?? Division::first();
-        $divisiId = $defaultDivision ? $defaultDivision->id_divisi : null;
+        // Aturan bisnis: BPH tidak perlu divisi (otomatis divisi BPH = 1)
+        $bphPositions = ['ketua', 'wakil_ketua', 'sekretaris', 'bendahara'];
+        $divisiId = in_array($request->position, $bphPositions) ? 1 : $request->id_divisi;
 
         $org->members()->syncWithoutDetaching([
-            $user->id_user => ['id_divisi' => $divisiId]
+            $user->id_user => [
+                'id_divisi' => $divisiId,
+                'position' => $request->position
+            ]
         ]);
 
         // Sinkronisasi global di tabel users
@@ -81,13 +92,15 @@ class OrganizationController extends Controller
     {
         $request->validate([
             'emails' => 'required|string',
-            'id_divisi' => 'required|exists:divisions,id_divisi',
+            'position' => 'required|in:ketua,wakil_ketua,sekretaris,bendahara,coordinator,member',
+            'id_divisi' => 'nullable|exists:divisions,id_divisi',
         ]);
 
         $org = Organization::findOrFail($orgId);
 
         // Keamanan: Cek apakah user pengundang adalah bagian dari BPH (id_divisi = 1)
-        $isAdmin = $org->members()
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+        $isAdmin = $isSuperAdmin || $org->members()
             ->where('users.id_user', auth()->user()->id_user)
             ->wherePivot('id_divisi', 1)
             ->exists();
@@ -110,6 +123,9 @@ class OrganizationController extends Controller
         $already = [];
         $notFound = [];
 
+        $bphPositions = ['ketua', 'wakil_ketua', 'sekretaris', 'bendahara'];
+        $divisiId = in_array($request->position, $bphPositions) ? 1 : $request->id_divisi;
+
         foreach ($emails as $email) {
             $user = User::where('email', $email)->first();
 
@@ -125,13 +141,14 @@ class OrganizationController extends Controller
                 continue;
             }
 
-            // Simpan ke pivot table dengan id_divisi pilihan
+            // Simpan ke pivot table dengan id_divisi & position
             $org->members()->attach($user->id_user, [
-                'id_divisi' => $request->id_divisi,
+                'id_divisi' => $divisiId,
+                'position' => $request->position,
             ]);
 
             // Sinkronisasi global ke tabel users
-            $user->id_divisi = $request->id_divisi;
+            $user->id_divisi = $divisiId;
             $user->save();
 
             $added[] = $email;
@@ -160,13 +177,20 @@ class OrganizationController extends Controller
     public function updateMemberRole(Request $request, $id_org, $id_user)
     {
         $request->validate([
-            'id_divisi' => 'required|exists:divisions,id_divisi',
+            'position' => 'required|in:ketua,wakil_ketua,sekretaris,bendahara,coordinator,member',
+            'id_divisi' => 'nullable|exists:divisions,id_divisi',
         ]);
 
         $org = Organization::findOrFail($id_org);
 
+        $targetUser = User::findOrFail($id_user);
+        if ($targetUser->email === 'admin@mail.com') {
+            abort(403, 'Peran Superadmin tidak boleh diubah.');
+        }
+
         // Keamanan: Pastikan yang mengubah adalah BPH (id_divisi = 1)
-        $isAdmin = $org->members()
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+        $isAdmin = $isSuperAdmin || $org->members()
             ->where('users.id_user', auth()->user()->id_user)
             ->wherePivot('id_divisi', 1)
             ->exists();
@@ -175,14 +199,18 @@ class OrganizationController extends Controller
             abort(403, 'Anda tidak memiliki hak untuk memperbarui peran anggota.');
         }
 
-        // 1. Update kolom id_divisi di tabel pivot organization_members
+        $bphPositions = ['ketua', 'wakil_ketua', 'sekretaris', 'bendahara'];
+        $divisiId = in_array($request->position, $bphPositions) ? 1 : $request->id_divisi;
+
+        // 1. Update kolom id_divisi & position di tabel pivot organization_members
         $org->members()->updateExistingPivot($id_user, [
-            'id_divisi' => $request->id_divisi
+            'id_divisi' => $divisiId,
+            'position' => $request->position
         ]);
 
         // 2. SINKRONISASI GLOBAL: Update id_divisi di tabel users
         $user = User::findOrFail($id_user);
-        $user->id_divisi = $request->id_divisi;
+        $user->id_divisi = $divisiId;
         $user->save();
 
         return redirect()->back()->with('success', 'Divisi dan Role anggota berhasil disinkronkan!');
@@ -195,8 +223,14 @@ class OrganizationController extends Controller
     {
         $org = Organization::findOrFail($id_org);
 
+        $targetUser = User::findOrFail($id_user);
+        if ($targetUser->email === 'admin@mail.com') {
+            abort(403, 'Superadmin tidak boleh dikeluarkan dari organisasi.');
+        }
+
         // Keamanan: Cek hak akses BPH
-        $isAdmin = $org->members()
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+        $isAdmin = $isSuperAdmin || $org->members()
             ->where('users.id_user', auth()->user()->id_user)
             ->wherePivot('id_divisi', 1)
             ->exists();
@@ -212,7 +246,8 @@ class OrganizationController extends Controller
 
     public function index()
     {
-        $orgs = auth()->user()->organizations;
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+        $orgs = $isSuperAdmin ? Organization::all() : auth()->user()->organizations;
         return view('organizations.index', compact('orgs'));
     }
  
@@ -239,9 +274,10 @@ class OrganizationController extends Controller
             'logo_path' => $logoPath,
         ]);
 
-        // Pembuat organisasi otomatis diletakkan di BPH (id_divisi = 1) sebagai Admin
+        // Pembuat organisasi otomatis diletakkan di BPH (id_divisi = 1) sebagai Ketua
         $org->members()->attach(auth()->user()->id_user, [
-            'id_divisi' => 1
+            'id_divisi' => 1,
+            'position' => 'ketua'
         ]);
 
         return redirect('/organizations')->with('success', 'Organization created');
@@ -249,6 +285,13 @@ class OrganizationController extends Controller
 
     public function edit($id)
     {
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+
+        if ($isSuperAdmin) {
+            $org = Organization::findOrFail($id);
+            return view('organizations.edit', compact('org'));
+        }
+
         $org = auth()->user()
             ->organizations()
             ->where('id_org', $id)
@@ -271,8 +314,8 @@ class OrganizationController extends Controller
     {
         $org = Organization::findOrFail($id);
 
-        // Keamanan: Cek hak akses pengedit
-        $isAdmin = $org->members()
+        $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+        $isAdmin = $isSuperAdmin || $org->members()
             ->where('users.id_user', auth()->user()->id_user)
             ->wherePivot('id_divisi', 1)
             ->exists();

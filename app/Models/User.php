@@ -22,8 +22,20 @@ class User extends Authenticatable
         'id_user',
         'name',
         'email',
-        'password'
+        'password',
+        'id_divisi'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (!$user->id_user) {
+                $user->id_user = (string) Str::uuid();
+            }
+        });
+    }
 
     protected $hidden = [
         'password',

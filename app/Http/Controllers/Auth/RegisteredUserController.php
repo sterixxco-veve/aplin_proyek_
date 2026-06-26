@@ -36,7 +36,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password, // Kirim string asli, Model yang akan menghash
-            'id_divisi' => '', // Pastikan role terisi
+            'id_divisi' => null,
         ]);
 
         event(new Registered($user));

@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $isSuperAdmin = auth()->user()->email === 'admin@mail.com';
+    $isAdmin = $isSuperAdmin || $org->members->contains(function ($member) {
+        return $member->id_user === auth()->user()->id_user 
+            && $member->pivot->id_divisi == 1;
+    });
+@endphp
 <div class="container pb-5">
     {{-- Breadcrumb Navigation --}}
     <nav aria-label="breadcrumb" class="mb-4">
@@ -43,26 +50,21 @@
                     </div>
 
                     {{-- Quick Actions --}}
-                    <div class="d-flex gap-2">
-                        <a href="/divisions" class="btn btn-outline-primary rounded-pill">
-                            <i class="bi bi-gear me-2"></i>Master Divisi
-                        </a>
-                        <a href="{{ route('organizations.edit', $org->id_org) }}" class="btn btn-light rounded-pill px-3 shadow-sm border">
-                            <i class="bi bi-pencil-square me-1"></i> Edit Info
-                        </a>
-                    </div>
+                    @if($isAdmin)
+                        <div class="d-flex gap-2">
+                            <a href="/divisions" class="btn btn-outline-primary rounded-pill">
+                                <i class="bi bi-gear me-2"></i>Master Divisi
+                            </a>
+                            <a href="{{ route('organizations.edit', $org->id_org) }}" class="btn btn-light rounded-pill px-3 shadow-sm border">
+                                <i class="bi bi-pencil-square me-1"></i> Edit Info
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
 
         {{-- 🔑 Admin Actions: Invite Member --}}
-        @php
-            $isAdmin = $org->members->contains(function ($member) {
-                return $member->id_user === auth()->user()->id_user 
-                    && $member->pivot->role === 'admin_org';
-            });
-        @endphp
-
         @if($isAdmin)
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
@@ -76,11 +78,32 @@
                         
                         <p class="text-muted small mb-4">Masukkan email anggota baru untuk memberikan akses ke organisasi ini.</p>
 
-                        <form method="POST" action="/organizations/{{ $org->id_org }}/invite">
+                        <form method="POST" action="/organizations/{{ $org->id_org }}/invite" id="singleInviteForm">
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-muted ms-1">Alamat Email</label>
                                 <input type="email" name="email" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" placeholder="nama@email.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Posisi</label>
+                                <select name="position" class="form-select bg-light border-0 py-3 rounded-4 shadow-none" id="singlePosSelect" required>
+                                    <option value="member">Member</option>
+                                    <option value="coordinator">Coordinator</option>
+                                    <option value="ketua">Ketua (BPH)</option>
+                                    <option value="wakil_ketua">Wakil Ketua (BPH)</option>
+                                    <option value="sekretaris">Sekretaris (BPH)</option>
+                                    <option value="bendahara">Bendahara (BPH)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="singleDivWrapper">
+                                <label class="form-label small fw-bold text-muted ms-1">Divisi</label>
+                                <select name="id_divisi" class="form-select bg-light border-0 py-3 rounded-4 shadow-none">
+                                    @foreach($divisions as $div)
+                                        @if(!in_array(strtolower($div->nama_divisi), ['bph', 'sekretaris', 'bendahara']))
+                                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm mt-2 transition-transform">
                                 Kirim Undangan <i class="bi bi-send-fill ms-2 small"></i>
@@ -92,17 +115,31 @@
                         <h6 class="fw-bold mb-2 text-dark">Undang Banyak Anggota</h6>
                         <p class="text-muted small mb-3">Pisahkan email dengan baris baru, koma, atau titik koma.</p>
 
-                        <form method="POST" action="/organizations/{{ $org->id_org }}/invite-bulk">
+                        <form method="POST" action="/organizations/{{ $org->id_org }}/invite-bulk" id="bulkInviteForm">
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-muted ms-1">Email Anggota</label>
                                 <textarea name="emails" class="form-control bg-light border-0 py-3 rounded-4 shadow-none" rows="4" placeholder="satu@email.com&#10;dua@email.com" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted ms-1">Role Organization</label>
-                                <select name="role" class="form-select bg-light border-0 py-3 rounded-4 shadow-none" required>
+                                <label class="form-label small fw-bold text-muted ms-1">Posisi</label>
+                                <select name="position" class="form-select bg-light border-0 py-3 rounded-4 shadow-none" id="bulkPosSelect" required>
                                     <option value="member">Member</option>
-                                    <option value="admin_org">Admin Org</option>
+                                    <option value="coordinator">Coordinator</option>
+                                    <option value="ketua">Ketua (BPH)</option>
+                                    <option value="wakil_ketua">Wakil Ketua (BPH)</option>
+                                    <option value="sekretaris">Sekretaris (BPH)</option>
+                                    <option value="bendahara">Bendahara (BPH)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="bulkDivWrapper">
+                                <label class="form-label small fw-bold text-muted ms-1">Divisi</label>
+                                <select name="id_divisi" class="form-select bg-light border-0 py-3 rounded-4 shadow-none">
+                                    @foreach($divisions as $div)
+                                        @if(!in_array(strtolower($div->nama_divisi), ['bph', 'sekretaris', 'bendahara']))
+                                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                                        @endif
+                                    @endforeach
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold shadow-sm mt-2">
@@ -151,20 +188,34 @@
                                         </td>
                                         <td>
                                             @php
-                                                $role = $member->pivot->role;
-                                                $badgeClass = ($role === 'admin_org') ? 'bg-danger-subtle text-danger' : 'bg-light text-dark';
-                                                $roleLabel = $role === 'admin_org' ? 'Admin Org' : ucfirst($role);
+                                                $pos = $member->pivot->position ?? 'member';
+                                                $divId = $member->pivot->id_divisi;
+                                                $isBph = in_array($pos, ['ketua', 'wakil_ketua', 'sekretaris', 'bendahara']) || $divId == 1;
+                                                $badgeClass = $isBph ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary';
+                                                $divName = $divisions->firstWhere('id_divisi', $divId)->nama_divisi ?? 'N/A';
+                                                $posLabel = str_replace('_', ' ', ucwords($pos, '_'));
                                             @endphp
-                                            <span class="badge {{ $badgeClass }} border rounded-pill px-3 py-2 shadow-sm small">
-                                                <i class="bi {{ $role === 'admin_org' ? 'bi-shield-lock-fill' : 'bi-person-fill' }} me-1"></i>
-                                                {{ $roleLabel }}
-                                            </span>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <span class="badge {{ $badgeClass }} border rounded-pill px-3 py-2 shadow-sm small">
+                                                    <i class="bi {{ $isBph ? 'bi-shield-lock-fill' : 'bi-person-fill' }} me-1"></i>
+                                                    {{ $posLabel }}
+                                                </span>
+                                                @if(!$isBph)
+                                                    <span class="badge bg-light text-dark border rounded-pill px-3 py-2 shadow-sm small">
+                                                        <i class="bi bi-diagram-3-fill me-1 text-muted"></i>
+                                                        {{ $divName }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="text-end pe-4">
-                                            @if($isAdmin && $member->id_user !== auth()->id())
-                                                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Hapus Member">
-                                                    <i class="bi bi-trash-fill"></i>
-                                                </button>
+                                            @if($isAdmin && $member->id_user !== auth()->user()->id_user && $member->email !== 'admin@mail.com')
+                                                <form action="/organizations/{{ $org->id_org }}/members/{{ $member->id_user }}/remove" method="POST" class="d-inline" onsubmit="return confirm('Hapus anggota ini?')">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Hapus Member">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                    </button>
+                                                </form>
                                             @else
                                                 <span class="text-muted small">N/A</span>
                                             @endif
@@ -188,6 +239,31 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bphPos = ['ketua', 'wakil_ketua', 'sekretaris', 'bendahara'];
+        
+        function handleToggle(selectId, wrapperId) {
+            const sel = document.getElementById(selectId);
+            const wrap = document.getElementById(wrapperId);
+            if (!sel || !wrap) return;
+
+            function toggle() {
+                if (bphPos.includes(sel.value)) {
+                    wrap.style.display = 'none';
+                } else {
+                    wrap.style.display = 'block';
+                }
+            }
+            sel.addEventListener('change', toggle);
+            toggle();
+        }
+
+        handleToggle('singlePosSelect', 'singleDivWrapper');
+        handleToggle('bulkPosSelect', 'bulkDivWrapper');
+    });
+</script>
 
 <style>
     .breadcrumb-item + .breadcrumb-item::before {
