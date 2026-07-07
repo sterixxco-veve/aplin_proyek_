@@ -183,6 +183,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/certificates', [CertificateController::class, 'index'])->name('web.certificates.index');
     Route::get('/certificates/{eventId}', [CertificateController::class, 'showEvent'])->name('web.certificates.show');
     Route::post('/events/{event}/certificates/download-zip', [EventController::class, 'downloadCertificatesZip']);
+    Route::post('/events/{id_event}/certificates/bulk-insert', [CertificateController::class, 'bulkInsert']);
     Route::post('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);

@@ -52,6 +52,17 @@ class EventController extends Controller
 
 
         $divisions = \App\Models\Division::all();
+
+        $singleK = BudgetCategory::firstOrCreate(['nama_kategori' => 'Pemasukan']);
+        $doubleK = BudgetCategory::where('nama_kategori', 'Pemasukkan')->first();
+        if ($doubleK && $singleK && $doubleK->id_category != $singleK->id_category) {
+            \App\Models\EventBudget::where('id_category', $doubleK->id_category)->update(['id_category' => $singleK->id_category]);
+            $doubleK->delete();
+        }
+
+        // Hapus kategori Pemasukan dari ExpenseCategory karena Finance hanya untuk pengeluaran
+        ExpenseCategory::whereIn('nama_kategori', ['Pemasukan', 'Pemasukkan', 'pemasukan', 'pemasukkan'])->delete();
+
         $budgetCategories = BudgetCategory::orderBy('nama_kategori')->get();
         $members = $event->organization->members;
         $availableMembers = $members->reject(function ($member) use ($event) {
@@ -68,7 +79,7 @@ class EventController extends Controller
         // Ambil data Tugas (Tasks) & Keuangan
         $tasks = Task::with('assignee')->where('id_event', $id)->get();
         $expenses = ExpenseReport::with(['category', 'user'])->where('id_event', $id)->latest('id_expense')->get();
-        $expenseCategories = ExpenseCategory::all();
+        $expenseCategories = ExpenseCategory::whereNotIn('nama_kategori', ['Pemasukan', 'Pemasukkan', 'pemasukan', 'pemasukkan'])->get();
 
         // Hitung Progress Pengerjaan
         $total = $tasks->count();

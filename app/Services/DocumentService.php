@@ -107,12 +107,20 @@ class DocumentService
         // Mengambil data relasi anggaran dari model event (Proposal Budget)
         $mappedBudgets = $event?->budgets ?? collect();
 
-        if ($doc->document_type === 'lpj') {
-            // Untuk LPJ:
-            // 1. PEMASUKAN = SELURUH DATA DARI BUDGET PROPOSAL (karena itu adalah total anggaran dana yang disetujui untuk kegiatan)
-            $pemasukanItems = $mappedBudgets->all();
+        // 1. PEMASUKAN = SELURUH DATA DARI BUDGET PROPOSAL YANG BERKATEGORI PEMASUKAN / PEMASUKKAN
+        foreach ($mappedBudgets as $b) {
+            $categoryName = strtolower($b->category?->nama_kategori ?? '');
 
-            // 2. PENGELUARAN = DATA REALISASI DARI FINANCE (ExpenseReport) yang berstatus accepted atau reimbursed
+            if (str_contains($categoryName, 'pemasuk')) {
+                $pemasukanItems[] = $b;
+            } elseif ($doc->document_type !== 'lpj') {
+                // Untuk Proposal & dokumen selain LPJ: Pengeluaran adalah item budget yang BUKAN pemasukan
+                $pengeluaranItems[] = $b;
+            }
+        }
+
+        // 2. PENGELUARAN UNTUK LPJ = DATA REALISASI DARI FINANCE (ExpenseReport) yang berstatus accepted/reimbursed
+        if ($doc->document_type === 'lpj') {
             $mappedExpenses = $event?->expenses()
                 ->where(function ($query) {
                     $query->where('approval_status', 'accepted')
@@ -123,17 +131,6 @@ class DocumentService
                 // Jembatan kompatibilitas dengan template blade agar tidak kosong saat membaca $peng->keterangan
                 $exp->keterangan = $exp->nama_pengeluaran ?? $exp->keterangan ?? '-';
                 $pengeluaranItems[] = $exp;
-            }
-        } else {
-            // Untuk Proposal & dokumen selain LPJ:
-            foreach ($mappedBudgets as $b) {
-                $categoryName = strtolower($b->category?->nama_kategori ?? '');
-
-                if (str_contains($categoryName, 'pemasukan')) {
-                    $pemasukanItems[] = $b;
-                } else {
-                    $pengeluaranItems[] = $b;
-                }
             }
         }
 
