@@ -31,4 +31,5 @@ RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+# Ubah baris CMD paling bawah menjadi seperti ini:
+CMD ["sh", "-c", "php artisan storage:link && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
