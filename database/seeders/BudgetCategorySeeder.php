@@ -11,6 +11,7 @@ class BudgetCategorySeeder extends Seeder
     public function run(): void
     {
         DB::table('budget_categories')->insert([
+            ['nama_kategori' => 'Pemasukan'],
             ['nama_kategori' => 'Operasional'],
             ['nama_kategori' => 'Marketing'],
             ['nama_kategori' => 'Produksi'],

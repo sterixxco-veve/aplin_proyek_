@@ -12,6 +12,16 @@ class BudgetCategoryController extends Controller
 {
     public function index()
     {
+        $singleK = BudgetCategory::firstOrCreate(['nama_kategori' => 'Pemasukan']);
+        $doubleK = BudgetCategory::where('nama_kategori', 'Pemasukkan')->first();
+        if ($doubleK && $singleK && $doubleK->id_category != $singleK->id_category) {
+            \App\Models\EventBudget::where('id_category', $doubleK->id_category)->update(['id_category' => $singleK->id_category]);
+            $doubleK->delete();
+        }
+
+        // Hapus kategori Pemasukan dari ExpenseCategory karena Finance hanya untuk pengeluaran
+        ExpenseCategory::whereIn('nama_kategori', ['Pemasukan', 'Pemasukkan', 'pemasukan', 'pemasukkan'])->delete();
+
         $categories = BudgetCategory::withCount('eventBudgets')->get();
         return view('categories.index', compact('categories'));
     }

@@ -37,8 +37,8 @@ class ExpenseController extends Controller
             ->where('id_event', $eventId)
             ->latest('id_expense')
             ->get();
-        $categories = ExpenseCategory::all();
-        $expenseCategories = ExpenseCategory::all();
+        $categories = ExpenseCategory::whereNotIn('nama_kategori', ['Pemasukan', 'Pemasukkan', 'pemasukan', 'pemasukkan'])->get();
+        $expenseCategories = $categories;
 
 
         return view('events.finance', compact(
