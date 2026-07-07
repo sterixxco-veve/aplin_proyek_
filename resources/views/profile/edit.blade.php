@@ -38,23 +38,6 @@
             </div>
         </div>
 
-        {{-- DELETE ACCOUNT FORM --}}
-        <div class="col-12">
-            <div class="card p-4 border-0 shadow-sm custom-profile-card">
-                <div class="card-body p-0">
-                    <h5 class="fw-bold text-dark text-danger mb-1" style="font-size: 1.2rem;">Hapus Akun</h5>
-                    <p class="text-muted small mb-4">Setelah akun Anda dihapus, semua sumber daya dan datanya akan dihapus secara permanen.</p>
-                    
-                    <div class="custom-form-wrapper delete-section">
-                        @include('profile.partials.delete-user-form')
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 <style>
   
     .custom-profile-card {

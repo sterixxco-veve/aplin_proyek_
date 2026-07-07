@@ -4,6 +4,26 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
+    {{-- PROSES FILTER DATA UPCOMING DI AWAL AGAR BISA DIGUNAKAN DI KARTU STATS & LIST DETAIL --}}
+    @php
+        $now = \Carbon\Carbon::now();
+        $upcomingItems = $events->filter(function ($event) use ($now) {
+            $mulai = \Carbon\Carbon::parse($event->tgl_mulai);
+            $selesai = $event->tgl_selesai ? \Carbon\Carbon::parse($event->tgl_selesai) : null;
+
+            if ($now->lt($mulai)) {
+                return true;
+            } // Planning
+            if ($selesai && $now->between($mulai, $selesai)) {
+                return true;
+            } // Ongoing
+            if (!$selesai && $now->isSameDay($mulai)) {
+                return true;
+            } // Ongoing fallback
+            return false; // Done disembunyikan dari modul upcoming
+        });
+    @endphp
+
     <div class="container-fluid px-4 pb-5">
         {{-- WELCOME HEADER --}}
         <div class="mb-4">
@@ -38,11 +58,11 @@
                             <i class="bi bi-graph-up-arrow fs-5"></i>
                         </div>
                         <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 font-semibold"
-                            style="font-size: 10px;">+2</span>
+                            style="font-size: 10px;">+{{ count($upcomingItems) }}</span>
                     </div>
-                    <small class="text-secondary fw-medium d-block mb-1" style="font-size: 0.775rem;">Upcoming
-                        Events</small>
-                    <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.3px;">8</h4>
+                    <small class="text-secondary fw-medium d-block mb-1" style="font-size: 0.775rem;">Upcoming Events</small>
+                    {{-- DIUBAH MENJADI DINAMIS --}}
+                    <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.3px;">{{ count($upcomingItems) }}</h4>
                 </div>
             </div>
 
@@ -57,25 +77,6 @@
                     </div>
                     <div class="card-body p-2" style="max-height: 250px; overflow-y: auto;">
                         <div class="list-group list-group-flush">
-                            {{-- Filter murni mencari event yang belum selesai (Planning atau Ongoing saja) --}}
-                            @php
-                                $now = \Carbon\Carbon::now();
-                                $upcomingItems = $events->filter(function ($event) use ($now) {
-                                    $mulai = \Carbon\Carbon::parse($event->tgl_mulai);
-                                    $selesai = $event->tgl_selesai ? \Carbon\Carbon::parse($event->tgl_selesai) : null;
-
-                                    if ($now->lt($mulai)) {
-                                        return true;
-                                    } // Planning
-                                    if ($selesai && $now->between($mulai, $selesai)) {
-                                        return true;
-                                    } // Ongoing
-                                    if (!$selesai && $now->isSameDay($mulai)) {
-                                        return true;
-                                    } // Ongoing fallback
-                                    return false; // Done disembunyikan dari modul upcoming
-                                });
-                            @endphp
 
                             @forelse($upcomingItems as $event)
                                 <div class="list-group-item border-0 rounded-3 mb-1 hover-bg-light transition p-2 px-3">
@@ -222,9 +223,6 @@
             letter-spacing: -0.1px;
         }
 
-        /* ================================================== */
-        /* OVERRIDE FULLCALENDAR BUTTON SPACING (ANTI-MEPET)  */
-        /* ================================================== */
         .fc .fc-toolbar {
             align-items: center;
             margin-bottom: 1.25rem !important;
@@ -232,7 +230,6 @@
 
         .fc .fc-button-group {
             gap: 4px;
-            /* Memberikan jarak antar tombol group */
         }
 
         .fc .fc-button-primary {
@@ -240,9 +237,7 @@
             border-color: #4f46e5 !important;
             font-size: 0.8rem !important;
             padding: 6px 12px !important;
-            /* Diperlebar sedikit agar lega */
             border-radius: 8px !important;
-            /* Dibuat round lembut */
             font-weight: 600 !important;
             box-shadow: none !important;
         }
@@ -250,7 +245,6 @@
         .fc .fc-toolbar-chunk div {
             display: flex;
             gap: 8px;
-            /* Jarak pisah antara button group dan tombol today */
         }
 
         .fc .fc-button-primary:disabled {
