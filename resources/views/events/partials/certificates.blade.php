@@ -31,9 +31,6 @@
     </div>
 @endif
 
-<!-- STEP 1: TEMPLATE UPLOAD -->
-
-<!-- STEP 2: BULK INSERT RECIPIENTS -->
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-light border-0 px-4 py-3">
         <h6 class="mb-0 fw-bold">
@@ -52,20 +49,23 @@
         </div>
 
         <div>
-            <!-- Manual Tab -->
             <div id="manual">
                 @if($canManageCertificate)
                     <form method="POST" action="/events/{{ $event->id_event }}/certificates/bulk-insert" id="manualForm">
                         @csrf
                         <div id="recipientFields">
                             <div class="row g-3 recipient-row">
-                                <div class="col-md-6">
-                                    <input type="text" name="nama_penerima[]" class="form-control"
-                                        placeholder="Nama Penerima">
+                                <div class="col-md-4">
+                                    <input type="text" name="nrp[]" class="form-control"
+                                        placeholder="NRP (Opsional)">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <input type="text" name="nama_penerima[]" class="form-control"
+                                        placeholder="Nama Penerima" required>
+                                </div>
+                                <div class="col-md-4">
                                     <input type="email" name="email_penerima[]" class="form-control"
-                                        placeholder="Email Penerima">
+                                        placeholder="Email Penerima" required>
                                 </div>
                             </div>
                         </div>
@@ -84,7 +84,6 @@
                 @endif
             </div>
 
-            <!-- CSV Tab -->
             <div id="csv" style="display:none;">
                 @if($canManageCertificate)
                     <div class="mb-3 p-3 bg-light rounded">
@@ -98,10 +97,9 @@
                         @csrf
                         <div class="mb-3">
                             <label class="form-label small text-muted">File CSV atau Excel</label>
-                            <input type="file" name="recipients_file" class="form-control" accept=".csv,.xlsx,.xls"
-                               >
+                            <input type="file" name="recipients_file" class="form-control" accept=".csv,.xlsx,.xls">
                             <small class="text-muted d-block mt-2">
-                                Format: <code>Nama Lengkap, Email Penerima</code><br>
+                                Format: <code>NRP (Opsional), Nama Lengkap, Email Penerima</code><br>
                                 Baris pertama adalah header (otomatis dilewati).
                             </small>
                         </div>
@@ -118,8 +116,7 @@
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
-    <div
-        class="card-header bg-light border-0 px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="card-header bg-light border-0 px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h6 class="mb-0 fw-bold">
             <span class="badge bg-primary me-2">2</span> Upload Template Background
         </h6>
@@ -144,8 +141,7 @@
                 @csrf
                 <div class="flex-grow-1">
                     <label class="form-label small text-muted">File Template (PNG/JPG, max 5MB)</label>
-                    <input type="file" name="template_file" class="form-control" accept="image/png,image/jpeg,image/jpg"
-                       >
+                    <input type="file" name="template_file" class="form-control" accept="image/png,image/jpeg,image/jpg">
                     <small class="text-muted d-block mt-2">Template akan digunakan sebagai background certificate. Pastikan
                         ukuran dan resolusi sudah sesuai.</small>
                 </div>
@@ -154,40 +150,21 @@
         @endif
     </div>
 </div>
-<!-- STEP 3: DAFTAR PENERIMA & ACTION -->
+
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-light border-0 px-4 py-3 d-flex justify-content-between align-items-center flex-wrap">
         <h6 class="mb-0 fw-bold">
             <span class="badge bg-primary me-2">3</span> Daftar Penerima & Proses
         </h6>
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <!-- <div class="small text-muted">
-                <span id="selectedCount">0</span>
-                recipient selected
-            </div>
-
-            <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#sendEmailModal">
-
-                <i class="bi bi-envelope-fill me-1"></i>
-                Send Bulk Email
-            </button> -->
-
         </div>
         @if($canManageCertificate && $certificates->count() > 0)
             <div class="d-flex gap-2 flex-wrap">
-
                 @if($templatePath)
                     <form method="POST" action="/events/{{ $event->id_event }}/certificates/generate">
                         @csrf
-
                         <input type="hidden" name="template_path" value="{{ $templatePath }}">
-
                         <button type="submit" class="btn btn-sm btn-success">
-
                             <i class="bi bi-sparkles me-1"></i>
                             Generate Certificates
                         </button>
@@ -195,29 +172,22 @@
                 @endif
 
                 <form id="downloadZipForm" method="POST" action="/events/{{ $event->id_event }}/certificates/download-zip">
-
                     @csrf
-
                     <div id="downloadZipInputs"></div>
                     <div class="small text-muted">
-                        <span id="selectedCount">0</span>
-                        recipient selected
+                        <span id="selectedCount">0</span> recipient selected
                     </div>
 
                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                         data-bs-target="#sendEmailModal">
-
                         <i class="bi bi-envelope-fill me-1"></i>
                         Send Bulk Email
                     </button>
                     <button type="submit" class="btn btn-sm btn-warning">
-
                         <i class="bi bi-file-earmark-zip me-1"></i>
                         Download ZIP
                     </button>
-
                 </form>
-
             </div>
         @endif
     </div>
@@ -230,9 +200,8 @@
                         <th class="ps-4" width="40">
                             <input type="checkbox" id="selectAllCertificates">
                         </th>
-
                         <th>No</th>
-                        <th>Penerima</th>
+                        <th>NRP</th> <th>Penerima</th>
                         <th>Email</th>
                         <th>Status File</th>
                         <th>Terkirim</th>
@@ -253,6 +222,10 @@
 
                             <td>
                                 {{ $index + 1 }}
+                            </td>
+
+                            <td class="text-muted small">
+                                {{ $cert->nrp ?? '-' }}
                             </td>
 
                             <td class="fw-semibold">
@@ -292,7 +265,6 @@
                                     @if($cert->file_url)
                                         <a href="{{ asset('storage/' . $cert->file_url) }}" download
                                             class="btn btn-sm btn-outline-success">
-
                                             <i class="bi bi-download"></i>
                                         </a>
                                     @endif
@@ -300,21 +272,18 @@
                                     <form method="POST"
                                         action="/events/{{ $event->id_event }}/certificates/{{ $cert->id_cert }}"
                                         style="display:inline" onsubmit="return confirm('Hapus penerima ini?')">
-
                                         @csrf
                                         @method('DELETE')
-
                                         <button class="btn btn-sm btn-outline-danger">
                                             Hapus
                                         </button>
                                     </form>
-
                                 </td>
                             @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $canManageCertificate ? 6 : 5 }}" class="p-4 text-muted text-center">
+                            <td colspan="{{ $canManageCertificate ? 7 : 6 }}" class="p-4 text-muted text-center">
                                 Belum ada penerima certificate. Silahkan tambah penerima terlebih dahulu.
                             </td>
                         </tr>
@@ -325,7 +294,6 @@
     </div>
 </div>
 
-<!-- SEND EMAIL MODAL -->
 @if($canManageCertificate && $certificates->where('file_url', '!=', null)->count() > 0)
     <div class="modal fade" id="sendEmailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -336,17 +304,11 @@
                 </div>
                 <div class="modal-body p-4">
                     <form method="POST" action="/events/{{ $event->id_event }}/certificates/send" id="sendEmailForm">
-
                         @csrf
-
                         <div class="alert alert-info mb-3">
-                            <div class="fw-semibold mb-1">
-                                Selected Recipients
-                            </div>
-
+                            <div class="fw-semibold mb-1">Selected Recipients</div>
                             <div>
-                                <span id="modalSelectedCount">0</span>
-                                certificate(s) selected
+                                <span id="modalSelectedCount">0</span> certificate(s) selected
                             </div>
                         </div>
 
@@ -362,13 +324,8 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">
-                                Cancel
-                            </button>
-
-                            <button type="submit" class="btn btn-primary flex-fill">
-                                Send Bulk Email
-                            </button>
+                            <button type="button" class="btn btn-light flex-fill" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary flex-fill">Send Bulk Email</button>
                         </div>
                     </form>
                 </div>
@@ -381,51 +338,45 @@
     <script>
         function addRecipientRow() {
             const html = `
-                            <div class="row g-3 recipient-row mt-3">
-                                <div class="col-md-6">
-                                    <input type="text" name="nama_penerima[]" class="form-control" placeholder="Nama Penerima">
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <input type="email" name="email_penerima[]" class="form-control" placeholder="Email Penerima">
-                                        <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.parentElement.parentElement.remove()">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                <div class="row g-3 recipient-row mt-3">
+                    <div class="col-md-4">
+                        <input type="text" name="nrp[]" class="form-control" placeholder="NRP (Opsional)">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="nama_penerima[]" class="form-control" placeholder="Nama Penerima" required>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="email" name="email_penerima[]" class="form-control" placeholder="Email Penerima" required>
+                            <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.parentElement.parentElement.remove()">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
             document.getElementById('recipientFields').insertAdjacentHTML('beforeend', html);
         }
     </script>
     <script>
         function showTab(tab) {
-
             const manual = document.getElementById('manual');
             const csv = document.getElementById('csv');
-
             const manualBtn = document.getElementById('manualBtn');
             const csvBtn = document.getElementById('csvBtn');
 
             if (tab === 'manual') {
-
                 manual.style.display = 'block';
                 csv.style.display = 'none';
-
                 manualBtn.classList.remove('btn-outline-primary');
                 manualBtn.classList.add('btn-primary');
-
                 csvBtn.classList.remove('btn-primary');
                 csvBtn.classList.add('btn-outline-primary');
-
-            } else {
-
+            </div> else {
                 manual.style.display = 'none';
                 csv.style.display = 'block';
-
                 csvBtn.classList.remove('btn-outline-primary');
                 csvBtn.classList.add('btn-primary');
-
                 manualBtn.classList.remove('btn-primary');
                 manualBtn.classList.add('btn-outline-primary');
             }
@@ -436,114 +387,70 @@
         });
     </script>
     <script>
-
         document.addEventListener('DOMContentLoaded', function () {
-
-            const selectAll =
-                document.getElementById('selectAllCertificates');
-
-            const checkboxes =
-                document.querySelectorAll('.cert-checkbox');
-
-            const selectedCount =
-                document.getElementById('selectedCount');
-
-            const modalSelectedCount =
-                document.getElementById('modalSelectedCount');
-
-            const selectedRecipientsList =
-                document.getElementById('selectedRecipientsList');
-
-            const selectedInputsContainer =
-                document.getElementById('selectedInputsContainer');
+            const selectAll = document.getElementById('selectAllCertificates');
+            const checkboxes = document.querySelectorAll('.cert-checkbox');
+            const selectedCount = document.getElementById('selectedCount');
+            const modalSelectedCount = document.getElementById('modalSelectedCount');
+            const selectedRecipientsList = document.getElementById('selectedRecipientsList');
+            const selectedInputsContainer = document.getElementById('selectedInputsContainer');
 
             function updateSelectedRecipients() {
-                const downloadZipInputs =
-                    document.getElementById('downloadZipInputs');
+                const downloadZipInputs = document.getElementById('downloadZipInputs');
 
                 if (downloadZipInputs) {
                     downloadZipInputs.innerHTML = '';
                 }
-                const selected =
-                    Array.from(checkboxes)
-                        .filter(cb => cb.checked);
+                const selected = Array.from(checkboxes).filter(cb => cb.checked);
 
                 if (selectedCount) {
                     selectedCount.textContent = selected.length;
                 }
-
                 if (modalSelectedCount) {
                     modalSelectedCount.textContent = selected.length;
                 }
-
                 if (selectedRecipientsList) {
                     selectedRecipientsList.innerHTML = '';
                 }
-
                 if (selectedInputsContainer) {
                     selectedInputsContainer.innerHTML = '';
                 }
 
                 selected.forEach(cb => {
-
                     if (selectedRecipientsList) {
-
                         selectedRecipientsList.innerHTML += `
-                                <div class="small border-bottom py-2">
-                                    <div class="fw-semibold">
-                                        ${cb.dataset.name}
-                                    </div>
-
-                                    <div class="text-muted">
-                                        ${cb.dataset.email}
-                                    </div>
-                                </div>
-                            `;
+                            <div class="small border-bottom py-2">
+                                <div class="fw-semibold">${cb.dataset.name}</div>
+                                <div class="text-muted">${cb.dataset.email}</div>
+                            </div>
+                        `;
                     }
-
                     if (downloadZipInputs) {
                         downloadZipInputs.innerHTML += `
-                                <input
-                                    type="hidden"
-                                    name="cert_ids[]"
-                                    value="${cb.value}">
-                            `;
+                            <input type="hidden" name="cert_ids[]" value="${cb.value}">
+                        `;
                     }
-
                     if (selectedInputsContainer) {
-
                         selectedInputsContainer.innerHTML += `
-                                <input
-                                    type="hidden"
-                                    name="cert_ids[]"
-                                    value="${cb.value}">
-                            `;
+                            <input type="hidden" name="cert_ids[]" value="${cb.value}">
+                        `;
                     }
                 });
             }
 
             if (selectAll) {
-
                 selectAll.addEventListener('change', function () {
-
                     checkboxes.forEach(cb => {
                         cb.checked = selectAll.checked;
                     });
-
                     updateSelectedRecipients();
                 });
             }
 
             checkboxes.forEach(cb => {
-
                 cb.addEventListener('change', function () {
-
                     updateSelectedRecipients();
-
-                    const allChecked =
-                        Array.from(checkboxes)
-                            .every(x => x.checked);
-
+                    const allChecked = Array.from(checkboxes).every(x => x.checked);
                     if (selectAll) {
                         selectAll.checked = allChecked;
                     }
@@ -552,9 +459,6 @@
 
             updateSelectedRecipients();
         });
-
     </script>
-
-    <!-- Include Certificate Editor Modal -->
     @include('events.partials.certificate-editor-modal')
 @endif
