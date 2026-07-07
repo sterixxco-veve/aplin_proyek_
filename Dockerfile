@@ -13,11 +13,13 @@ RUN apt-get update && apt-get install -y \
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
+# TAMBAHKAN pdo_mysql DI SINI
 RUN docker-php-ext-install \
     gd \
     zip \
     pdo \
-    pdo_pgsql
+    pdo_pgsql \
+    pdo_mysql
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
