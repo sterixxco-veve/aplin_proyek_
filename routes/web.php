@@ -18,7 +18,7 @@ use App\Http\Controllers\Api\EventCommitteeController;
 use App\Http\Controllers\Api\ExpenseReportController;
 use App\Http\Controllers\Api\PartnerController as ApiPartnerController;
 use App\Http\Controllers\Web\BudgetCategoryController;
-
+use App\Http\Controllers\GeminiChatController;
 
 
 /*
@@ -101,7 +101,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    
+
     // ==========================================
     // ROUTE MASTER KATEGORI ANGGARAN & KEUANGAN
     // ==========================================
@@ -164,7 +164,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'updateBudget']);
     Route::delete('/events/{eventId}/budgets/{budgetId}', [EventController::class, 'destroyBudget']);
     Route::get('/finance', [ExpenseController::class, 'home']);
-
+    Route::post('/gemini-chat', [GeminiChatController::class, 'sendMessage'])->name('gemini.chat');
     Route::get(
         '/budgets',
         [EventController::class, 'budgetList']

@@ -174,6 +174,275 @@
         </div>
     </div>
 
+    <button class="gemini-chat-btn" onclick="toggleGeminiChat()" title="Tanya Gemini">
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
+
+    <div class="gemini-chat-container" id="geminiChatContainer">
+        <div class="gemini-chat-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-stars" style="color: #6366f1;"></i>
+                <span class="fw-bold">Tanya Gemini AI</span>
+            </div>
+            <button class="btn btn-sm text-white border-0 opacity-75 hover-opacity-100" onclick="toggleGeminiChat()">
+                <i class="bi bi-xl"></i>
+            </button>
+        </div>
+
+        <div class="gemini-chat-messages" id="geminiChatMessages">
+            <div class="gemini-message gemini-msg">
+                Halo! Ada yang bisa saya bantu terkait event atau dashboard Anda hari ini? ✨
+            </div>
+        </div>
+
+        <div class="gemini-chat-input-area">
+            <input type="text" id="geminiUserInput" placeholder="Ketik sesuatu di sini..."
+                onkeypress="handleGeminiKeyPress(event)">
+            <button onclick="sendGeminiMessage()">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .gemini-chat-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 56px;
+            height: 56px;
+            background-color: #4f46e5;
+            /* Senada dengan warna tema dashboard-mu (#4f46e5) */
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+            font-size: 1.4rem;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .gemini-chat-btn:hover {
+            transform: scale(1.08);
+            background-color: #4338ca;
+        }
+
+        .gemini-chat-container {
+            position: fixed;
+            bottom: 95px;
+            right: 25px;
+            width: 360px;
+            height: 480px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            /* Default tersembunyi */
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9999;
+            border: 1px solid #e2e8f0;
+            font-family: inherit;
+        }
+
+        .gemini-chat-header {
+            background-color: #1e293b;
+            /* Header gelap elegan */
+            color: white;
+            padding: 16px;
+            font-size: 0.95rem;
+        }
+
+        .gemini-chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #f8fafc;
+        }
+
+        .gemini-message {
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .user-msg {
+            background-color: #eef2ff;
+            align-self: flex-end;
+            color: #4f46e5;
+            border-bottom-right-radius: 4px;
+            font-weight: 500;
+        }
+
+        .gemini-msg {
+            background-color: #ffffff;
+            align-self: flex-start;
+            color: #334155;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .gemini-chat-input-area {
+            display: flex;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px;
+            gap: 8px;
+        }
+
+        .gemini-chat-input-area input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.85rem;
+            transition: border-color 0.15s ease;
+        }
+
+        .gemini-chat-input-area input:focus {
+            border-color: #4f46e5;
+        }
+
+        .gemini-chat-input-area button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s ease;
+        }
+
+        .gemini-chat-input-area button:hover {
+            background-color: #4338ca;
+        }
+
+        .gemini-chat-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 56px;
+            height: 56px;
+            background-color: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease-in-out;
+
+            /* UPDATE DI SINI: Naikkan z-index ke level tertinggi */
+            z-index: 99999 !important;
+        }
+
+        .gemini-chat-btn:hover {
+            transform: scale(1.08);
+            background-color: #4338ca;
+        }
+
+        .gemini-chat-container {
+            position: fixed;
+            bottom: 95px;
+            right: 25px;
+            width: 360px;
+            height: 480px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            font-family: inherit;
+
+            /* UPDATE DI SINI: Pastikan kontainer chat juga di paling depan */
+            z-index: 99999 !important;
+        }
+    </style>
+
+    <script>
+        function toggleGeminiChat() {
+            const chatBox = document.getElementById('geminiChatContainer');
+            if (chatBox.style.display === 'flex') {
+                chatBox.style.display = 'none';
+            } else {
+                chatBox.style.display = 'flex';
+                // Scroll otomatis ke paling bawah saat dibuka
+                const msgContainer = document.getElementById('geminiChatMessages');
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            }
+        }
+
+        function handleGeminiKeyPress(event) {
+            if (event.key === 'Enter') sendGeminiMessage();
+        }
+
+        async function sendGeminiMessage() {
+            const inputEl = document.getElementById('geminiUserInput');
+            const messageText = inputEl.value.trim();
+            if (!messageText) return;
+
+            const messagesContainer = document.getElementById('geminiChatMessages');
+
+            // 1. Render pesan user ke UI
+            const userDiv = document.createElement('div');
+            userDiv.className = 'gemini-message user-msg';
+            userDiv.innerText = messageText;
+            messagesContainer.appendChild(userDiv);
+            inputEl.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 2. Render status "Sedang mengetik..."
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'gemini-message gemini-msg';
+            loadingDiv.innerHTML = '<i class="bi bi-three-dots animated-dots"></i> Mengetik...';
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                // 3. Request AJAX ke Route Laravel
+                const response = await fetch('/gemini-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Mengamankan request dengan CSRF Token global bawaan blade
+                    },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const data = await response.json();
+
+                // 4. Update status mengetik tadi menjadi respon teks dari Gemini
+                if (response.ok) {
+                    loadingDiv.innerText = data.reply;
+                } else {
+                    loadingDiv.innerText = data.reply || 'Waduh, server sedang bermasalah.';
+                }
+            } catch (error) {
+                loadingDiv.innerText = 'Gagal terhubung. Pastikan koneksi internet aman.';
+                console.error(error);
+            }
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>
