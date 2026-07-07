@@ -191,12 +191,6 @@ Route::middleware('auth')->group(function () {
 
 });
 
-// API RESOURCES FROM API.PHP
-Route::middleware('auth')->group(function () {
-    Route::apiResource('committees', EventCommitteeController::class);
-    Route::apiResource('expenses', ExpenseReportController::class);
-});
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -212,6 +206,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/expense-categories', [ExpenseCategoryController::class, 'store']);
     Route::delete('/expense-categories/{id}', [ExpenseCategoryController::class, 'destroy']);
 
+});
+
+// API RESOURCES FROM API.PHP
+Route::middleware('auth')->group(function () {
+    Route::apiResource('committees', EventCommitteeController::class);
+    Route::apiResource('expenses', ExpenseReportController::class);
 });
 
 

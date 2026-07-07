@@ -143,8 +143,6 @@
                                                 </td>
                                                 <td class="py-25">
                                                     <div class="fw-bold text-dark">{{ $item->kegiatan }}</div>
-                                                    <small class="text-muted" style="font-size: 0.75rem;">Item rundown
-                                                        acara</small>
                                                 </td>
                                                 <td class="py-25">
                                                     <div class="fw-semibold text-dark">

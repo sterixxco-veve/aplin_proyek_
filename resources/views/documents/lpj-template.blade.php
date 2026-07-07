@@ -613,8 +613,10 @@
                 </tbody>
             </table>
 
+            <h4 style="margin: 20px 0 8px; font-weight: bold; text-transform: uppercase;">B. PENGELUARAN</h4>
+
             @php
-                $groupedPengeluaran = collect($pengeluaranItems)->groupBy(fn($item) => $item->category->nama_kategori);
+                $groupedPengeluaran = collect($pengeluaranItems)->groupBy(fn($item) => $item->category?->nama_kategori ?? 'Lainnya');
             @endphp
 
             @php

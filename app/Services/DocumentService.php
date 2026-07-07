@@ -104,18 +104,36 @@ class DocumentService
         $pemasukanItems = [];
         $pengeluaranItems = [];
 
-        // Mengambil data relasi anggaran dari model event
+        // Mengambil data relasi anggaran dari model event (Proposal Budget)
         $mappedBudgets = $event?->budgets ?? collect();
 
-        foreach ($mappedBudgets as $b) {
-            // Membaca nama kategori anggaran (Contoh: "Pemasukan ISTTS", "Registrasi Pemasukan")
-            // Menggunakan fungsi str_contains agar fleksibel menyaring kata kunci "pemasukan"
-            $categoryName = strtolower($b->category?->nama_kategori ?? '');
+        if ($doc->document_type === 'lpj') {
+            // Untuk LPJ:
+            // 1. PEMASUKAN = SELURUH DATA DARI BUDGET PROPOSAL (karena itu adalah total anggaran dana yang disetujui untuk kegiatan)
+            $pemasukanItems = $mappedBudgets->all();
 
-            if (str_contains($categoryName, 'pemasukan')) {
-                $pemasukanItems[] = $b;
-            } else {
-                $pengeluaranItems[] = $b;
+            // 2. PENGELUARAN = DATA REALISASI DARI FINANCE (ExpenseReport) yang berstatus accepted atau reimbursed
+            $mappedExpenses = $event?->expenses()
+                ->where(function ($query) {
+                    $query->where('approval_status', 'accepted')
+                        ->orWhere('is_reimbursed', true);
+                })->get() ?? collect();
+
+            foreach ($mappedExpenses as $exp) {
+                // Jembatan kompatibilitas dengan template blade agar tidak kosong saat membaca $peng->keterangan
+                $exp->keterangan = $exp->nama_pengeluaran ?? $exp->keterangan ?? '-';
+                $pengeluaranItems[] = $exp;
+            }
+        } else {
+            // Untuk Proposal & dokumen selain LPJ:
+            foreach ($mappedBudgets as $b) {
+                $categoryName = strtolower($b->category?->nama_kategori ?? '');
+
+                if (str_contains($categoryName, 'pemasukan')) {
+                    $pemasukanItems[] = $b;
+                } else {
+                    $pengeluaranItems[] = $b;
+                }
             }
         }
 

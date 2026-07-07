@@ -285,7 +285,7 @@
                                 @if ($canManageFinance)
                                     <div class="d-flex gap-2 justify-content-end">
                                         <button
-                                            class="btn btn-sm btn-link text-warning p-0 text-decoration-none fw-semibold"
+                                            class="btn btn-sm btn-link text-warning p-0 text-decoration-none fw-semibold edit-btn"
                                             style="font-size: 0.8rem;" data-id="{{ $exp->id_expense }}"
                                             data-nama="{{ $exp->nama_pengeluaran }}"
                                             data-kategori="{{ $exp->id_expense_category }}"
@@ -310,7 +310,7 @@
                         </tr>
 
                         {{-- Decline Reason Form Box Row --}}
-                        <tr id="decline-row-${{ $exp->id_expense }}" class="decline-row d-none">
+                        <tr id="decline-row-{{ $exp->id_expense }}" class="decline-row d-none">
                             <td colspan="9" class="px-3 pb-3 bg-light">
                                 <div class="card border-danger-subtle bg-white shadow-sm mt-1"
                                     style="border-radius: 10px;">
@@ -471,14 +471,14 @@
     });
 
     function showDeclineCard(expenseId) {
-        const row = document.getElementById(`decline-row-\${expenseId}`);
+        const row = document.getElementById(`decline-row-${expenseId}`);
         if (row) {
             row.classList.remove('d-none');
         }
     }
 
     function hideDeclineCard(expenseId) {
-        const row = document.getElementById(`decline-row-\${expenseId}`);
+        const row = document.getElementById(`decline-row-${expenseId}`);
         if (row) {
             row.classList.add('d-none');
         }
@@ -551,7 +551,7 @@
         document.getElementById('qty').value = exp.qty;
         document.getElementById('rekening').value = exp.nomor_rekening;
 
-        document.getElementById('expenseForm').action = `/expenses/\${exp.id}`;
+        document.getElementById('expenseForm').action = `/expenses/${exp.id}`;
 
         if (!document.getElementById('methodInput')) {
             let input = document.createElement('input');
