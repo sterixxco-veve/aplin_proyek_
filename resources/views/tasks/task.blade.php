@@ -205,6 +205,13 @@
                                                         onclick="openEditModal({{ $task->id_task }})">
                                                         Edit
                                                     </button>
+                                                    <span class="text-muted mx-1">|</span>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-semibold"
+                                                        style="font-size: 0.8rem;"
+                                                        onclick="deleteTask({{ $task->id_task }})">
+                                                        Delete
+                                                    </button>
                                                 @endif
                                             </div>
                                         </div>
@@ -422,6 +429,8 @@
             window.openCreateTaskModal = function() {
                 form.reset();
                 form.action = '/events/{{ $event->id_event ?? '' }}/tasks';
+                let methodInput = document.getElementById('taskMethodInput');
+                if (methodInput) methodInput.remove();
                 taskIdInput.value = '';
                 title.textContent = 'Tambah Task';
                 submitBtn.textContent = 'Simpan Task';
@@ -440,6 +449,14 @@
                     const task = await response.json();
 
                     form.action = `/tasks/${taskId}`;
+                    if (!document.getElementById('taskMethodInput')) {
+                        let input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = '_method';
+                        input.value = 'PUT';
+                        input.id = 'taskMethodInput';
+                        form.appendChild(input);
+                    }
                     taskIdInput.value = task.id_task;
                     title.textContent = 'Edit Task';
                     submitBtn.textContent = 'Update Task';
@@ -456,6 +473,30 @@
                     taskModal.show();
                 } catch (error) {
                     alert('Gagal memuat data detail tugas.');
+                }
+            };
+
+            window.deleteTask = async function(taskId) {
+                if (!confirm('Apakah Anda yakin ingin menghapus tugas ini?')) return;
+                try {
+                    const response = await fetch(`/tasks/${taskId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if (response.ok) {
+                        if (window.location.pathname.includes('/events/')) {
+                            window.location.search = '?tab=tasks';
+                        } else {
+                            window.location.reload();
+                        }
+                    } else {
+                        alert('Gagal menghapus tugas.');
+                    }
+                } catch (error) {
+                    alert('Terjadi kesalahan koneksi.');
                 }
             };
         });

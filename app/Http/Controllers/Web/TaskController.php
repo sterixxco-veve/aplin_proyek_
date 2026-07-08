@@ -134,10 +134,14 @@ class TaskController extends Controller
             'deadline'
         ]));
 
-        return response()->json([
-            'success' => true,
-            'task' => $task->load('assignee')
-        ]);
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json([
+                'success' => true,
+                'task' => $task->load('assignee')
+            ]);
+        }
+
+        return back()->with('success', 'Task berhasil diperbarui');
     }
 
 
@@ -161,7 +165,11 @@ class TaskController extends Controller
 
         $task->delete();
 
-        return response()->json(['success' => true]);
+        if (request()->wantsJson() || request()->ajax() || request()->header('Accept') === 'application/json') {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Task berhasil dihapus');
     }
 
 

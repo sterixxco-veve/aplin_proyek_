@@ -85,11 +85,17 @@
                                 </div>
                             </div>
 
-                            <div class="mt-2 pt-2 border-top text-end">
+                            <div class="mt-2 pt-2 border-top d-flex justify-content-end gap-1">
                                 <button type="button" class="btn btn-sm btn-light py-0 px-2 border"
-                                    onclick="openEditModal({{ $task->id_task }})">
+                                    onclick="openEditModal({{ $task->id_task }})" title="Edit Tugas">
                                     ✏️
                                 </button>
+                                @if ($canManageTasks)
+                                    <button type="button" class="btn btn-sm btn-light py-0 px-2 border text-danger"
+                                        onclick="deleteTask({{ $task->id_task }})" title="Hapus Tugas">
+                                        🗑️
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -280,6 +286,8 @@
             window.openCreateTaskModal = function() {
                 form.reset();
                 form.action = '/events/{{ $event->id_event }}/tasks';
+                let methodInput = document.getElementById('taskMethodInput');
+                if (methodInput) methodInput.remove();
                 taskIdInput.value = '';
                 title.textContent = 'Tambah Task';
                 submitBtn.textContent = 'Simpan Task';
@@ -298,6 +306,14 @@
                     const task = await response.json();
 
                     form.action = `/tasks/${taskId}`;
+                    if (!document.getElementById('taskMethodInput')) {
+                        let input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = '_method';
+                        input.value = 'PUT';
+                        input.id = 'taskMethodInput';
+                        form.appendChild(input);
+                    }
                     taskIdInput.value = task.id_task;
                     title.textContent = 'Edit Task';
                     submitBtn.textContent = 'Update Task';
@@ -314,6 +330,30 @@
                     taskModal.show();
                 } catch (error) {
                     alert('Gagal membuka data edit.');
+                }
+            };
+
+            window.deleteTask = async function(taskId) {
+                if (!confirm('Apakah Anda yakin ingin menghapus tugas ini?')) return;
+                try {
+                    const response = await fetch(`/tasks/${taskId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if (response.ok) {
+                        if (window.location.pathname.includes('/events/')) {
+                            window.location.search = '?tab=tasks';
+                        } else {
+                            window.location.reload();
+                        }
+                    } else {
+                        alert('Gagal menghapus tugas.');
+                    }
+                } catch (error) {
+                    alert('Terjadi kesalahan koneksi.');
                 }
             };
         });

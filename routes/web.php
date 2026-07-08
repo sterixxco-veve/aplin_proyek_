@@ -187,7 +187,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tasks/{id}/status', [TaskController::class, 'updateStatus']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
     Route::get('/tasks/{id}', [TaskController::class, 'show']);
-    Route::put('/tasks/{id}', [TaskController::class, 'update']);
+    Route::match(['put', 'post'], '/tasks/{id}', [TaskController::class, 'update']);
 
 
 });
